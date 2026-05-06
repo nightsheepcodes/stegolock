@@ -33,6 +33,7 @@ use App\Models\Folder;
 use App\Models\DocumentShare;
 use App\Models\FolderShare;
 use App\Models\DocumentActivity;
+use App\Models\User;
 use App\Services\CryptoService;
 use App\Services\TemporaryKeyStorage;
 use App\Jobs\ProcessSteganoJob;
@@ -393,10 +394,12 @@ class DocumentController extends Controller
     {
         // 1: Validate
         $request->validate([
-            'file' => ['required', 'file', 'mimes:pdf,doc,docx,txt', 'min:1', 'max:5120']
+            'file' => ['required', 'file', 'mimes:pdf,doc,docx,txt', 'min:1', 'max:5120'],
+            'folder_id' => ['nullable', 'exists:folders,folder_id']
         ]);
 
         $file = $request->file('file');
+        $folderId = $request->input('folder_id');
 
         $document = new Document();
 
@@ -419,7 +422,8 @@ class DocumentController extends Controller
                 'file_hash' => $fileHash,
                 'temp_path' => $path,
                 'original_size' => $file->getSize(),
-                'status' => 'uploaded'
+                'status' => 'uploaded',
+                'folder_id' => $folderId
             ]);
 
 
@@ -1531,5 +1535,30 @@ class DocumentController extends Controller
             });
 
         return response()->json($shares);
+    }
+
+    /**
+     * Search users by email or name for sharing
+     */
+    public function searchUsers(Request $request)
+    {
+        $request->validate([
+            'query' => 'required|string|min:2|max:255',
+        ]);
+
+        $searchQuery = $request->input('query');
+        $currentUserId = Auth::id();
+
+        $users = User::where('id', '!=', $currentUserId)
+            ->where('is_active', true)
+            ->where(function ($query) use ($searchQuery) {
+                $query->where('email', 'like', "%{$searchQuery}%")
+                    ->orWhere('name', 'like', "%{$searchQuery}%");
+            })
+            ->select('id', 'name', 'email')
+            ->limit(10)
+            ->get();
+
+        return response()->json($users);
     }
 }

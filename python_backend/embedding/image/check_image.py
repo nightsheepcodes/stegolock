@@ -3,13 +3,13 @@ from PIL import Image
 
 USAGE_RATIO = 0.15
 
-def get_png_embedding_capacity(image_path):
+def get_image_embedding_capacity(image_path):
     """
-    Validates PNG image for LSB embedding and returns usable and total capacity (in bytes).
+    Validates PNG or JPEG image for LSB embedding and returns usable and total capacity (in bytes).
 
     Conditions:
-    - Must be PNG
-    - Must be RGB or RGBA
+    - Must be PNG or JPEG
+    - Must be RGB, RGBA, or convertible to RGB
 
     Returns:
     - (usable_bytes, total_bytes) if valid
@@ -21,17 +21,21 @@ def get_png_embedding_capacity(image_path):
         img = Image.open(image_path)
 
         # --- Validate format ---
-        if img.format != 'PNG':
+        if img.format not in ['PNG', 'JPEG']:
             return -1, -1
 
-        # --- Validate mode ---
+        # --- Validate mode and convert if needed ---
         if img.mode not in ['RGB', 'RGBA']:
-            return -1, -1
+            # Convert grayscale ('L') or CMYK to RGB for consistent capacity calculation
+            img = img.convert('RGB')
+        
+        # Determine channels
+        if img.mode in ['RGB', 'RGBA']:
+            channels = len(img.getbands())
+        else:
+            channels = 3  # After conversion to RGB
 
         width, height = img.size
-
-        # --- Determine channels ---
-        channels = len(img.getbands())  # RGB=3, RGBA=4
 
         # --- Compute capacity ---
         total_pixels = width * height
@@ -50,10 +54,10 @@ def get_png_embedding_capacity(image_path):
 # ------------------- CLI execution -------------------
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python get_png_capacity.py <image_path>")
+        print("Usage: python check_image.py <image_path>")
         sys.exit(1)
 
     image_path = sys.argv[1]
 
-    usable, total = get_png_embedding_capacity(image_path)
+    usable, total = get_image_embedding_capacity(image_path)
     print(f"{usable},{total}")

@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { X, Upload, FileText, CheckCircle2, ShieldAlert, Loader2, ArrowRight } from 'lucide-react';
 import axios from 'axios';
 
-export default function UploadModal({ isOpen, onClose, allowUpload, uploaded }) {
+export default function UploadModal({ isOpen, onClose, allowUpload, uploaded, folderId = null }) {
 
     const [filePreview, setFilePreview] = useState(null);
     const [confirmStep, setConfirmStep] = useState(false);
@@ -82,6 +82,9 @@ export default function UploadModal({ isOpen, onClose, allowUpload, uploaded }) 
         try {
             const formData = new FormData();
             formData.append('file', file);
+            if (folderId) {
+                formData.append('folder_id', folderId);
+            }
 
             // Upload
             const res = await axios.post('/documents/upload', formData, {

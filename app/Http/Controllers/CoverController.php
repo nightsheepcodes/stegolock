@@ -142,7 +142,7 @@ class CoverController extends Controller
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
                 $filename = Str::random(10) . '_' . $file->getClientOriginalName();
-                $file->storeAs("public/{$folder}", $filename);
+                $file->storeAs("{$folder}", $filename, 'public');
                 $uploadCount++;
             }
         }

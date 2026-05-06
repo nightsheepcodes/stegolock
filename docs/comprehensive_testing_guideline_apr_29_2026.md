@@ -35,12 +35,12 @@ Focuses on the lifecycle of files and folders within the personal workspace.
 
 | ID | Feature | Role | Test Steps | Expected Result | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| DM-01 | **New Folder** | User | Click "New" -> "New Folder"; enter a name. | Folder appears in the grid; breadcrumbs update on entry. | Pending |
-| DM-02 | **Rename Action** | User | File Menu -> Rename; provide new name. | Database updates; UI reflects new filename immediately. | Pending |
-| DM-03 | **Move Action** | User | File Menu -> Move; select target folder. | File disappears from current folder and appears in target. | Pending |
-| DM-04 | **Star/Favorite** | User | Click the Star icon on a card. | Star turns yellow; file appears in the "Starred" navigation view. | Pending |
-| DM-05 | **File Info Modal** | User | Click "File Info" in the menu. | Shows file type, cloud size, and full activity audit trail. | Pending |
-| DM-06 | **Delete File** | User | Click Delete -> Confirm in modal. | File is removed from DB, Cloud storage, and UI. | Pending |
+| DM-01 | **New Folder** | User | Click "New" -> "New Folder"; enter a name. | Folder appears in the grid; breadcrumbs update on entry. | ✅ PASSED |
+| DM-02 | **Rename Action** | User | File Menu -> Rename; provide new name. | Database updates; UI reflects new filename immediately. | ✅ PASSED |
+| DM-03 | **Move Action** | User | File Menu -> Move; select target folder. | File disappears from current folder and appears in target. | ✅ PASSED|
+| DM-04 | **Star/Favorite** | User | Click the Star icon on a card. | Star turns yellow; file appears in the "Starred" navigation view. | ✅ PASSED |
+| DM-05 | **File Info Modal** | User | Click "File Info" in the menu. | Shows file type, cloud size, and full activity audit trail. | ✅ PASSED |
+| DM-06 | **Delete File** | User | Click Delete -> Confirm in modal. | File is removed from DB, Cloud storage, and UI. | ✅ PASSED |
 | DM-07 | **Quota Tracking** | User | Upload a large file. | "Personal Space" bar in sidebar updates its percentage. | Pending |
 
 ---
@@ -76,8 +76,8 @@ Focuses on the Superadmin and System Admin oversight capabilities.
 
 | ID | Feature | Role | Test Steps | Expected Result | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| ADM-01| **Admin Dashboard**| Admin | Navigate to `/admin/dashboard`. | Shows 3-column infrastructure grid with live system metrics. | Pending |
-| ADM-02| **User Promotion** | Super | User List -> Promote to "User Admin". | Target user gains access to administrative navigation links. | Pending |
+| ADM-01| **Admin Dashboard**| Admin | Navigate to `/admin/dashboard`. | Shows 3-column infrastructure grid with live system metrics. | ✅ PASSED |
+| ADM-02| **User Promotion** | Super | User List -> Promote to "User Admin". | Target user gains access to administrative navigation links. | ✅ PASSED |
 | ADM-03| **Quota Override** | Admin | Edit user quota to 500MB. | User's storage progress bar reflects the new limit instantly. | Pending |
 | ADM-04| **Zombie Detection**| Admin | Navigate to "Database Management". | System scans Cloud vs DB and flags unmapped storage files. | Pending |
 | ADM-05| **Cover Audit** | Admin | Click "Audit Integrity" in Cover Management. | System verifies all stego-carriers are still present in B2. | Pending |
@@ -94,7 +94,7 @@ Focuses on system robustness under failure conditions.
 | ERR-02| **Invalid File** | User | Attempt to upload a 0-byte or corrupted file. | System rejects upload with a clear validation error message. | Pending |
 | ERR-03| **Pool Exhaustion**| User | Attempt to lock a file when cover pool is empty. | System sends Admin notification; user sees "Insufficient Capacity". | Pending |
 | ERR-04| **B2 Timeout** | User | Simulate network failure during B2 retrieval. | Unlock job fails gracefully; status updates to "Failed" with error. | Pending |
-| ERR-05| **Unauthorized** | User | Manually type `/admin/dashboard` as a standard user. | System redirects to Home or shows 403 Unauthorized. | ❌ FAILED (Route accessible to standard users) |
+| ERR-05| **Unauthorized** | User | Manually type `/admin/dashboard` as a standard user. | System redirects to Home or shows 403 Unauthorized. | ✅ PASSED |
 
 ---
 *Testing Guideline - StegoLock Comprehensive Verification Suite - V2.0*

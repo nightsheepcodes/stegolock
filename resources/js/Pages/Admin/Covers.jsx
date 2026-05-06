@@ -71,6 +71,12 @@ export default function CoversPage({ covers, candidateCount, auditResults }) {
         return matchesType && matchesSearch;
     });
 
+    const acceptTypes = {
+        image: 'image/png, image/jpeg',
+        audio: 'audio/wav, audio/mpeg',
+        text: 'text/plain'
+    };
+
     return (
         <AdminLayout
             header={
@@ -213,6 +219,7 @@ export default function CoversPage({ covers, candidateCount, auditResults }) {
                                 <input 
                                     type="file" 
                                     multiple 
+                                    accept={acceptTypes[uploadType]}
                                     onChange={e => setData('files', e.target.files)}
                                     className="absolute inset-0 opacity-0 cursor-pointer z-10"
                                 />
@@ -224,7 +231,7 @@ export default function CoversPage({ covers, candidateCount, auditResults }) {
                                         <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
                                             {data.files.length > 0 ? `${data.files.length} files selected` : `Click or drag ${uploadType} files here`}
                                         </p>
-                                        <p className="text-xs text-slate-400 mt-1">Supported: PNG, WAV, TXT (Max 50MB)</p>
+                                        <p className="text-xs text-slate-400 mt-1">Supported: PNG, JPG, WAV, MP3, TXT (Max 50MB)</p>
                                     </div>
                                 </div>
                             </div>

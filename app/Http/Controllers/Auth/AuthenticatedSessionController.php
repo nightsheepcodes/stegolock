@@ -88,6 +88,12 @@ class AuthenticatedSessionController extends Controller
         // Login user manually
         Auth::login($user);
 
+        // Check if redirect to survey is requested (from form data or query parameter)
+        $redirectTo = $request->input('redirect') ?: $request->query('redirect');
+        if ($redirectTo === 'survey') {
+            return redirect()->route('survey');
+        }
+
         // Redirect based on role
         if ($user->isUserAdmin() || $user->isDbStorageAdmin() || $user->isSuperadmin()) {
             return redirect()->intended(route('admin.dashboard', absolute: false));

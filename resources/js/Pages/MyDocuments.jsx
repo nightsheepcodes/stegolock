@@ -378,7 +378,7 @@ export default function MyDocuments({ documents, folders, currentFolder, breadcr
                                 {searchQuery || filters.fileFormat !== 'all' || filters.status !== 'all' ? "Try adjusting your filters or search query" : "Upload files to get started with Stegolock"}
                             </p>
                             <button
-                                onClick={() => window.dispatchEvent(new CustomEvent('trigger-upload-modal'))}
+                                onClick={() => window.dispatchEvent(new CustomEvent('trigger-upload-modal', { detail: { folderId: currentFolder?.folder_id || null } }))}
                                 className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-600 to-indigo-600 dark:from-cyber-accent dark:to-indigo-500 text-white px-5 py-2 rounded-xl hover:from-cyan-700 hover:to-indigo-700 dark:hover:from-cyan-400 dark:hover:to-indigo-400 transition-all text-sm font-bold shadow-lg shadow-cyan-500/30 dark:shadow-[0_0_15px_rgba(34,211,238,0.4)]"
                             >
                                 <Lock className="size-4" />

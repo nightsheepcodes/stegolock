@@ -1,5 +1,5 @@
 import AdminLayout from '@/Layouts/Admin/AdminLayout';
-import { Head } from '@inertiajs/react';
+import { Head, usePage, router } from '@inertiajs/react';
 import { 
     Cloud, 
     HardDrive, 
@@ -20,7 +20,6 @@ import { useState } from 'react';
 
 export default function CloudPage({ stats, users }) {
     const [searchQuery, setSearchQuery] = useState('');
-    const { router } = usePage().props;
 
     const formatBytes = (bytes, decimals = 2) => {
         if (!+bytes) return '0 Bytes';

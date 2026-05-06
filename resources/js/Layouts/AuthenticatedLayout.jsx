@@ -31,10 +31,12 @@ export default function AuthenticatedLayout({
     const [folderProcessing, setFolderProcessing] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
+    const [currentFolderId, setCurrentFolderId] = useState(null);
 
     useEffect(() => {
-        const handleTriggerUpload = () => {
+        const handleTriggerUpload = (e) => {
             if (!isUploading) {
+                setCurrentFolderId(e.detail?.folderId || null);
                 setShowUploadModal(true);
             }
         };
@@ -152,6 +154,7 @@ export default function AuthenticatedLayout({
                         onClose={() => setShowUploadModal(false)}
                         allowUpload={() => setIsUploading(false)}
                         uploaded={() => setIsUploading(true)}
+                        folderId={currentFolderId}
                     />
 
                     <CreateFolderModal 

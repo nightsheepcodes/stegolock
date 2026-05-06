@@ -15,6 +15,11 @@ Route::get('/', function () {
     ]);
 });
 
+Route::middleware('auth')->group(function () {
+    Route::get('/survey', [SurveyController::class, 'index'])->name('survey');
+    Route::post('/survey', [SurveyController::class, 'store'])->name('survey.store');
+});
+
 Route::middleware('auth', 'verified')->group(function () {
 
     // Route::get('/myDocuments', function () {
@@ -87,6 +92,8 @@ Route::middleware('auth')->group(function () {
         ->name('documents.share.remove');
     Route::get('/documents/activity/{id}', [DocumentController::class, 'getActivity']);
     Route::get('/documents/recipients/{id}', [DocumentController::class, 'getRecipients']);
+    Route::get('/users/search', [DocumentController::class, 'searchUsers'])
+        ->name('users.search');
 
     // Folder Sharing
     Route::post('/folders/share', [DocumentController::class, 'shareFolder'])

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { X, Share2, Mail, CheckCircle2, AlertCircle, Trash2, Loader2, Clock, UserCheck, RefreshCw, ShieldCheck, UserPlus, FolderOpen, Info } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { X, Share2, Mail, CheckCircle2, AlertCircle, Trash2, Loader2, Clock, UserCheck, RefreshCw, ShieldCheck, UserPlus, FolderOpen, Info, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
 import { ConfirmModal } from './ConfirmModal';
@@ -8,6 +8,14 @@ export function ShareFolderModal({ folder, onClose }) {
   const [email, setEmail] = useState('');
   const [isSharing, setIsSharing] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  
+  // User search dropdown states
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const searchTimeoutRef = useRef(null);
+  const dropdownRef = useRef(null);
   
   const handleShare = async () => {
     if (!email) return;
@@ -50,6 +58,60 @@ export function ShareFolderModal({ folder, onClose }) {
             handleConfirm();
         }
     }
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Debounced user search
+  const searchUsers = useCallback((query) => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (query.length < 2) {
+      setSearchResults([]);
+      setShowDropdown(false);
+      return;
+    }
+
+    searchTimeoutRef.current = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const response = await axios.get('/users/search', {
+          params: { query }
+        });
+        setSearchResults(response.data);
+        setShowDropdown(response.data.length > 0);
+      } catch (error) {
+        console.error('Failed to search users', error);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300);
+  }, []);
+
+  const handleEmailChange = (e) => {
+    const value = e.target.value;
+    setEmail(value);
+    setSelectedUser(null);
+    searchUsers(value);
+  };
+
+  const handleSelectUser = (user) => {
+    setSelectedUser(user);
+    setEmail(user.email);
+    setSearchResults([]);
+    setShowDropdown(false);
   };
 
   return (
@@ -100,19 +162,48 @@ export function ShareFolderModal({ folder, onClose }) {
                 <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Add Recipient</h3>
             </div>
             <div className="flex flex-col gap-3">
-                <div className="relative">
+                <div className="relative" ref={dropdownRef}>
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                         <Mail className="size-5 text-slate-400 dark:text-slate-500" />
                     </div>
                     <input
-                        type="email"
+                        type="text"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 bg-slate-50 dark:bg-cyber-surface border border-slate-200 dark:border-cyber-border rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-cyber-accent focus:border-transparent transition-all font-bold text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 text-sm"
-                        placeholder="recipient@example.com"
+                        onChange={handleEmailChange}
+                        onFocus={() => email.length >= 2 && searchResults.length > 0 && setShowDropdown(true)}
+                        className="w-full pl-12 pr-10 py-3 bg-slate-50 dark:bg-cyber-surface border border-slate-200 dark:border-cyber-border rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-cyber-accent focus:border-transparent transition-all font-bold text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 text-sm"
+                        placeholder="Search by name or email..."
                         disabled={showConfirm}
                         autoFocus
                     />
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        {isSearching ? (
+                            <Loader2 className="size-4 animate-spin text-slate-400" />
+                        ) : (
+                            <Search className="size-4 text-slate-400 dark:text-slate-500" />
+                        )}
+                    </div>
+
+                    {/* User Search Dropdown */}
+                    {showDropdown && (
+                        <div className="absolute z-10 w-full mt-1 bg-white dark:bg-cyber-surface border border-slate-200 dark:border-cyber-border rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                            {searchResults.map((user) => (
+                                <div
+                                    key={user.id}
+                                    onClick={() => handleSelectUser(user)}
+                                    className="p-3 hover:bg-slate-50 dark:hover:bg-cyber-border/30 cursor-pointer flex items-center gap-3 transition-colors"
+                                >
+                                    <div className="size-8 shrink-0 bg-gradient-to-br from-indigo-100 to-indigo-50 dark:from-indigo-500/20 dark:to-indigo-600/10 rounded-lg flex items-center justify-center text-indigo-700 dark:text-indigo-400 font-black text-sm border border-indigo-100/50 dark:border-indigo-500/20">
+                                        {user.name.charAt(0)}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{user.name}</p>
+                                        <p className="text-xs text-slate-500 dark:text-slate-500 truncate">{user.email}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
                 {!showConfirm ? (
                     <button
