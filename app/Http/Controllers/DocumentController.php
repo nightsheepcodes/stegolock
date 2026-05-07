@@ -450,7 +450,7 @@ class DocumentController extends Controller
     {
         // 1: Validate
         $request->validate([
-            'file' => ['required', 'file', 'mimes:pdf,doc,docx,txt', 'min:1', 'max:5120'],
+            'file' => ['required', 'file', 'mimes:pdf,doc,docx,txt,png,jpg,jpeg,mp3,wav', 'min:1', 'max:20480'],
             'folder_id' => ['nullable', 'exists:folders,folder_id']
         ]);
 
@@ -507,19 +507,22 @@ class DocumentController extends Controller
                 throw new \Exception("Failed to store document");
             }
 
-        } catch (QueryException $e) {
+        } catch (\Throwable $e) {
             // Log the actual error for debugging
-            \Illuminate\Support\Facades\Log::error('Upload failed: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('Upload process failed: ' . $e->getMessage(), [
+                'code' => $e->getCode(),
+                'trace' => $e->getTraceAsString()
+            ]);
 
             // Check if it's actually a duplicate key error (SQLSTATE 23000)
-            if ($e->getCode() == '23000') {
+            if ($e instanceof QueryException && $e->getCode() == '23000') {
                 return response()->json([
                     'errors' => ['file' => ['A file with identical content or name already exists in your vault.']]
                 ], 422);
             }
 
             return response()->json([
-                'errors' => ['file' => ['Database error: ' . $e->getMessage()]]
+                'errors' => ['file' => ['Upload failed: ' . $e->getMessage()]]
             ], 422);
         } finally {
             $this->finishMetric('upload', $document->document_id ?? null, Auth::id(), null, 'upload');

@@ -105,7 +105,8 @@ Route::middleware('auth')->group(function () {
         ->name('folders.share.accept');
 });
 
-// Admin Routes
+Route::get('/capacity/check', [CapacityController::class, 'check'])->name('capacity.check');
+
 Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
     
     // All Admin Users (user_admin, db_storage_admin, superadmin)
