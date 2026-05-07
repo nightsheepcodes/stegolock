@@ -31,6 +31,16 @@ export default function UploadModal({ isOpen, onClose, allowUpload, uploaded, fo
         file: null,
     });
 
+    const resetAll = () => {
+        form.reset();
+        setFilePreview(null);
+        setConfirmStep(false);
+        setFileError(null);
+        setDuplicateMatch(null);
+        setDocumentId(null);
+        setStatus(null);
+    };
+
     useEffect(() => {
         if (!isOpen) {
             resetAll();
@@ -141,15 +151,6 @@ export default function UploadModal({ isOpen, onClose, allowUpload, uploaded, fo
         e.returnValue = ''; // required for Chrome to show prompt
     };
 
-    const resetAll = () => {
-        form.reset();
-        setFilePreview(null);
-        setConfirmStep(false);
-        setFileError(null);
-        setDuplicateMatch(null);
-        setDocumentId(null);
-        setStatus(null);
-    };
 
     const handleUpload = async () => {
 
