@@ -13,15 +13,8 @@ return new class extends Migration
     {
         Schema::create('survey_responses', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email');
-            $table->integer('experience_rating')->nullable(); // 1-5 rating
-            $table->integer('ease_of_use_rating')->nullable(); // 1-5 rating
-            $table->integer('security_confidence_rating')->nullable(); // 1-5 rating
-            $table->text('features_used')->nullable(); // JSON or comma-separated
-            $table->text('improvements_suggested')->nullable();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->text('additional_comments')->nullable();
-            $table->boolean('would_recommend')->nullable();
             $table->timestamps();
         });
     }

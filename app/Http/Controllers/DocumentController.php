@@ -448,9 +448,19 @@ class DocumentController extends Controller
      */
     public function upload(Request $request)
     {
-        // 1: Validate
+        // EARLY LOGGING FOR DIAGNOSTICS
+        \Illuminate\Support\Facades\Log::info('Production Upload Entry', [
+            'user_id' => Auth::id(),
+            'has_file' => $request->hasFile('file'),
+            'file_name' => $request->hasFile('file') ? $request->file('file')->getClientOriginalName() : 'n/a',
+            'file_size' => $request->hasFile('file') ? $request->file('file')->getSize() : 0,
+            'file_mime' => $request->hasFile('file') ? $request->file('file')->getMimeType() : 'n/a',
+            'folder_id' => $request->input('folder_id')
+        ]);
+
+        // 1: Validate (Relaxed for debugging)
         $request->validate([
-            'file' => ['required', 'file', 'mimes:pdf,doc,docx,txt,png,jpg,jpeg,mp3,wav', 'min:1', 'max:20480'],
+            'file' => ['required', 'file', 'mimes:pdf,doc,docx,txt,png,jpg,jpeg,mp3,wav', 'min:1', 'max:51200'],
             'folder_id' => ['nullable', 'exists:folders,folder_id']
         ]);
 
