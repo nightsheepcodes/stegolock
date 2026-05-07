@@ -59,10 +59,13 @@ class DocumentController extends Controller
             throw new \RuntimeException('Master key token not found in session.');
         }
 
-        $masterKey = (new TemporaryKeyStorage())->retrieve($token, Auth::id());
+        $storage = new TemporaryKeyStorage();
+        $masterKey = $storage->retrieve($token, Auth::id());
         if (!$masterKey) {
             throw new \RuntimeException('Master key not found or expired.');
         }
+
+        $storage->refresh($token);
 
         return $masterKey;
     }
@@ -375,11 +378,6 @@ class DocumentController extends Controller
                 'error_message' => $e->getMessage()
             ]);
 
-            // Cleanup the temp upload file if it exists and encryption failed
-            if ($tempPath && Storage::exists($tempPath)) {
-                Storage::delete($tempPath);
-            }
-
             return [
                 'isLocked' => false,
                 'error' => 'Document could not be locked: ' . $e->getMessage()
@@ -511,9 +509,6 @@ class DocumentController extends Controller
                 'status' => 'encrypted'
             ]);
 
-            // Safe to delete uploaded file
-            Storage::delete($temp_filePath);
-
             //return data for Segmentation
             return $encPath;
 
@@ -523,11 +518,6 @@ class DocumentController extends Controller
                 'status' => 'failed',
                 'error_message' => 'Encryption failed: ' . $e->getMessage()
             ]);
-
-            // Ensure the temp upload file is deleted on failure
-            if (Storage::exists($temp_filePath)) {
-                Storage::delete($temp_filePath);
-            }
 
             throw $e; // Rethrow to let the caller handle it
         }

@@ -68,7 +68,9 @@ class TemporaryKeyStorage
             $this->store = $desiredStore;
         }
 
-        $this->ttl = config('temporary-key-storage.ttl', 3600);
+        $sessionTtl = (int) config('session.lifetime', 120) * 60;
+        $configuredTtl = (int) config('temporary-key-storage.ttl', 3600);
+        $this->ttl = max($configuredTtl, $sessionTtl);
     }
 
     /**
@@ -182,6 +184,22 @@ class TemporaryKeyStorage
     {
         $redisKey = $this->prefix . $token;
         return $this->repository()->has($redisKey);
+    }
+
+    /**
+     * Refresh the TTL for an existing token without changing its value.
+     */
+    public function refresh(string $token): bool
+    {
+        $redisKey = $this->prefix . $token;
+        $payload = $this->repository()->get($redisKey);
+
+        if (!$payload) {
+            return false;
+        }
+
+        $this->repository()->put($redisKey, $payload, $this->ttl);
+        return true;
     }
 
     /**

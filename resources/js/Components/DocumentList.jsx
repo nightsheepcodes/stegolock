@@ -1,4 +1,4 @@
-import { MoreVertical, Shield, Loader2, Star, Unlock, FolderInput, Info, Trash2, Pencil, FileText } from 'lucide-react';
+import { MoreVertical, Shield, Loader2, Star, Unlock, FolderInput, Info, Trash2, Pencil, FileText, Users, CheckCircle2, AlertCircle } from 'lucide-react';
 import { formatBytes, formatDate, getFileColor, getFileIcon } from '@/Utils/fileUtils';
 
 export function DocumentList({ 
@@ -80,10 +80,30 @@ export function DocumentList({
                                                 <Loader2 className="size-4 animate-spin" />
                                                 <span className="text-xs font-bold animate-pulse">Processing...</span>
                                             </div>
-                                        ) : (
+                                        ) : doc.status === 'stored' ? (
                                             <div className="flex items-center gap-1.5">
                                                 <Shield className="size-4 text-green-500" />
                                                 <span className="text-xs font-bold text-green-600 uppercase">Secured</span>
+                                            </div>
+                                        ) : doc.status === 'decrypted' ? (
+                                            <div className="flex items-center gap-1.5">
+                                                <Unlock className="size-4 text-blue-500" />
+                                                <span className="text-xs font-bold text-blue-600 uppercase">Original</span>
+                                            </div>
+                                        ) : doc.status === 'retrieved' ? (
+                                            <div className="flex items-center gap-1.5">
+                                                <CheckCircle2 className="size-4 text-cyan-500" />
+                                                <span className="text-xs font-bold text-cyan-600 uppercase">Retrieved</span>
+                                            </div>
+                                        ) : doc.status === 'failed' ? (
+                                            <div className="flex items-center gap-1.5">
+                                                <AlertCircle className="size-4 text-red-500" />
+                                                <span className="text-xs font-bold text-red-600 uppercase">Failed</span>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-1.5">
+                                                <Shield className="size-4 text-gray-400" />
+                                                <span className="text-xs font-bold text-gray-600 uppercase">{doc.status || 'Unknown'}</span>
                                             </div>
                                         )}
                                     </td>

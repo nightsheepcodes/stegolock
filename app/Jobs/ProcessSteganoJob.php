@@ -125,6 +125,13 @@ class ProcessSteganoJob implements ShouldQueue
                 Log::info("[SteganoJob] Encrypted source file purged from temp storage.");
             }
 
+            $sourcePath = $document->temp_path;
+            if ($sourcePath && Storage::disk('local')->exists($sourcePath)) {
+                Storage::disk('local')->delete($sourcePath);
+                $document->update(['temp_path' => null]);
+                Log::info("[SteganoJob] Original upload file purged after successful processing.");
+            }
+
         } catch (\Throwable $e) {
             Log::error("[SteganoJob] Document locking failed.", [
                 'document_id' => $this->documentId,

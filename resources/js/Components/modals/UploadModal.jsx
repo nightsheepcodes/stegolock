@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useForm, router } from '@inertiajs/react';
 import { toast } from 'sonner';
-import { X, Upload, FileText, CheckCircle2, ShieldAlert, Loader2, ArrowRight } from 'lucide-react';
+import { X, Upload, FileText, CheckCircle2, ShieldAlert, Loader2, ArrowRight, AlertCircle, RotateCcw } from 'lucide-react';
 import axios from 'axios';
 
 export default function UploadModal({ isOpen, onClose, allowUpload, uploaded, folderId = null }) {
@@ -12,6 +12,8 @@ export default function UploadModal({ isOpen, onClose, allowUpload, uploaded, fo
     const [documentId, setDocumentId] = useState(null);
     const [toastId, setToastId] = useState(null);
     const [status, setStatus] = useState(null);
+    const [uploadError, setUploadError] = useState(null);
+    const [retrying, setRetrying] = useState(false);
 
     const [locked, setLocked] = useState(null);
 
@@ -60,20 +62,69 @@ export default function UploadModal({ isOpen, onClose, allowUpload, uploaded, fo
         e.returnValue = ''; // required for Chrome to show prompt
     };
 
+    const handleRetry = async () => {
+        if (!form.data.file) return;
+        setRetrying(true);
+        setUploadError(null);
+        await handleUpload(true);
+        setRetrying(false);
+    };
+
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const files = e.dataTransfer.files;
+        if (files && files.length > 0) {
+            const file = files[0];
+            
+            // Reset previous error
+            setFileError(null);
+
+            // Validate type
+            if (!allowedTypes.includes(file.type)) {
+                setFileError('Invalid file type. Only PDF, DOC, DOCX, and TXT are allowed.');
+                form.setData('file', null);
+                setConfirmStep(false);
+                setFilePreview(null);
+                return;
+            }
+
+            form.setData('file', file);
+
+            setFilePreview({
+                name: file.name,
+                size: (file.size / 1024).toFixed(2) + ' KB',
+                type: file.type,
+            });
+
+            setConfirmStep(true);
+        }
+    };
+
     const resetAll = () => {
         form.reset();
         setFilePreview(null);
         setConfirmStep(false);
         setFileError(null);
+        setUploadError(null);
+        setRetrying(false);
     };
 
-    const handleUpload = async () => {
+    const handleUpload = async (isRetry = false) => {
 
         if (!form.data.file) return;
 
         const file = form.data.file;
 
-        resetAll();
+        if (!isRetry) {
+            resetAll();
+        }
         onClose();
         uploaded();
 
@@ -122,8 +173,10 @@ export default function UploadModal({ isOpen, onClose, allowUpload, uploaded, fo
 
         } catch (err) {
             console.log('Error: ', err);
-            const errorMessage = err.response?.data?.errors?.file?.[0] || 'Failed to process document. Please try again.';
-            toast.error(errorMessage, { id: toastId });
+            const errorMessage = err.response?.data?.errors?.file?.[0] || err.response?.data?.message || 'Failed to process document. Please try again.';
+            toast.dismiss(toastId);
+            setUploadError(errorMessage);
+            setConfirmStep(true);
         }
     };
 
@@ -185,7 +238,11 @@ export default function UploadModal({ isOpen, onClose, allowUpload, uploaded, fo
                                 onChange={handleFileChange}
                             />
 
-                            <div className="border-2 border-dashed border-slate-200 dark:border-cyber-border rounded-[2rem] p-12 text-center hover:border-cyan-500 dark:hover:border-cyber-accent hover:bg-cyan-50/50 dark:hover:bg-cyber-accent/5 transition-all group duration-300">
+                            <div 
+                                className="border-2 border-dashed border-slate-200 dark:border-cyber-border rounded-[2rem] p-12 text-center hover:border-cyan-500 dark:hover:border-cyber-accent hover:bg-cyan-50/50 dark:hover:bg-cyber-accent/5 transition-all group duration-300"
+                                onDragOver={handleDragOver}
+                                onDrop={handleDrop}
+                            >
                                 <div className="flex justify-center mb-6">
                                     <div className="bg-slate-50 dark:bg-cyber-surface p-6 rounded-3xl shadow-sm group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 border border-slate-100 dark:border-cyber-border">
                                         <FileText className="size-12 text-slate-400 dark:text-slate-500 group-hover:text-cyan-500 dark:group-hover:text-cyber-accent transition-colors" />
@@ -216,7 +273,7 @@ export default function UploadModal({ isOpen, onClose, allowUpload, uploaded, fo
                     {/* ===================== */}
                     {/* STEP 2: CONFIRMATION */}
                     {/* ===================== */}
-                    {confirmStep && filePreview && (
+                    {confirmStep && filePreview && !uploadError && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <div className="bg-slate-50 dark:bg-cyber-surface/50 rounded-[2rem] p-6 border border-slate-100 dark:border-cyber-border flex items-center gap-4">
                                 <div className="p-4 bg-white dark:bg-cyber-void rounded-2xl shadow-sm">
@@ -271,6 +328,64 @@ export default function UploadModal({ isOpen, onClose, allowUpload, uploaded, fo
                                         <>
                                             Begin Locking
                                             <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ===================== */}
+                    {/* STEP 3: ERROR STATE */}
+                    {/* ===================== */}
+                    {uploadError && filePreview && (
+                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="bg-slate-50 dark:bg-cyber-surface/50 rounded-[2rem] p-6 border border-slate-100 dark:border-cyber-border flex items-center gap-4">
+                                <div className="p-4 bg-white dark:bg-cyber-void rounded-2xl shadow-sm">
+                                    <FileText className="size-8 text-slate-400 dark:text-slate-500" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-black text-slate-900 dark:text-white truncate text-lg">{filePreview.name}</p>
+                                    <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-1">
+                                        <span>{filePreview.size}</span>
+                                        <span>•</span>
+                                        <span>{filePreview.type.split('/')[1] || 'Document'}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="p-6 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-[2rem] flex items-start gap-4">
+                                <AlertCircle className="size-6 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+                                <div className="flex-1">
+                                    <p className="text-sm font-black text-red-900 dark:text-red-300 mb-1 uppercase tracking-tight">Upload Failed</p>
+                                    <p className="text-xs text-red-700 dark:text-red-500/90 font-semibold leading-relaxed">
+                                        {uploadError}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-4 pt-4">
+                                <button
+                                    onClick={resetAll}
+                                    className="flex-1 px-8 py-4 bg-slate-100 dark:bg-cyber-surface text-slate-700 dark:text-slate-300 font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-slate-200 dark:hover:bg-cyber-border/30 transition-all"
+                                >
+                                    Choose Different
+                                </button>
+
+                                <button
+                                    onClick={handleRetry}
+                                    disabled={retrying}
+                                    className="flex-1 px-8 py-4 bg-gradient-to-r from-orange-500 to-red-600 dark:from-orange-600 dark:to-red-500 text-white font-black uppercase tracking-widest text-xs rounded-2xl hover:shadow-lg hover:shadow-orange-500/30 transition-all flex items-center justify-center gap-3 group"
+                                >
+                                    {retrying ? (
+                                        <>
+                                            <Loader2 className="size-4 animate-spin" />
+                                            Retrying...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <RotateCcw className="size-4 group-hover:-rotate-180 transition-transform duration-300" />
+                                            Retry Upload
                                         </>
                                     )}
                                 </button>

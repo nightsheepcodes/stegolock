@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, History, FileText, User, Clock, CheckCircle2, Share2, Unlock, Trash2, ShieldCheck, Loader2, AlertCircle, Lock } from 'lucide-react';
+import { X, History, FileText, User, Clock, CheckCircle2, Share2, Unlock, Trash2, ShieldCheck, Loader2, AlertCircle, Lock, Upload } from 'lucide-react';
 import { formatDate, formatBytes } from '@/Utils/fileUtils';
 import axios from 'axios';
 
@@ -42,6 +42,15 @@ export function FileInfoModal({ document: doc, onClose }) {
   const formatDateTime = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const handleReupload = () => {
+    window.dispatchEvent(new CustomEvent('trigger-upload-modal', {
+      detail: {
+        folderId: doc.folder_id || null,
+      },
+    }));
+    onClose();
   };
 
   const getActionText = (activity) => {
@@ -176,7 +185,16 @@ export function FileInfoModal({ document: doc, onClose }) {
         </div>
 
         {/* Footer */}
-        <div className="p-6 bg-slate-50 dark:bg-cyber-surface border-t border-slate-100 dark:border-cyber-border/50 flex justify-end">
+        <div className="p-6 bg-slate-50 dark:bg-cyber-surface border-t border-slate-100 dark:border-cyber-border/50 flex items-center justify-end gap-3">
+            {doc.status === 'failed' && (
+              <button
+                onClick={handleReupload}
+                className="inline-flex items-center gap-2 px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-white bg-gradient-to-r from-cyan-600 to-indigo-600 dark:from-cyber-accent dark:to-indigo-500 hover:shadow-lg hover:shadow-cyan-500/20 rounded-xl transition-all"
+              >
+                <Upload className="size-4" />
+                Reupload
+              </button>
+            )}
             <button
               onClick={onClose}
               className="px-6 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-cyber-border/30 rounded-xl transition-all"
