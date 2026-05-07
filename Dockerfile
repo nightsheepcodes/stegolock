@@ -60,5 +60,5 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 # If PORT is not set, default to 80
 RUN sed -i 's/80/${PORT:-80}/g' /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf
 
-# Start Apache in the foreground
-CMD apache2-foreground
+# Start Apache in the foreground, ensuring MPM cleanup happens at runtime to prevent conflicts
+CMD ["/bin/bash", "-c", "rm -f /etc/apache2/mods-enabled/mpm_event.load /etc/apache2/mods-enabled/mpm_event.conf && rm -f /etc/apache2/mods-enabled/mpm_worker.load /etc/apache2/mods-enabled/mpm_worker.conf && a2enmod mpm_prefork && apache2-foreground"]
