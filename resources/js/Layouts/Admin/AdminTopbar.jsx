@@ -1,3 +1,4 @@
+import React from 'react';
 import { usePage } from '@inertiajs/react';
 import { User, HardDrive, EyeOff } from 'lucide-react';
 import Dropdown from '@/Components/Dropdown';

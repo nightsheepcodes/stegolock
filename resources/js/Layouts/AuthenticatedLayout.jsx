@@ -6,7 +6,7 @@ import Dropdown from '@/Components/Dropdown';
 import { Sidebar } from "@/Components/Sidebar";
 
 import { Link, usePage, router } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'sonner';
 import TextInput from '@/Components/TextInput';

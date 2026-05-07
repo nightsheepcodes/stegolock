@@ -1,3 +1,4 @@
+import React from 'react';
 import { Sidebar } from "@/Components/Sidebar";
 import AdminTopbar from './AdminTopbar';
 import { usePage, router } from '@inertiajs/react';

@@ -19,13 +19,22 @@ import {
     Server,
     ImagePlus
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { formatBytes } from '@/Utils/fileUtils';
 import { Link, usePage, router } from '@inertiajs/react';
 
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 
+const MenuButton = ({ icon: Icon, label, onClick, className = ""}) => (
+    <button
+        onClick={onClick}
+        className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 transition-all rounded-xl text-left group ${!className.includes('cursor-not-allowed') ? 'hover:bg-cyber-accent hover:text-white dark:hover:text-cyber-void hover:shadow-md' : ''} ${className}`}
+    >
+        <Icon className={`size-4 text-slate-500 dark:text-slate-400 transition-colors ${!className.includes('cursor-not-allowed') ? 'group-hover:text-white dark:group-hover:text-cyber-void' : ''} ${className}`} />
+        {label}
+    </button>
+);
 
 export function Sidebar({
   folders,
@@ -82,15 +91,6 @@ export function Sidebar({
         ? (effectiveTotalStorage / effectiveStorageLimit) * 100 
         : 0;
 
-    const MenuButton = ({ icon: Icon, label, onClick, className = ""}) => (
-        <button
-            onClick={onClick}
-            className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 transition-all rounded-xl text-left group ${!className.includes('cursor-not-allowed') ? 'hover:bg-cyber-accent hover:text-white dark:hover:text-cyber-void hover:shadow-md' : ''} ${className}`}
-        >
-            <Icon className={`size-4 text-slate-500 dark:text-slate-400 transition-colors ${!className.includes('cursor-not-allowed') ? 'group-hover:text-white dark:group-hover:text-cyber-void' : ''} ${className}`} />
-            {label}
-        </button>
-    );
 
   return (
     <nav className="w-72 h-screen flex flex-col border-r border-slate-200 dark:border-cyber-border/50 bg-white dark:bg-cyber-void transition-colors duration-300 shadow-lg z-30 relative overflow-hidden shrink-0">
