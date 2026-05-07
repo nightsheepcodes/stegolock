@@ -65,6 +65,8 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/documents/check-existence', [DocumentController::class, 'checkExistence']);
     Route::get('/documents/status/{id}', [DocumentController::class, 'getStatus']);
+    Route::get('/documents/metrics/{id}', [DocumentController::class, 'getMetrics']);
+    Route::post('/documents/verify/{id}', [DocumentController::class, 'verifyIntegrity']);
 
     Route::get('/documents/download/{id}', [DocumentController::class, 'download']);
 

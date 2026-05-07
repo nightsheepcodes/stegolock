@@ -136,6 +136,35 @@ export function useDocumentActions({
         }
     };
 
+    const fetchMetrics = async (docId) => {
+        try {
+            const resp = await axios.get(`/documents/metrics/${docId}`);
+            return resp.data;
+        } catch (err) {
+            console.error('Failed to fetch metrics:', err);
+            return [];
+        }
+    };
+
+    const handleVerifyIntegrity = async (docId) => {
+        const toastId = toast.loading('Starting storage integrity scan...', { duration: 3000 });
+        try {
+            const resp = await axios.post(`/documents/verify/${docId}`);
+            if (resp.data.success) {
+                if (resp.data.status === 'healthy') {
+                    toast.success('Integrity Check Passed: All fragments are intact.', { id: toastId });
+                } else {
+                    toast.error(`Integrity Check Failed: ${resp.data.issues.length} issues found.`, { id: toastId });
+                }
+                return resp.data;
+            }
+        } catch (err) {
+            console.error('Integrity check failed:', err);
+            toast.error('Failed to complete integrity check.', { id: toastId });
+        }
+        return null;
+    };
+
     return {
         handleUnlock,
         handleMove,
@@ -143,6 +172,8 @@ export function useDocumentActions({
         keepFile,
         handleToggleStar,
         handleFileInfo,
-        handleRename
+        handleRename,
+        fetchMetrics,
+        handleVerifyIntegrity
     };
 }

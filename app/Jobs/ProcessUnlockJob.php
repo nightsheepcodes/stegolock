@@ -17,10 +17,11 @@ use App\Services\CryptoService;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
+use App\Traits\RecordsMetrics;
 
 class ProcessUnlockJob implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, RecordsMetrics;
 
     public $tries = 5;
     public $timeout = 600; // 10 minutes for larger files
@@ -34,12 +35,12 @@ class ProcessUnlockJob implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(int $documentId, string $base64MasterKey, int $userId = null)
+    public function __construct(int $documentId, string $base64MasterKey, ?int $userId = null, ?string $jobId = null)
     {
         $this->documentId = $documentId;
         $this->base64MasterKey = $base64MasterKey;
         $this->userId = $userId;
-        $this->jobId = (string) Str::uuid();
+        $this->jobId = $jobId ?? (string) Str::uuid();
         $this->jobTempPath = storage_path("app/private/temp/jobs/{$this->jobId}");
     }
 
@@ -61,6 +62,7 @@ class ProcessUnlockJob implements ShouldQueue
      */
     public function handle(): void
     {
+        $this->initializeIsolatedLogger($this->jobId);
         $document = Document::findOrFail($this->documentId);
 
         // Status Guard: Prevent redundant unlocking if already decrypted or reconstructed
@@ -68,6 +70,9 @@ class ProcessUnlockJob implements ShouldQueue
             Log::info("[UnlockJob] Document already unlocked or in final stages. Skipping.", ['document_id' => $this->documentId]);
             return;
         }
+
+        $this->finishMetric('job_wait_time', $this->documentId, $this->userId ?? $document->user_id, $this->jobId, 'unlock');
+
         Log::info("[UnlockJob] Starting optimized document unlocking process.", [
             'document_id' => $this->documentId,
             'job_id' => $this->jobId,
@@ -87,21 +92,29 @@ class ProcessUnlockJob implements ShouldQueue
             // 1. Parallel Fetching
             Log::info("[UnlockJob] Fetching stego shards in parallel...");
             $this->updateStatus('retrieved');
+            $this->startMetric('cloud_retrieval');
             $stegoData = $this->fetchStegoFilesBatch($b2, $document);
+            $this->finishMetric('cloud_retrieval', $this->documentId, $this->userId ?? $document->user_id, $this->jobId, 'unlock');
             
             // 2. Batch Extraction
             Log::info("[UnlockJob] Extracting fragments via Batch Driver...");
             $this->updateStatus('extracted');
+            $this->startMetric('extraction');
             $this->extractFragmentsBatch($stegoData['files']);
+            $this->finishMetric('extraction', $this->documentId, $this->userId ?? $document->user_id, $this->jobId, 'unlock');
             
             // 3. Streaming Assembly (Low Memory)
             Log::info("[UnlockJob] Reassembling fragments into .stegolock container...");
+            $this->startMetric('assembly');
             $stegolock_file = $this->assembleStreaming($document, $stegoData['files']);
+            $this->finishMetric('assembly', $this->documentId, $this->userId ?? $document->user_id, $this->jobId, 'unlock');
 
             // 4. Decrypt
             Log::info("[UnlockJob] Final decryption phase...");
             $this->updateStatus('reconstructed');
+            $this->startMetric('decryption');
             $this->decrypt($document, $stegolock_file);
+            $this->finishMetric('decryption', $this->documentId, $this->userId ?? $document->user_id, $this->jobId, 'unlock');
             $this->updateStatus('decrypted');
 
             DocumentActivity::create([
@@ -185,11 +198,22 @@ class ProcessUnlockJob implements ShouldQueue
         $command = config('app.python_binary', 'python') . " " . base_path('python_backend/batch_processor.py') . " " . escapeshellarg($manifestPath) . " 2>&1";
         $output = [];
         $status = 0;
+        Log::channel($this->isolatedLoggerChannel)->debug("Running Python batch extraction script...", [
+            'manifest_path' => $manifestPath,
+            'shard_count' => count($manifest)
+        ]);
+
         exec($command, $output, $status);
 
         if ($status !== 0) {
+            Log::channel($this->isolatedLoggerChannel)->error("Batch extraction script failed.", [
+                'output' => $output,
+                'status' => $status
+            ]);
             throw new \Exception("Python Process Fatal Error: " . implode("\n", $output));
         }
+
+        Log::channel($this->isolatedLoggerChannel)->debug("Batch extraction script success.");
 
         // Parse JSON results from the last line of output
         $lastLine = end($output);

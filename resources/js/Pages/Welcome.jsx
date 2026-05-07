@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Shield, Lock, Layers, EyeOff, Share2, FileText, CheckCircle, ArrowRight, Github, ExternalLink, Users, Target, Info, Moon, Sun, Menu } from 'lucide-react';
+import { Shield, Lock, Layers, EyeOff, Share2, FileText, CheckCircle, ArrowRight, Github, ExternalLink, Users, Target, Info, Moon, Sun, Menu, X } from 'lucide-react';
 import { DecorativeBackground } from '@/Components/DecorativeBackground';
 import { useState, useEffect } from 'react';
 

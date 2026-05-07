@@ -14,6 +14,7 @@ export default function Login({ status, canResetPassword }) {
         remember: false,
         redirect: new URLSearchParams(window.location.search).get('redirect') || '',
     });
+    const isTimeout = new URLSearchParams(window.location.search).get('timeout') === 'session_expired';
 
     const submit = (e) => {
         e.preventDefault();
@@ -28,8 +29,18 @@ export default function Login({ status, canResetPassword }) {
             <Head title="Login" />
 
             {status && (
-                <div className="mb-4 text-sm font-medium text-green-600">
-                    {status}
+                <div className="mb-6 p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/30 flex items-center gap-3 text-green-600 dark:text-green-400">
+                    <CheckCircle2 className="size-5 shrink-0" />
+                    <span className="text-sm font-medium">{status}</span>
+                </div>
+            )}
+
+            {isTimeout && (
+                <div className="mb-6 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 flex items-center gap-3 text-amber-600 dark:text-amber-400 animate-in fade-in slide-in-from-top-2 duration-500">
+                    <AlertCircle className="size-5 shrink-0" />
+                    <span className="text-sm font-medium">
+                        Your session has expired due to inactivity. Please log in again.
+                    </span>
                 </div>
             )}
 

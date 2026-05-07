@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Sidebar from "@/Components/Sidebar";
 import AdminTopbar from './AdminTopbar';
 import { usePage, router } from '@inertiajs/react';
+import useInactivityTimeout from '@/hooks/useInactivityTimeout';
 
 export default function AdminLayout({ 
     children, 
@@ -12,6 +13,9 @@ export default function AdminLayout({
     hasProcessingDocs = false,
     noScroll = false
 }) {
+    // Enable auto-logout after 10 minutes of inactivity
+    useInactivityTimeout(10);
+
     const { auth } = usePage().props;
     const [isMobileOpen, setIsMobileOpen] = useState(false);
 

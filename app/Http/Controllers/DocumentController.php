@@ -39,11 +39,14 @@ use App\Services\TemporaryKeyStorage;
 use App\Jobs\ProcessSteganoJob;
 use App\Jobs\ProcessUnlockJob;
 use Illuminate\Support\Facades\RateLimiter;
+use App\Traits\RecordsMetrics;
 
 
 
 class DocumentController extends Controller
 {
+    use RecordsMetrics;
+
     protected $primaryKey = 'document_id';
     protected $cryptoService;
 
@@ -336,9 +339,30 @@ class DocumentController extends Controller
             abort(403, 'You do not own this document.');
         }
 
-        $tempPath = $document->temp_path;
+        // Storage Limit Enforcement (Lock Gate)
+        // Prevents starting an expensive job when the user is already at their quota.
+        // The Capacity Gate in ProcessSteganoJob will catch edge cases where the
+        // stego output exceeds remaining space even if storage_used < storage_limit.
+        $user = Auth::user();
+        if (!$user->isSuperadmin() && $user->storage_limit > 0) {
+            $user->refreshStorageUsed();
+            if ($user->storage_used >= $user->storage_limit) {
+                $used  = $this->formatBytes($user->storage_used);
+                $limit = $this->formatBytes($user->storage_limit);
+                return response()->json([
+                    'errors' => ['file' => [
+                        "Storage limit reached ({$used} / {$limit}). " .
+                        "Please delete existing files before locking new documents."
+                    ]]
+                ], 422);
+            }
+        }
+
+        $tempPath    = $document->temp_path;
+        $processUuid = (string) Str::uuid();
 
         try {
+            $this->startMetric('encryption');
             $masterKey = $this->getMasterKeyFromSession();
 
             // 2. Get temp path from document record
@@ -353,8 +377,10 @@ class DocumentController extends Controller
                 throw new \Exception("Encryption failed");
             }
 
+            $this->finishMetric('encryption', $document->document_id, Auth::id(), $processUuid, 'lock');
+
             // 4. Dispatch the rest to the background
-            ProcessSteganoJob::dispatch($document->document_id, $encryptedPath);
+            ProcessSteganoJob::dispatch($document->document_id, $encryptedPath, $processUuid);
 
             DocumentActivity::create([
                 'document_id' => $document->document_id,
@@ -428,10 +454,30 @@ class DocumentController extends Controller
             'folder_id' => ['nullable', 'exists:folders,folder_id']
         ]);
 
-        $file = $request->file('file');
+        $file     = $request->file('file');
         $folderId = $request->input('folder_id');
 
+        // Storage Limit Enforcement (Upload Gate)
+        // Superadmins and unlimited accounts (storage_limit = 0) are exempt.
+        $user = Auth::user();
+        if (!$user->isSuperadmin() && $user->storage_limit > 0) {
+            $user->refreshStorageUsed();
+            if (($user->storage_used + $file->getSize()) > $user->storage_limit) {
+                $used      = $this->formatBytes($user->storage_used);
+                $limit     = $this->formatBytes($user->storage_limit);
+                $fileSize  = $this->formatBytes($file->getSize());
+                return response()->json([
+                    'errors' => ['file' => [
+                        "Storage limit reached. You are using {$used} of {$limit}. " .
+                        "This file ({$fileSize}) would exceed your quota. " .
+                        "Please delete existing files to free up space."
+                    ]]
+                ], 422);
+            }
+        }
+
         $document = new Document();
+        $this->startMetric('upload');
 
         $path = "";
 
@@ -475,6 +521,8 @@ class DocumentController extends Controller
             return response()->json([
                 'errors' => ['file' => ['Database error: ' . $e->getMessage()]]
             ], 422);
+        } finally {
+            $this->finishMetric('upload', $document->document_id ?? null, Auth::id(), null, 'upload');
         }
 
         return [
@@ -617,13 +665,16 @@ class DocumentController extends Controller
         }
 
         try {
+            $this->startMetric('unlock_prepare');
             $masterKey = $this->getMasterKeyFromSession();
+            $processUuid = (string) Str::uuid();
+            $this->finishMetric('unlock_prepare', $document->document_id, Auth::id(), $processUuid, 'unlock');
         } catch (\RuntimeException $e) {
             abort(403, $e->getMessage());
         }
 
         // Dispatch the unlocking process to the background
-        ProcessUnlockJob::dispatch($document->document_id, base64_encode($masterKey), Auth::id());
+        ProcessUnlockJob::dispatch($document->document_id, base64_encode($masterKey), Auth::id(), $processUuid);
 
         return response()->json([
             'success' => true,
@@ -800,9 +851,87 @@ class DocumentController extends Controller
         return response()->json([
             'status' => $document->status,
             'error_message' => $document->error_message,
-            'in_cloud_size' => $document->in_cloud_size,
             'original_size' => $document->original_size,
         ]);
+    }
+
+    public function getMetrics($id)
+    {
+        $document = Document::findOrFail($id);
+        
+        // Authorization check
+        if ($document->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        // Phase 1 will add the ProcessMetric model
+        if (class_exists('\App\Models\ProcessMetric')) {
+            $metrics = \App\Models\ProcessMetric::where('document_id', $id)
+                ->orderBy('started_at')
+                ->get();
+            return response()->json($metrics);
+        }
+
+        return response()->json([]);
+    }
+
+    public function verifyIntegrity($id)
+    {
+        $document = Document::findOrFail($id);
+        
+        // Authorization check
+        if ($document->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $this->startMetric('integrity_check');
+        $b2 = new B2Service();
+        $issues = [];
+        $checkedCount = 0;
+
+        try {
+            $stegoMap = StegoMap::where('document_id', $document->document_id)->first();
+            if (!$stegoMap) {
+                throw new \Exception("Stego map missing for document.");
+            }
+
+            $stegoFiles = StegoFile::where('stego_map_id', $stegoMap->stego_map_id)->get();
+            
+            foreach ($stegoFiles as $file) {
+                try {
+                    $info = $b2->getFileInfo($file->cloud_file_id);
+                    if (!$info) {
+                        $issues[] = "Fragment missing in cloud: {$file->filename}";
+                    } elseif ($info['contentLength'] != $file->stego_size) {
+                        $issues[] = "Fragment size mismatch: {$file->filename} (Expected: {$file->stego_size}, Actual: {$info['contentLength']})";
+                    }
+                } catch (\Exception $e) {
+                    $issues[] = "Failed to verify fragment {$file->filename}: " . $e->getMessage();
+                }
+                $checkedCount++;
+            }
+
+            $status = empty($issues) ? 'healthy' : 'corrupted';
+            
+            $this->finishMetric('integrity_check', $document->document_id, Auth::id(), null, 'audit', [
+                'status' => $status,
+                'fragments_checked' => $checkedCount,
+                'issue_count' => count($issues)
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'status' => $status,
+                'fragments_checked' => $checkedCount,
+                'issues' => $issues
+            ]);
+
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function keep(Request $request)
@@ -1599,5 +1728,16 @@ class DocumentController extends Controller
             ->get();
 
         return response()->json($users);
+    }
+
+    /**
+     * Human-readable byte formatter for storage limit error messages.
+     */
+    private function formatBytes(int $bytes): string
+    {
+        if ($bytes >= 1073741824) return round($bytes / 1073741824, 2) . ' GB';
+        if ($bytes >= 1048576)    return round($bytes / 1048576, 2) . ' MB';
+        if ($bytes >= 1024)       return round($bytes / 1024, 2) . ' KB';
+        return $bytes . ' B';
     }
 }

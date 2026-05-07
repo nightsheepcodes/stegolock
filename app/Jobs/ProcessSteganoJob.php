@@ -21,10 +21,11 @@ use App\Notifications\AdminPoolAlert;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
+use App\Traits\RecordsMetrics;
 
 class ProcessSteganoJob implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, RecordsMetrics;
     
     public $tries = 5;
     public $timeout = 300; // 5 minutes
@@ -39,11 +40,11 @@ class ProcessSteganoJob implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(int $documentId, string $encryptedPath)
+    public function __construct(int $documentId, string $encryptedPath, ?string $jobId = null)
     {
         $this->documentId = $documentId;
         $this->encryptedPath = $encryptedPath;
-        $this->jobId = (string) Str::uuid();
+        $this->jobId = $jobId ?? (string) Str::uuid();
         $this->jobTempPath = storage_path("app/private/temp/jobs/{$this->jobId}");
     }
 
@@ -66,6 +67,7 @@ class ProcessSteganoJob implements ShouldQueue
      */
     public function handle(): void
     {
+        $this->initializeIsolatedLogger($this->jobId);
         $document = Document::findOrFail($this->documentId);
 
         // Status Guard: Prevent redundant processing if already stored/mapped
@@ -73,6 +75,9 @@ class ProcessSteganoJob implements ShouldQueue
             Log::info("[SteganoJob] Document already processed or in final stages. Skipping.", ['document_id' => $this->documentId]);
             return;
         }
+        
+        $this->finishMetric('job_wait_time', $this->documentId, $document->user_id, $this->jobId, 'lock');
+
         Log::info("[SteganoJob] Starting document locking process.", [
             'document_id' => $this->documentId,
             'job_id' => $this->jobId,
@@ -104,11 +109,15 @@ class ProcessSteganoJob implements ShouldQueue
 
             // 3. Fluid Splitting
             Log::info("[SteganoJob] Splitting document into fragments...");
+            $this->startMetric('segmentation');
             $this->splitDocument($document, $selectedCovers);
+            $this->finishMetric('segmentation', $this->documentId, $document->user_id, $this->jobId, 'lock');
 
             // 4. Embedding
             Log::info("[SteganoJob] Embedding fragments into covers...");
+            $this->startMetric('embedding');
             $this->embedDocument($document);
+            $this->finishMetric('embedding', $this->documentId, $document->user_id, $this->jobId, 'lock');
 
             DocumentActivity::create([
                 'document_id' => $this->documentId,
@@ -449,6 +458,41 @@ class ProcessSteganoJob implements ShouldQueue
         ]);
 
         $stegoFilePaths = collect($stegoMap)->pluck('stegoFile')->toArray();
+
+        // ── Capacity Gate ────────────────────────────────────────────────────────
+        // All stego files now exist on local disk (Python embedding is done).
+        // We know their REAL sizes here — before any B2 upload begins.
+        // Compare total stego size against the user's remaining free space.
+        $user->refresh(); // Ensure storage_used is fresh (not stale from job start)
+        $remainingSpace  = max(0, $user->storage_limit - $user->storage_used);
+        $totalStegoSize  = array_sum(array_map('filesize', $stegoFilePaths));
+
+        Log::info('[SteganoJob] Capacity gate check.', [
+            'storage_used_bytes'    => $user->storage_used,
+            'storage_limit_bytes'   => $user->storage_limit,
+            'remaining_space_bytes' => $remainingSpace,
+            'total_stego_size'      => $totalStegoSize,
+        ]);
+
+        if ($totalStegoSize > $remainingSpace) {
+            // Clean up all local stego files — B2 upload never starts
+            foreach ($stegoFilePaths as $path) {
+                if (file_exists($path)) @unlink($path);
+            }
+
+            $needed = $this->formatBytes($totalStegoSize);
+            $free   = $this->formatBytes($remainingSpace);
+            $used   = $this->formatBytes($user->storage_used);
+            $limit  = $this->formatBytes($user->storage_limit);
+
+            throw new \Exception(
+                "CAPACITY_EXCEEDED: Locking this document requires {$needed} of cloud space, " .
+                "but only {$free} is available (Storage: {$used} / {$limit}). " .
+                "Please delete existing files to free up space."
+            );
+        }
+        // ─────────────────────────────────────────────────────────────────────────
+
         Log::info("[SteganoJob] Uploading fragments to B2 cloud...", ['batch_size' => count($stegoFilePaths)]);
         $document->update(['status' => 'embedded']);
         
@@ -587,9 +631,26 @@ class ProcessSteganoJob implements ShouldQueue
 
         $output = [];
         $status = 0;
+        
+        Log::channel($this->isolatedLoggerChannel)->debug("Running Python embedding script...", [
+            'command' => $command,
+            'cover' => $cover->filename,
+            'type' => $cover->type
+        ]);
+
         exec($command, $output, $status);
 
-        if ($status !== 0) throw new \Exception("Embedding failed (py script error):\n" . implode("\n", $output));
+        if ($status !== 0) {
+            Log::channel($this->isolatedLoggerChannel)->error("Embedding script failed.", [
+                'output' => $output,
+                'status' => $status
+            ]);
+            throw new \Exception("Embedding failed (py script error):\n" . implode("\n", $output));
+        }
+
+        Log::channel($this->isolatedLoggerChannel)->debug("Embedding script success.", [
+            'output' => array_slice($output, -5) // Log last few lines (includes offset)
+        ]);
 
         $offset = (int) end($output);
 
@@ -638,5 +699,16 @@ class ProcessSteganoJob implements ShouldQueue
             type: 'critical_error',
             actionUrl: '/admin/covers'
         ));
+    }
+
+    /**
+     * Human-readable byte formatter for capacity gate error messages.
+     */
+    private function formatBytes(int $bytes): string
+    {
+        if ($bytes >= 1073741824) return round($bytes / 1073741824, 2) . ' GB';
+        if ($bytes >= 1048576)    return round($bytes / 1048576, 2) . ' MB';
+        if ($bytes >= 1024)       return round($bytes / 1024, 2) . ' KB';
+        return $bytes . ' B';
     }
 }

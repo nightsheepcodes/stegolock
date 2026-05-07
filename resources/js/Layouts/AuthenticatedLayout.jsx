@@ -13,8 +13,9 @@ import TextInput from '@/Components/TextInput';
 import InputError from '@/Components/InputError';
 import CreateFolderModal from '@/Components/modals/CreateFolderModal';
 import UploadModal from '@/Components/modals/UploadModal';
+import useInactivityTimeout from '@/hooks/useInactivityTimeout';
 
-export default function AuthenticatedLayout({
+ export default function AuthenticatedLayout({
     header,
     subHeader,
     headerActions,
@@ -23,6 +24,8 @@ export default function AuthenticatedLayout({
     hasProcessingDocs = false,
     children
  }) {
+    // Enable auto-logout after 10 minutes of inactivity
+    useInactivityTimeout(10);
 
     const user = usePage().props.auth.user;
     const [showFolderCreateModal, setShowFolderCreateModal] = useState(false);
