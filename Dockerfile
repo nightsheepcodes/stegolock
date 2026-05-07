@@ -58,5 +58,5 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 # If PORT is not set, default to 80
 RUN sed -i 's/80/${PORT:-80}/g' /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf
 
-# Start Apache in the foreground, but run database migrations first
-CMD php artisan migrate --force && apache2-foreground
+# Start Apache in the foreground, but run database migrations and seeders first
+CMD php artisan migrate --force && php artisan db:seed --force && apache2-foreground
