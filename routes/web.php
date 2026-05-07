@@ -15,7 +15,10 @@ Route::get('/', function () {
     ]);
 });
 
-
+Route::middleware('auth')->group(function () {
+    Route::get('/survey', [SurveyController::class, 'index'])->name('survey');
+    Route::post('/survey', [SurveyController::class, 'store'])->name('survey.store');
+});
 
 Route::middleware('auth', 'verified')->group(function () {
 
@@ -47,7 +50,6 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-
     // Document upload route
     Route::post('/documents/upload', [DocumentController::class, 'upload'])
         ->name('documents.upload');
@@ -73,7 +75,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/documents/star/toggle', [StarredController::class, 'toggleStar'])
         ->name('documents.star.toggle');
 
-
     // Folder Management
     Route::get('/folders', [FolderController::class, 'index']);
     Route::post('/folders', [FolderController::class, 'store']);
@@ -91,27 +92,35 @@ Route::middleware('auth')->group(function () {
         ->name('documents.share.remove');
     Route::get('/documents/activity/{id}', [DocumentController::class, 'getActivity']);
     Route::get('/documents/recipients/{id}', [DocumentController::class, 'getRecipients']);
+    Route::get('/users/search', [DocumentController::class, 'searchUsers'])
+        ->name('users.search');
 
     // Folder Sharing
     Route::post('/folders/share', [DocumentController::class, 'shareFolder'])
         ->name('folders.share');
     Route::post('/folders/share/accept', [DocumentController::class, 'acceptFolderShare'])
         ->name('folders.share.accept');
-
 });
 
 // Admin Routes
 Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
     
-    // Dashboard
-    Route::get('/dashboard', [\App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])->name('dashboard');
-
-    // User Management
-    Route::get('/users', [\App\Http\Controllers\Admin\UserManagementController::class, 'index'])->name('users.index');
-    Route::get('/users/{user}/activities', [\App\Http\Controllers\Admin\UserManagementController::class, 'getUserActivities'])->name('users.activities');
-    Route::patch('/users/{user}/toggle-status', [\App\Http\Controllers\Admin\UserManagementController::class, 'toggleStatus'])->name('users.toggle-status');
-    Route::patch('/users/{user}/update-quota', [\App\Http\Controllers\Admin\UserManagementController::class, 'updateQuota'])->name('users.update-quota');
-    Route::delete('/users/{user}', [\App\Http\Controllers\Admin\UserManagementController::class, 'deleteUser'])->name('users.destroy');
+    // All Admin Users (user_admin, db_storage_admin, superadmin)
+    Route::middleware('role:user_admin,db_storage_admin,superadmin')->group(function () {
+        // Dashboard
+        Route::get('/dashboard', [\App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])->name('dashboard');
+    });
+    
+    // User Management (Accessible by user_admin and superadmin)
+    Route::middleware('role:user_admin,superadmin')->group(function () {
+        Route::get('/users', [\App\Http\Controllers\Admin\UserManagementController::class, 'index'])->name('users.index');
+        Route::post('/users', [\App\Http\Controllers\Admin\UserManagementController::class, 'store'])->name('users.store');
+        Route::get('/users/{user}/activities', [\App\Http\Controllers\Admin\UserManagementController::class, 'getUserActivities'])->name('users.activities');
+        Route::patch('/users/{user}/update-role', [\App\Http\Controllers\Admin\UserManagementController::class, 'updateRole'])->name('users.update-role');
+        Route::patch('/users/{user}/toggle-status', [\App\Http\Controllers\Admin\UserManagementController::class, 'toggleStatus'])->name('users.toggle-status');
+        Route::patch('/users/{user}/update-quota', [\App\Http\Controllers\Admin\UserManagementController::class, 'updateQuota'])->name('users.update-quota');
+        Route::delete('/users/{user}', [\App\Http\Controllers\Admin\UserManagementController::class, 'deleteUser'])->name('users.destroy');
+    });
 
     // Cloud Management
     Route::middleware('role:db_storage_admin,superadmin')->group(function () {
@@ -139,13 +148,11 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         Route::post('/covers/scan', [\App\Http\Controllers\CoverController::class, 'scan_cover'])->name('covers.scan');
         Route::post('/covers/audit', [\App\Http\Controllers\CoverController::class, 'auditIntegrity'])->name('covers.audit');
         Route::post('/covers/cleanup', [\App\Http\Controllers\CoverController::class, 'cleanupOrphans'])->name('covers.cleanup');
+        
+        // Wiki Feed Management (for text cover generation)
+        Route::get('/wiki/random/{p}', [WikiFeedController::class, 'fetchRandomWiki'])->name('wiki.random');
+        Route::post('/covers/text/generate', [WikiFeedController::class, 'exportToTxt'])->name('covers.text.generate');
     });
 });
-
-use App\Http\Controllers\WikiFeedController;
-Route::get('/wiki/random/{p}', [WikiFeedController::class, 'fetchRandomWiki']);
-Route::get('/wiki/export', [WikiFeedController::class, 'exportToTxt']);
-Route::post('/covers/text/generate', [WikiFeedController::class, 'exportToTxt']);
-Route::post('/covers/scan', [CoverController::class, 'scan_cover']);
 
 require __DIR__.'/auth.php';

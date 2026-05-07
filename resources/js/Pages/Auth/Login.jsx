@@ -12,6 +12,7 @@ export default function Login({ status, canResetPassword }) {
         email: '',
         password: '',
         remember: false,
+        redirect: new URLSearchParams(window.location.search).get('redirect') || '',
     });
 
     const submit = (e) => {
@@ -39,6 +40,8 @@ export default function Login({ status, canResetPassword }) {
             </div>
 
             <form onSubmit={submit} className="space-y-6">
+                <input type="hidden" name="redirect" value={data.redirect} />
+
                 <div className="space-y-2">
                     <InputLabel htmlFor="email" value="Email" />
                     <div className="relative group">

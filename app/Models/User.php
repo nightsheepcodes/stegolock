@@ -27,14 +27,22 @@ class User extends Authenticatable
         'email',
         'role',
         'is_active',
+        'storage_used',
+        'storage_limit',
+    ];
+
+    /**
+     * The attributes that are not mass assignable.
+     *
+     * @var list<string>
+     */
+    protected $guarded = [
         'password_hash',
         'auth_salt',
         'ek_salt',
         'master_key_enc',
         'nonce',
         'tag',
-        'storage_used',
-        'storage_limit',
     ];
 
     /**
@@ -56,11 +64,18 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
             'storage_used' => 'integer',
             'storage_limit' => 'integer',
             'is_active' => 'boolean',
         ];
+    }
+
+    /**
+     * Get the password for the user (required by Authenticatable).
+     */
+    public function getAuthPassword(): string
+    {
+        return $this->password_hash;
     }
 
     /**

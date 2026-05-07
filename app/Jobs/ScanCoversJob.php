@@ -28,8 +28,10 @@ class ScanCoversJob implements ShouldQueue
     {
         Log::info("Starting background cover scan...");
 
-        $this->scan('audio', 'wav', 'cover_audios', 'python_backend/embedding/audio/get_wav_embedding_capacity.py');
-        $this->scan('image', 'png', 'cover_images', 'python_backend/embedding/image/check_image.py');
+        // Audio candidates may be WAV or MP3; scan both extensions so uploaded MP3s are picked up
+        $this->scan('audio', ['wav', 'mp3'], 'cover_audios', 'python_backend/embedding/audio/get_wav_embedding_capacity.py');
+        // Image candidates may be PNG or JPEG; scan both extensions
+        $this->scan('image', ['png', 'jpg', 'jpeg'], 'cover_images', 'python_backend/embedding/image/check_image.py');
         $this->scan('text', 'txt', 'cover_texts', 'python_backend/embedding/text/check_text.py');
 
         Log::info("Cover scan completed.");
@@ -38,16 +40,27 @@ class ScanCoversJob implements ShouldQueue
     /**
      * Scans a specific folder for candidate cover files.
      */
-    private function scan(string $type, string $extension, string $folderName, string $scriptPath)
+    /**
+     * Scan supports a single extension string or an array of extensions.
+     * @param string|string[] $extension
+     */
+    private function scan(string $type, $extension, string $folderName, string $scriptPath)
     {
         $folderPath = storage_path("app/public/{$folderName}");
         if (!file_exists($folderPath)) {
             Log::warning("Scan directory does not exist: {$folderPath}");
             return;
         }
+        $files = [];
+        $exts = is_array($extension) ? $extension : [$extension];
+        foreach ($exts as $ext) {
+            $found = glob($folderPath . "/*.{$ext}");
+            if ($found) {
+                $files = array_merge($files, $found);
+            }
+        }
 
-        $files = glob($folderPath . "/*.{$extension}");
-        if (!$files) {
+        if (empty($files)) {
             return;
         }
 
@@ -79,9 +92,11 @@ class ScanCoversJob implements ShouldQueue
 
         // Build Python command to get embedding capacity
         $command = config('app.python_binary', 'python') . " " . base_path($scriptPath) . " " . escapeshellarg($filePath) . " 2>&1";
+        Log::info("Running capacity script: type={$type} file={$filePath} command={$command}");
         $output = [];
         $status = 0;
         exec($command, $output, $status);
+        Log::info("Script result for {$filePath}: status={$status} output=" . implode("\n", $output));
 
         if ($status !== 0 || empty($output)) {
             Log::error("Script failure for {$filePath} (Status {$status}): " . implode("\n", $output));
@@ -102,6 +117,9 @@ class ScanCoversJob implements ShouldQueue
         // 1. Script must return valid capacity
         // 2. Usable capacity must be at least 128KB to be useful for fragments
         $minCapacity = 128 * 1024; 
+
+        // Log computed capacity for debugging
+        Log::info("Cover capacity check: {$filePath} | usable={$usableBytes} bytes | total={$totalBytes} bytes | min={$minCapacity} bytes");
 
         if ($usableBytes >= $minCapacity) {
             // Standardize filename

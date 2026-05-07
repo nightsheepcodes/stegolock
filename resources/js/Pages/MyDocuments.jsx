@@ -29,6 +29,12 @@ import TextInput from '@/Components/TextInput';
 import InputError from '@/Components/InputError';
 
 export default function MyDocuments({ documents, folders, currentFolder, breadcrumbs = [], totalStorage, storageLimit, title = "My Documents" }) {
+    const documentList = Array.isArray(documents)
+        ? documents
+        : Array.isArray(documents?.data)
+            ? documents.data
+            : [];
+
     const [viewMode, setViewMode] = useState(() => localStorage.getItem('stegolock_view_mode') || 'grid');
     const [searchQuery, setSearchQuery] = useState('');
     const [filters, setFilters] = useState({
@@ -78,7 +84,7 @@ export default function MyDocuments({ documents, folders, currentFolder, breadcr
 
     // Initial check for stuck files
     useEffect(() => {
-        const stuckDoc = documents.find(doc => doc.status === 'retrieved' || doc.status === 'decrypted');
+        const stuckDoc = documentList.find(doc => doc.status === 'retrieved' || doc.status === 'decrypted');
         if (stuckDoc && !showKeepFileModal && !showDownloadReadyModal) {
             if (stuckDoc.status === 'decrypted') {
                 setShowDownloadReadyModal(true);
@@ -87,14 +93,14 @@ export default function MyDocuments({ documents, folders, currentFolder, breadcr
             }
             setSelectedDocId(stuckDoc.document_id);
         }
-    }, [documents]);
+    }, [documentList, showKeepFileModal, showDownloadReadyModal]);
 
     const { 
         localDocs, 
         setLocalDocs, 
         unlockingProgress, 
         updateUnlockingProgress 
-    } = useDocumentStatusPolling(documents, (doc) => {
+    } = useDocumentStatusPolling(documentList, (doc) => {
         setSelectedDocId(doc.document_id);
         setShowDownloadReadyModal(true);
     });
@@ -189,7 +195,7 @@ export default function MyDocuments({ documents, folders, currentFolder, breadcr
     };
 
     const filteredDocs = useMemo(() => {
-        let result = [...localDocs];
+        let result = Array.isArray(localDocs) ? [...localDocs] : [];
 
         // Search Filter
         if (searchQuery) {
@@ -294,7 +300,7 @@ export default function MyDocuments({ documents, folders, currentFolder, breadcr
             }
             totalStorage={totalStorage}
             storageLimit={storageLimit}
-            hasProcessingDocs={localDocs.some(doc => unlockingProgress[doc.document_id] || !['stored', 'decrypted', 'retrieved', 'failed'].includes(doc.status))}
+            hasProcessingDocs={Array.isArray(localDocs) && localDocs.some(doc => unlockingProgress[doc.document_id] || !['stored', 'decrypted', 'retrieved', 'failed'].includes(doc.status))}
         >
             <Head title="My Documents"/>
 
@@ -372,7 +378,7 @@ export default function MyDocuments({ documents, folders, currentFolder, breadcr
                                 {searchQuery || filters.fileFormat !== 'all' || filters.status !== 'all' ? "Try adjusting your filters or search query" : "Upload files to get started with Stegolock"}
                             </p>
                             <button
-                                onClick={() => window.dispatchEvent(new CustomEvent('trigger-upload-modal'))}
+                                onClick={() => window.dispatchEvent(new CustomEvent('trigger-upload-modal', { detail: { folderId: currentFolder?.folder_id || null } }))}
                                 className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-600 to-indigo-600 dark:from-cyber-accent dark:to-indigo-500 text-white px-5 py-2 rounded-xl hover:from-cyan-700 hover:to-indigo-700 dark:hover:from-cyan-400 dark:hover:to-indigo-400 transition-all text-sm font-bold shadow-lg shadow-cyan-500/30 dark:shadow-[0_0_15px_rgba(34,211,238,0.4)]"
                             >
                                 <Lock className="size-4" />
@@ -485,14 +491,14 @@ export default function MyDocuments({ documents, folders, currentFolder, breadcr
             <FileRetrievedModal 
                 show={showKeepFileModal}
                 onClose={() => setShowKeepFileModal(null)}
-                onKeep={() => keepFile(selectedDocId, localDocs.find(d => d.document_id === selectedDocId)?.filename)}
+                onKeep={() => keepFile(selectedDocId, Array.isArray(localDocs) ? localDocs.find(d => d.document_id === selectedDocId)?.filename : undefined)}
                 onDelete={() => { setShowDeleteModal(true); setShowKeepFileModal(null); }}
             />
 
             <DownloadReadyModal 
                 show={showDownloadReadyModal}
                 onClose={() => setShowDownloadReadyModal(false)}
-                document={localDocs.find(d => d.document_id === selectedDocId)}
+                document={Array.isArray(localDocs) ? localDocs.find(d => d.document_id === selectedDocId) : undefined}
                 onDownload={handleDownloadAndProceed}
             />
 

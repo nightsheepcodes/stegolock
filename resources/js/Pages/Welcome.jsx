@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { Shield, Lock, Layers, EyeOff, Share2, FileText, CheckCircle, ArrowRight, Github, ExternalLink, Users, Target, Info, Moon, Sun } from 'lucide-react';
 import { DecorativeBackground } from '@/Components/DecorativeBackground';
 import { useState, useEffect } from 'react';
@@ -49,6 +49,18 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                 className="p-2 text-slate-400 hover:text-cyber-accent transition-colors"
                             >
                                 {darkMode ? <Moon className="size-5" /> : <Sun className="size-5" />}
+                            </button>
+                            <button
+                                onClick={() => {
+                                    if (auth.user) {
+                                        router.visit(route('survey'));
+                                    } else {
+                                        router.visit(route('login', { redirect: 'survey' }));
+                                    }
+                                }}
+                                className="px-4 py-2 text-sm font-medium text-slate-400 hover:text-cyber-accent transition"
+                            >
+                                Survey
                             </button>
                             {auth.user ? (
                                 <Link

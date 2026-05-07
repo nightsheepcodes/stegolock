@@ -73,21 +73,10 @@ export function Sidebar({
     const [showNewMenu, setShowNewMenu] = useState(false);
 
     const [isUploading, setIsUploading] = useState(false);
-    const globalHasProcessingDocs = usePage().props.hasProcessingDocs || false;
 
     // Any ongoing process (either local or background)
     // Only block if a LOCAL upload request is active
     const isProcessOngoing = isUploading;
-
-    useEffect(() => {
-        const handleTriggerUpload = () => {
-            if (!isProcessOngoing) {
-                setShowUploadModal(true);
-            }
-        };
-        window.addEventListener('trigger-upload-modal', handleTriggerUpload);
-        return () => window.removeEventListener('trigger-upload-modal', handleTriggerUpload);
-    }, [isProcessOngoing]);
 
     const storagePercentage = effectiveStorageLimit > 0 
         ? (effectiveTotalStorage / effectiveStorageLimit) * 100 
@@ -152,7 +141,7 @@ export function Sidebar({
                         />
                         <div className="absolute w-full mt-16 p-2 glass-panel shadow-2xl z-50 rounded-2xl border border-slate-200 dark:border-cyber-border/50 dark:bg-cyber-surface/90 backdrop-blur-xl">
                             <MenuButton icon={Upload}
-                                        label={isProcessOngoing ? "Currently locking a file..." : "Lock a File"}
+                                        label={isProcessOngoing ? "Currently locking a file..." : "Upload and Lock"}
                                         onClick={() => {
                                             if (isProcessOngoing) return;
                                             setShowNewMenu(false);
