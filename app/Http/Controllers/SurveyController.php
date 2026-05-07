@@ -11,11 +11,6 @@ use Illuminate\Support\Facades\DB;
 
 class SurveyController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
-
     /**
      * Display the survey form.
      */
@@ -24,7 +19,8 @@ class SurveyController extends Controller
         $questions = SurveyQuestion::orderBy('order')->get()->groupBy('category');
         
         return Inertia::render('Survey', [
-            'questions' => $questions
+            'questions' => $questions,
+            'user' => auth()->user()
         ]);
     }
 
@@ -37,6 +33,9 @@ class SurveyController extends Controller
         
         // Build validation rules for all question codes
         $rules = [
+            'respondent_name' => 'nullable|string|max:255',
+            'respondent_email' => 'nullable|email|max:255',
+            'respondent_role' => 'required|string|max:255',
             'additional_comments' => 'nullable|string',
         ];
         
@@ -49,6 +48,9 @@ class SurveyController extends Controller
         DB::transaction(function () use ($request, $questions, $validated) {
             $response = SurveyResponse::create([
                 'user_id' => $request->user()->id,
+                'respondent_name' => $validated['respondent_name'] ?? null,
+                'respondent_email' => $validated['respondent_email'] ?? null,
+                'respondent_role' => $validated['respondent_role'],
                 'additional_comments' => $validated['additional_comments'] ?? null,
             ]);
 

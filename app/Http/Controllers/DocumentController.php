@@ -460,7 +460,7 @@ class DocumentController extends Controller
 
         // 1: Validate (Relaxed for debugging)
         $request->validate([
-            'file' => ['required', 'file', 'mimes:pdf,doc,docx,txt,png,jpg,jpeg,mp3,wav', 'min:1', 'max:51200'],
+            'file' => ['required', 'file', 'mimes:pdf,doc,docx,txt', 'min:1', 'max:5120'],
             'folder_id' => ['nullable', 'exists:folders,folder_id']
         ]);
 

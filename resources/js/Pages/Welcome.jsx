@@ -3,7 +3,7 @@ import { Shield, Lock, Layers, EyeOff, Share2, FileText, CheckCircle, ArrowRight
 import { DecorativeBackground } from '@/Components/DecorativeBackground';
 import { useState, useEffect } from 'react';
 
-export default function Welcome({ auth, laravelVersion, phpVersion }) {
+export default function Welcome({ auth, laravelVersion, phpVersion, hasCompletedSurvey }) {
     const [darkMode, setDarkMode] = useState(() => {
         if (typeof window !== 'undefined') {
             const saved = localStorage.getItem('stegolock_theme');
@@ -55,18 +55,20 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                             >
                                 {darkMode ? <Moon className="size-5" /> : <Sun className="size-5" />}
                             </button>
-                            <button
-                                onClick={() => {
-                                    if (auth.user) {
-                                        router.visit(route('survey'));
-                                    } else {
-                                        router.visit(route('login', { redirect: 'survey' }));
-                                    }
-                                }}
-                                className="px-4 py-2 text-sm font-black uppercase tracking-widest text-slate-400 hover:text-cyber-accent transition"
-                            >
-                                Survey
-                            </button>
+                            {!hasCompletedSurvey && (
+                                <button
+                                    onClick={() => {
+                                        if (auth.user) {
+                                            router.visit(route('survey'));
+                                        } else {
+                                            router.visit(route('login', { redirect: 'survey' }));
+                                        }
+                                    }}
+                                    className="px-4 py-2 text-sm font-black uppercase tracking-widest text-slate-400 hover:text-cyber-accent transition"
+                                >
+                                    Survey
+                                </button>
+                            )}
                             {auth.user ? (
                                 <Link
                                     href={route('myDocuments')}
@@ -136,25 +138,27 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                         </div>
                         
                         <div className="flex-1 space-y-2">
-                            <button
-                                onClick={() => {
-                                    setIsMobileMenuOpen(false);
-                                    if (auth.user) {
-                                        router.visit(route('survey'));
-                                    } else {
-                                        router.visit(route('login', { redirect: 'survey' }));
-                                    }
-                                }}
-                                className="w-full flex items-center justify-between p-6 rounded-2xl bg-slate-50 dark:bg-cyber-surface/30 border border-slate-100 dark:border-cyber-border/30 group active:scale-[0.98] transition-all"
-                            >
-                                <div className="flex items-center gap-4">
-                                    <div className="p-3 rounded-xl bg-white dark:bg-cyber-void text-indigo-500 shadow-sm">
-                                        <FileText className="size-5" />
+                            {!hasCompletedSurvey && (
+                                <button
+                                    onClick={() => {
+                                        setIsMobileMenuOpen(false);
+                                        if (auth.user) {
+                                            router.visit(route('survey'));
+                                        } else {
+                                            router.visit(route('login', { redirect: 'survey' }));
+                                        }
+                                    }}
+                                    className="w-full flex items-center justify-between p-6 rounded-2xl bg-slate-50 dark:bg-cyber-surface/30 border border-slate-100 dark:border-cyber-border/30 group active:scale-[0.98] transition-all"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-3 rounded-xl bg-white dark:bg-cyber-void text-indigo-500 shadow-sm">
+                                            <FileText className="size-5" />
+                                        </div>
+                                        <span className="text-lg font-bold text-slate-900 dark:text-white">Take Survey</span>
                                     </div>
-                                    <span className="text-lg font-bold text-slate-900 dark:text-white">Take Survey</span>
-                                </div>
-                                <ArrowRight className="size-5 text-slate-400 group-hover:text-cyber-accent transition-colors" />
-                            </button>
+                                    <ArrowRight className="size-5 text-slate-400 group-hover:text-cyber-accent transition-colors" />
+                                </button>
+                            )}
 
                             {auth.user ? (
                                 <Link

@@ -6,12 +6,17 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+use App\Models\SurveyResponse;
+
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
+        'hasCompletedSurvey' => auth()->check() 
+            ? SurveyResponse::where('user_id', auth()->id())->exists() 
+            : false,
     ]);
 });
 
