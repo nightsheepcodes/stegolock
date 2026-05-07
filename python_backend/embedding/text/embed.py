@@ -1,43 +1,50 @@
 import sys
 import random
+import numpy as np
 
-def to_binary(data):
-    return ''.join(format(byte, '08b') for byte in data)
-
-def from_binary(binary_str):
-    bytes_list = [int(binary_str[i:i+8], 2) for i in range(0, len(binary_str), 8)]
-    return bytes(bytes_list)
+DELIMITER = b'###STEGOLOCK###'
 
 def embed(input_text_file, output_text_file, data_file):
+    """
+    Embeds payload into text file LSB using NumPy for memory efficiency.
+    """
     with open(input_text_file, 'rb') as f:
-        cover_bytes = bytearray(f.read())
+        cover_bytes = np.fromfile(f, dtype=np.uint8)
 
     with open(data_file, 'rb') as f:
-        payload_bytes = f.read()
+        payload_bytes = f.read() + DELIMITER
 
-    # Add delimiter so we know where the payload ends
-    delimiter = b'###STEGOLOCK###'
-    payload_bytes += delimiter
-
-    binary_payload = to_binary(payload_bytes)
-
+    # Convert payload bytes to bit array using numpy
+    payload_bits = np.unpackbits(np.frombuffer(payload_bytes, dtype=np.uint8))
+    
     cover_len = len(cover_bytes)
-    payload_len = len(binary_payload)
+    payload_len = len(payload_bits)
 
     if payload_len > cover_len:
         raise Exception("Payload too large for this text file!")
 
+    # Calculate random offset
     max_offset = cover_len - payload_len
     offset = random.randint(0, max_offset)
 
-    # Embed payload
-    for i in range(len(binary_payload)):
-        cover_bytes[offset + i] = (cover_bytes[offset + i] & ~1) | int(binary_payload[i])
+    # Perform LSB replacement using vectorized operations
+    # Zero out the LSB and OR it with the payload bits
+    cover_bytes[offset : offset + payload_len] = (
+        cover_bytes[offset : offset + payload_len] & ~1
+    ) | payload_bits
 
     with open(output_text_file, 'wb') as f:
-        f.write(cover_bytes)
+        f.write(cover_bytes.tobytes())
 
     print(offset) #to be stored in the map of fragment to cover metadata
 
 if __name__ == "__main__":
-    embed(sys.argv[1], sys.argv[2], sys.argv[3])
+    if len(sys.argv) < 4:
+        print("Usage: python embed.py <input_text> <output_text> <data_file>")
+        sys.exit(1)
+        
+    try:
+        embed(sys.argv[1], sys.argv[2], sys.argv[3])
+    except Exception as e:
+        print(f"Embedding failed: {e}")
+        sys.exit(1)

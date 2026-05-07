@@ -1,54 +1,31 @@
 import sys
+import numpy as np
 
-def to_binary(data):
-    return ''.join(format(byte, '08b') for byte in data)
-
-"""
-def from_binary(binary_str):
-    bytes_list = [binary_str[i:i+8] for i in range(0, len(binary_str), 8)]
-    return bytes(bytearray(int(b, 2) for b in bytes_list))
-"""
-
-def from_binary(binary_string):
-    """Convert a binary string to bytes."""
-    bytes_list = []
-    for i in range(0, len(binary_string), 8):
-        byte = binary_string[i:i+8]
-        if len(byte) < 8:
-            break
-        bytes_list.append(int(byte, 2))
-    return bytes(bytes_list)
+DELIMITER = b'###STEGOLOCK###'
 
 def extract(stego_file, output_file, offset):
     """
-    Extract payload from stego text file starting at offset.
-
-    :param stego_file: path to the embedded text
-    :param output_file: path to write extracted payload
-    :param payload_length_bytes: number of bytes in the original payload including delimiter
-    :param offset: starting index in the cover file
+    Extract payload from stego text file starting at offset using NumPy for memory efficiency.
     """
-    delimiter = b'###STEGOLOCK###'
-
     with open(stego_file, 'rb') as f:
-        stego_bytes = bytearray(f.read())
+        # Move to offset
+        f.seek(offset)
+        # Read the rest of the file
+        stego_bytes = np.fromfile(f, dtype=np.uint8)
 
-    extracted_bits = []
+    # Extract LSBs (vectorized)
+    lsbs = np.bitwise_and(stego_bytes, 1)
+    
+    # Pack bits into bytes using NumPy
+    packed_bytes = np.packbits(lsbs)
+    data_bytes = packed_bytes.tobytes()
 
-    # Start extracting from the offset
-    for byte in stego_bytes[offset:]:
-        extracted_bits.append(str(byte & 1))  # get LSB
-
-    # Convert bits to bytes
-    binary_string = ''.join(extracted_bits)
-    recovered_bytes = from_binary(binary_string)
-
-    # Stop at delimiter
-    delimiter_index = recovered_bytes.find(delimiter)
+    # Look for delimiter
+    delimiter_index = data_bytes.find(DELIMITER)
     if delimiter_index == -1:
         raise Exception("Delimiter not found — extraction failed or wrong offset!")
 
-    recovered_payload = recovered_bytes[:delimiter_index]
+    recovered_payload = data_bytes[:delimiter_index]
 
     # Write recovered fragment
     with open(output_file, 'wb') as f:
@@ -58,8 +35,16 @@ def extract(stego_file, output_file, offset):
 
 if __name__ == "__main__":
     # Arguments: stego_file, output_file, offset
+    if len(sys.argv) < 4:
+        print("Usage: python extract.py <stego_file> <output_file> <offset>")
+        sys.exit(1)
+
     stego_file = sys.argv[1]
     output_file = sys.argv[2]
     offset = int(sys.argv[3])
 
-    extract(stego_file, output_file, offset)
+    try:
+        extract(stego_file, output_file, offset)
+    except Exception as e:
+        print(f"Extraction failed: {e}")
+        sys.exit(1)
