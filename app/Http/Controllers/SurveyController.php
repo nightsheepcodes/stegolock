@@ -21,15 +21,19 @@ class SurveyController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'experience_rating' => 'nullable|integer|min:1|max:5',
-            'ease_of_use_rating' => 'nullable|integer|min:1|max:5',
-            'security_confidence_rating' => 'nullable|integer|min:1|max:5',
-            'features_used' => 'nullable|string',
-            'improvements_suggested' => 'nullable|string',
-            'additional_comments' => 'nullable|string',
-            'would_recommend' => 'nullable|boolean',
-        ]);
+        // Build validation rules dynamically for PE, US, RE, SC fields
+        $rules = [];
+        $peFields = ['pe1', 'pe2', 'pe3', 'pe4', 'pe5', 'pe6', 'pe7'];
+        $usFields = ['us1', 'us2', 'us3', 'us4', 'us5', 'us6', 'us7', 'us8', 'us9'];
+        $reFields = ['re1', 're2', 're3', 're4', 're5', 're6'];
+        $scFields = ['sc1', 'sc2', 'sc3', 'sc4', 'sc5'];
+
+        foreach (array_merge($peFields, $usFields, $reFields, $scFields) as $field) {
+            $rules[$field] = 'nullable|integer|min:1|max:5';
+        }
+        $rules['additional_comments'] = 'nullable|string';
+
+        $validated = $request->validate($rules);
 
         // Add authenticated user's info
         $validated['name'] = $request->user()->name;
