@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Sidebar from "@/Components/Sidebar";
 import AdminTopbar from './AdminTopbar';
 import { usePage, router } from '@inertiajs/react';
@@ -13,6 +13,7 @@ export default function AdminLayout({
     noScroll = false
 }) {
     const { auth } = usePage().props;
+    const [isMobileOpen, setIsMobileOpen] = useState(false);
 
     return (
         <div className="flex min-h-screen bg-slate-50 dark:bg-cyber-surface transition-colors overflow-hidden">
@@ -21,6 +22,8 @@ export default function AdminLayout({
                 totalStorage={totalStorage}
                 storageLimit={storageLimit}
                 hasProcessingDocs={hasProcessingDocs}
+                isMobileOpen={isMobileOpen}
+                setIsMobileOpen={setIsMobileOpen}
                 onNewFolderClick={() => {
                     // Admins can also create folders if they are in personal view
                     router.visit(route('myDocuments'));
@@ -32,6 +35,7 @@ export default function AdminLayout({
                 <AdminTopbar 
                     header={header} 
                     headerActions={headerActions} 
+                    onMenuClick={() => setIsMobileOpen(true)}
                 />
                 
                 <main className={`flex-1 ${noScroll ? 'overflow-hidden' : 'overflow-y-auto'} p-6 sm:p-8`}>

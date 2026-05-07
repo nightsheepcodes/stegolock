@@ -17,7 +17,8 @@ import {
     UserCog,
     Cloud,
     Server,
-    ImagePlus
+    ImagePlus,
+    X
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { formatBytes } from '@/Utils/fileUtils';
@@ -29,7 +30,7 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 const MenuButton = ({ icon: Icon, label, onClick, className = ""}) => (
     <button
         onClick={onClick}
-        className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 transition-all rounded-xl text-left group ${!className.includes('cursor-not-allowed') ? 'hover:bg-cyber-accent hover:text-white dark:hover:text-cyber-void hover:shadow-md' : ''} ${className}`}
+        className={`w-full flex items-center gap-3 px-4 py-3.5 sm:py-3 text-sm font-bold text-slate-600 dark:text-slate-300 transition-all rounded-xl text-left group ${!className.includes('cursor-not-allowed') ? 'hover:bg-cyber-accent hover:text-white dark:hover:text-cyber-void hover:shadow-md' : ''} ${className}`}
     >
         <Icon className={`size-4 text-slate-500 dark:text-slate-400 transition-colors ${!className.includes('cursor-not-allowed') ? 'group-hover:text-white dark:group-hover:text-cyber-void' : ''} ${className}`} />
         {label}
@@ -46,6 +47,8 @@ export default function Sidebar({
   onManageStorageClick,
   onNewFolderClick,
   hasProcessingDocs = false,
+  onClose,
+  isMobile = false
 }) {
     const user = usePage().props.auth.user;
     const role = user.role;
@@ -98,7 +101,7 @@ export default function Sidebar({
             {/* HEADER */}
             <div className="w-full px-6">
                 <div className="flex items-center justify-between my-4">
-                    <Link href="/" className="group">
+                    <Link href="/" className="group" onClick={() => isMobile && onClose()}>
                         <div className="flex items-center space-x-3 my-3">
                             <div className="relative inline-flex items-center justify-center p-2.5 bg-gradient-to-br from-cyber-accent via-indigo-500 to-purple-600 rounded-xl shadow-lg shadow-cyan-500/40 dark:shadow-[0_0_20px_rgba(34,211,238,0.6)] group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                                 <Shield className="size-6 text-white drop-shadow-md relative z-10" />
@@ -108,16 +111,26 @@ export default function Sidebar({
                         </div>
                     </Link>
 
-                    <button 
-                        onClick={() => setDarkMode(!darkMode)}
-                        className="p-2.5 bg-slate-100 dark:bg-cyber-surface/50 border border-slate-200 dark:border-cyber-border rounded-xl text-slate-500 dark:text-slate-400 hover:text-cyber-accent hover:border-cyber-accent transition-all shadow-inner group hidden sm:block"
-                    >
-                        {darkMode ? (
-                            <Moon className="size-4 group-hover:drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]" />
-                        ) : (
-                            <Sun className="size-4 group-hover:drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]" />
+                    <div className="flex items-center gap-2">
+                        <button 
+                            onClick={() => setDarkMode(!darkMode)}
+                            className="p-2.5 bg-slate-100 dark:bg-cyber-surface/50 border border-slate-200 dark:border-cyber-border rounded-xl text-slate-500 dark:text-slate-400 hover:text-cyber-accent hover:border-cyber-accent transition-all shadow-inner group"
+                        >
+                            {darkMode ? (
+                                <Moon className="size-4 group-hover:drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]" />
+                            ) : (
+                                <Sun className="size-4 group-hover:drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]" />
+                            )}
+                        </button>
+                        {isMobile && (
+                            <button 
+                                onClick={onClose}
+                                className="lg:hidden p-2 text-slate-500 dark:text-slate-400 hover:text-red-500 transition-colors"
+                            >
+                                <X className="size-6" />
+                            </button>
                         )}
-                    </button>
+                    </div>
                 </div>
             </div>
 
@@ -176,6 +189,7 @@ export default function Sidebar({
                         href={route('myDocuments')}
                         active={route().current('myDocuments')}
                         icon={FolderOpen}
+                        onClick={() => isMobile && onClose()}
                     >
                         My Documents
                     </NavLink>
@@ -184,12 +198,14 @@ export default function Sidebar({
                         href={route('allDocuments')}
                         active={route().current('allDocuments')}
                         icon={FolderOpen}
+                        onClick={() => isMobile && onClose()}
                     >All Documents</NavLink>
 
                     <NavLink
                         href={route('sharedDocuments')}
                         active={route().current('sharedDocuments')}
                         icon={Users}
+                        onClick={() => isMobile && onClose()}
                     >
                         <div className="flex items-center justify-between w-full">
                             <span>Shared With Me</span>
@@ -205,6 +221,7 @@ export default function Sidebar({
                         href={route('starredDocuments')}
                         active={route().current('starredDocuments')}
                         icon={Star}
+                        onClick={() => isMobile && onClose()}
                     >Starred</NavLink>
                 </div>
             </div>
@@ -220,6 +237,7 @@ export default function Sidebar({
                             active={route().current('admin.dashboard')}
                             icon={LayoutDashboard}
                             variant="indigo"
+                            onClick={() => isMobile && onClose()}
                         >
                             Dashboard
                         </NavLink>
@@ -230,6 +248,7 @@ export default function Sidebar({
                                 active={route().current('admin.users.index')}
                                 icon={Users}
                                 variant="indigo"
+                                onClick={() => isMobile && onClose()}
                             >
                                 User Management
                             </NavLink>
@@ -242,6 +261,7 @@ export default function Sidebar({
                                     active={route().current('admin.cloud.index')}
                                     icon={Cloud}
                                     variant="indigo"
+                                    onClick={() => isMobile && onClose()}
                                 >
                                     Cloud Management
                                 </NavLink>
@@ -250,6 +270,7 @@ export default function Sidebar({
                                     active={route().current('admin.database.index')}
                                     icon={Server}
                                     variant="indigo"
+                                    onClick={() => isMobile && onClose()}
                                 >
                                     Database Management
                                 </NavLink>
@@ -258,6 +279,7 @@ export default function Sidebar({
                                     active={route().current('admin.covers.index')}
                                     icon={ImagePlus}
                                     variant="indigo"
+                                    onClick={() => isMobile && onClose()}
                                 >
                                     Cover Management
                                 </NavLink>
@@ -292,7 +314,10 @@ export default function Sidebar({
                 </div>
 
                 <button
-                    onClick={() => router.visit(route('manageStorage'))}
+                    onClick={() => {
+                        router.visit(route('manageStorage'));
+                        if (isMobile) onClose();
+                    }}
                     className={
                         'w-full flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all group ' +
                         (route().current('manageStorage') ?

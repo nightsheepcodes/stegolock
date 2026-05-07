@@ -82,18 +82,21 @@ export default function MyDocuments({ documents, folders, currentFolder, breadcr
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // Initial check for stuck files
+    const hasCheckedStuck = useRef(false);
     useEffect(() => {
-        const stuckDoc = documentList.find(doc => doc.status === 'retrieved' || doc.status === 'decrypted');
-        if (stuckDoc && !showKeepFileModal && !showDownloadReadyModal) {
-            if (stuckDoc.status === 'decrypted') {
-                setShowDownloadReadyModal(true);
-            } else {
-                setShowKeepFileModal(stuckDoc.document_id);
+        if (!hasCheckedStuck.current && documentList.length > 0) {
+            const stuckDoc = documentList.find(doc => doc.status === 'retrieved' || doc.status === 'decrypted');
+            if (stuckDoc) {
+                if (stuckDoc.status === 'decrypted') {
+                    setShowDownloadReadyModal(true);
+                } else {
+                    setShowKeepFileModal(stuckDoc.document_id);
+                }
+                setSelectedDocId(stuckDoc.document_id);
             }
-            setSelectedDocId(stuckDoc.document_id);
+            hasCheckedStuck.current = true;
         }
-    }, [documentList, showKeepFileModal, showDownloadReadyModal]);
+    }, [documentList]);
 
     const { 
         localDocs, 
@@ -320,7 +323,7 @@ export default function MyDocuments({ documents, folders, currentFolder, breadcr
                     <div className="p-6 pt-2">
                         {filteredDocs.length > 0 ? (
                         viewMode === 'grid' ? (
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
                                 {filteredDocs.map(doc => (
                                     <DocumentCard 
                                         key={doc.document_id}
@@ -368,8 +371,8 @@ export default function MyDocuments({ documents, folders, currentFolder, breadcr
                         )
                     ) : (
                         <div className="bg-slate-50 dark:bg-cyber-surface/30 rounded-2xl p-8 text-center border-2 border-dashed border-slate-300 dark:border-cyber-border">
-                            <div className="w-14 h-14 bg-cyan-50 dark:bg-cyber-accent/10 rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm border border-cyan-100 dark:border-cyber-accent/30">
-                                <FileText className="size-6 text-cyan-500 dark:text-cyber-accent" />
+                            <div className="w-12 sm:w-14 h-12 sm:h-14 bg-cyan-50 dark:bg-cyber-accent/10 rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm border border-cyan-100 dark:border-cyber-accent/30">
+                                <FileText className="size-5 sm:size-6 text-cyan-500 dark:text-cyber-accent" />
                             </div>
                             <h4 className="text-slate-900 dark:text-white font-bold mb-1 text-xl">
                                 {searchQuery || filters.fileFormat !== 'all' || filters.status !== 'all' ? "No matching documents" : "No Documents Found"}
@@ -403,7 +406,7 @@ export default function MyDocuments({ documents, folders, currentFolder, breadcr
 
                     <div className="p-6 pt-2">
                         {folders.length > 0 ? (
-                        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10 gap-4">
                             {folders.map(folder => (
                                 <div
                                     key={folder.folder_id}
@@ -497,12 +500,20 @@ export default function MyDocuments({ documents, folders, currentFolder, breadcr
 
             <DownloadReadyModal 
                 show={showDownloadReadyModal}
-                onClose={() => setShowDownloadReadyModal(false)}
+                onClose={() => {
+                    const doc = Array.isArray(localDocs) ? localDocs.find(d => d.document_id === selectedDocId) : null;
+                    if (selectedDocId) {
+                        keepFile(selectedDocId, doc?.filename, true, "Download Cancelled, File is still kept");
+                    }
+                    setShowDownloadReadyModal(false);
+                }}
                 document={Array.isArray(localDocs) ? localDocs.find(d => d.document_id === selectedDocId) : undefined}
                 onDownload={handleDownloadAndProceed}
                 onCancel={() => {
                     const doc = Array.isArray(localDocs) ? localDocs.find(d => d.document_id === selectedDocId) : null;
-                    keepFile(selectedDocId, doc?.filename);
+                    if (selectedDocId) {
+                        keepFile(selectedDocId, doc?.filename, true, "Download Cancelled, File is still kept");
+                    }
                     setShowDownloadReadyModal(false);
                 }}
             />

@@ -230,7 +230,7 @@ export default function SharedDocuments({ documents, pendingShares, pendingFolde
             if (elapsed < 6000) return 'Reconstructing file...';
             return 'Decrypting file...';
         }
-        return status.charAt(0).toUpperCase() + status.slice(1);
+        return status === 'stored' ? 'Locked' : status.charAt(0).toUpperCase() + status.slice(1);
     };
 
     const openMoveModal = (id) => {
@@ -275,18 +275,27 @@ export default function SharedDocuments({ documents, pendingShares, pendingFolde
         }
     };
 
-    const handleKeepFile = async (docId) => {
+    const handleKeepFile = async (docId, silent = false, customMessage = null) => {
         const doc = localDocs.find(d => d.document_id === docId);
         const filename = doc?.filename || 'File';
-        const toastId = toast.loading(`Keeping ${filename}...`);
+        let toastId = null;
+        if (!silent) {
+            toastId = toast.loading(`Keeping ${filename}...`);
+        }
         try {
             await axios.post('/documents/keep', { document_id: docId });
-            toast.success(`${filename} is kept.`, { id: toastId });
+            if (!silent) {
+                toast.success(`${filename} is kept.`, { id: toastId });
+            } else if (customMessage) {
+                toast.success(customMessage);
+            }
             setShowKeepFileModal(null);
             setShowDownloadReadyModal(false);
             router.reload();
         } catch (err) {
-            toast.error(`Failed to keep ${filename}.`, { id: toastId });
+            if (!silent) {
+                toast.error(`Failed to keep ${filename}.`, { id: toastId });
+            }
         }
     };
 
@@ -444,7 +453,7 @@ export default function SharedDocuments({ documents, pendingShares, pendingFolde
                                 {acceptedFolderShares.length}
                             </span>
                         </div>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10 gap-4">
                             {acceptedFolderShares.map(share => (
                                 <div
                                     key={share.share_id}
@@ -682,10 +691,20 @@ export default function SharedDocuments({ documents, pendingShares, pendingFolde
 
             <DownloadReadyModal 
                 show={showDownloadReadyModal}
-                onClose={() => setShowDownloadReadyModal(false)}
+                onClose={() => {
+                    if (selectedDocId) {
+                        handleKeepFile(selectedDocId, true, "Download Cancelled, File is still kept");
+                    }
+                    setShowDownloadReadyModal(false);
+                }}
                 document={localDocs.find(d => d.document_id === selectedDocId)}
                 onDownload={handleDownloadAndProceed}
-                onCancel={() => handleKeepFile(selectedDocId)}
+                onCancel={() => {
+                    if (selectedDocId) {
+                        handleKeepFile(selectedDocId, true, "Download Cancelled, File is still kept");
+                    }
+                    setShowDownloadReadyModal(false);
+                }}
             />
 
             <FileRetrievedModal 

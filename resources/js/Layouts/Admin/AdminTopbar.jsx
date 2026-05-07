@@ -1,9 +1,9 @@
 import React from 'react';
 import { usePage } from '@inertiajs/react';
-import { User, HardDrive, EyeOff } from 'lucide-react';
+import { User, HardDrive, EyeOff, Menu } from 'lucide-react';
 import Dropdown from '@/Components/Dropdown';
 
-export default function AdminTopbar({ header, headerActions }) {
+export default function AdminTopbar({ header, headerActions, onMenuClick }) {
     const { auth } = usePage().props;
     const user = auth.user;
     const role = user.role;
@@ -16,8 +16,16 @@ export default function AdminTopbar({ header, headerActions }) {
             <div className="max-w-[1600px] mx-auto px-4 lg:px-8 py-4">
                 <div className="flex items-center justify-between min-h-[40px]">
                     {/* Page Title / Header Content */}
-                    <div className="flex-1 min-w-0 text-slate-900 dark:text-white transition-colors">
-                        {header}
+                    <div className="flex items-center gap-3 flex-1 min-w-0 text-slate-900 dark:text-white transition-colors">
+                        <button
+                            onClick={onMenuClick}
+                            className="lg:hidden p-2 -ml-2 text-slate-500 hover:text-indigo-500 transition-colors"
+                        >
+                            <Menu className="size-6" />
+                        </button>
+                        <div className="truncate text-lg sm:text-xl font-black tracking-tight">
+                            {header}
+                        </div>
                     </div>
 
                     <div className="flex items-center gap-4 shrink-0">

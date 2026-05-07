@@ -77,18 +77,27 @@ export function useDocumentActions({
         }
     };
 
-    const keepFile = async (docId, filename) => {
-        const toastId = toast.loading(`Keeping ${filename}...`);
+    const keepFile = async (docId, filename, silent = false, customMessage = null) => {
+        let toastId = null;
+        if (!silent) {
+            toastId = toast.loading(`Keeping ${filename}...`);
+        }
         try {
             await axios.post('/documents/keep', {
                 document_id: docId
             });
-            await sleep(2000);
-            toast.success(`${filename} is kept.`, { id: toastId });
+            if (!silent) {
+                await sleep(2000);
+                toast.success(`${filename} is kept.`, { id: toastId });
+            } else if (customMessage) {
+                toast.success(customMessage);
+            }
             setShowKeepFileModal(null);
             setSelectedDocId(null);
         } catch (err) {
-            toast.error(`Failed to keep ${filename}.`, { id: toastId });
+            if (!silent) {
+                toast.error(`Failed to keep ${filename}.`, { id: toastId });
+            }
         }
     };
 

@@ -168,11 +168,11 @@ export default function MyFolders({ folders, totalStorage, storageLimit  }) {
                                     key={folder.folder_id}
                                     className="group relative w-full p-4 bg-white dark:bg-cyber-void rounded-xl shadow-md border border-slate-200 dark:border-slate-700 hover:shadow-lg hover:shadow-cyan-500/20 dark:hover:shadow-[0_0_15px_rgba(34,211,238,0.3)] hover:ring-1 hover:ring-cyan-500 dark:hover:ring-cyber-accent transition-all cursor-pointer"
                                 >
-                                    <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition space-x-1 z-10">
+                                    <div className="absolute top-0 right-0 p-4 opacity-100 sm:opacity-0 group-hover:opacity-100 transition space-x-1 z-10">
                                         <Dropdown>
                                             <Dropdown.Trigger>
-                                                <button>
-                                                    <MoreVertical className="size-8 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-cyber-surface rounded-md p-1.5 transition-colors" />
+                                                <button className="flex items-center justify-center">
+                                                    <MoreVertical className="size-8 sm:size-6 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-cyber-surface rounded-md p-1.5 transition-colors" />
                                                 </button>
                                             </Dropdown.Trigger>
                                             <Dropdown.Content>
@@ -202,7 +202,7 @@ export default function MyFolders({ folders, totalStorage, storageLimit  }) {
                                         className="flex flex-col items-center justify-center py-4 cursor-pointer"
                                         onClick={() => router.visit(`/myDocuments?folder_id=${folder.folder_id}`)}
                                     >
-                                        <FolderOpen className="size-16 text-cyan-500 dark:text-cyber-accent mb-2" />
+                                        <FolderOpen className="size-12 sm:size-16 text-cyan-500 dark:text-cyber-accent mb-2" />
                                         <h3 className="text-md font-bold text-slate-800 dark:text-slate-100 truncate w-full text-center">
                                             {folder.name}
                                         </h3>

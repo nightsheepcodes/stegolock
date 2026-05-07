@@ -15,7 +15,6 @@ export default function ManageStorage({
   storageLimit 
 }) {
   const [isDeleting, setIsDeleting] = useState(null);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedType, setSelectedType] = useState('all');
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -115,12 +114,7 @@ export default function ManageStorage({
     }
   };
 
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    router.reload({
-        onFinish: () => setIsRefreshing(false)
-    });
-  };
+
 
   const CategoryCard = ({ icon: Icon, data, label, color, type, isSelected, onClick }) => {
     const colorVariants = {
@@ -189,18 +183,9 @@ export default function ManageStorage({
       totalStorage={totalStorage}
       storageLimit={storageLimit}
       header={
-        <h2 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white transition-colors">Manage Personal Space</h2>
+        <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white transition-colors">Manage Personal Space</h2>
       }
-      headerActions={
-        <button
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-cyber-surface border border-slate-200 dark:border-cyber-border rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-cyber-border/30 transition-all shadow-sm"
-        >
-            <RefreshCw className={`size-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            Refresh
-        </button>
-      }
+
     >
       <Head title="Storage Management" />
 
@@ -215,21 +200,21 @@ export default function ManageStorage({
                 <div className="bg-gradient-to-br from-cyber-accent via-indigo-500 to-purple-600 rounded-[2.5rem] p-8 lg:p-10 text-white shadow-2xl shadow-cyan-500/40 dark:shadow-[0_0_40px_rgba(34,211,238,0.3)] relative overflow-hidden">
                     <div className="relative z-10 flex flex-wrap justify-center gap-6 md:gap-8 items-stretch">
                         <div className="bg-white/10 rounded-[2.5rem] p-8 backdrop-blur-md border border-white/10 text-center flex-1 min-w-[220px] transform hover:scale-105 transition-transform flex flex-col justify-center shadow-lg">
-                            <p className="text-4xl lg:text-5xl font-black mb-4 text-white drop-shadow-md">{formatBytes(totalStorage)}</p>
+                            <p className="text-3xl sm:text-4xl lg:text-5xl font-black mb-4 text-white drop-shadow-md">{formatBytes(totalStorage)}</p>
                             <div className="flex items-center justify-center gap-2 opacity-90">
                                 <HardDrive className="size-5" />
                                 <p className="text-sm font-black uppercase tracking-widest text-white">Usage</p>
                             </div>
                         </div>
                         <div className="bg-white/10 rounded-[2.5rem] p-8 backdrop-blur-md border border-white/10 text-center flex-1 min-w-[220px] transform hover:scale-105 transition-transform flex flex-col justify-center shadow-lg">
-                            <p className="text-4xl lg:text-5xl font-black mb-4 text-white drop-shadow-md">{formatBytes(storageLimit - totalStorage)}</p>
+                            <p className="text-3xl sm:text-4xl lg:text-5xl font-black mb-4 text-white drop-shadow-md">{formatBytes(storageLimit - totalStorage)}</p>
                             <div className="flex items-center justify-center gap-2 opacity-90">
                                 <HardDrive className="size-5" />
                                 <p className="text-sm font-black uppercase tracking-widest text-white">Free Space</p>
                             </div>
                         </div>
                         <div className="bg-white/10 rounded-[2.5rem] p-8 backdrop-blur-md border border-white/10 text-center flex-1 min-w-[220px] transform hover:scale-105 transition-transform flex flex-col justify-center shadow-lg">
-                            <p className="text-4xl lg:text-5xl font-black mb-4 text-white drop-shadow-md">{formatBytes(storageLimit)}</p>
+                            <p className="text-3xl sm:text-4xl lg:text-5xl font-black mb-4 text-white drop-shadow-md">{formatBytes(storageLimit)}</p>
                             <div className="flex items-center justify-center gap-2 opacity-90">
                                 <HardDrive className="size-5" />
                                 <p className="text-sm font-black uppercase tracking-widest text-white">Total Limit</p>

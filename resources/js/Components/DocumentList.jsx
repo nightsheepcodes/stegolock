@@ -1,4 +1,4 @@
-import { MoreVertical, Shield, Loader2, Star, Unlock, FolderInput, Info, Trash2, Pencil, FileText, Users } from 'lucide-react';
+import { MoreVertical, Shield, Loader2, Star, Unlock, FolderInput, Info, Trash2, Pencil, FileText, Users, AlertCircle } from 'lucide-react';
 import { formatBytes, formatDate, getFileColor, getFileIcon } from '@/Utils/fileUtils';
 
 export function DocumentList({ 
@@ -22,13 +22,13 @@ export function DocumentList({
     return (
         <div className="bg-white dark:bg-cyber-void rounded-2xl shadow-sm border border-gray-100 dark:border-cyber-border/30 overflow-hidden">
             <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                    <thead className="bg-gray-50 dark:bg-cyber-surface/50 text-gray-500 dark:text-slate-400 font-bold uppercase tracking-widest text-[10px] border-b border-gray-100 dark:border-cyber-border/30">
+                <table className="w-full text-left text-sm border-collapse">
+                    <thead className="hidden sm:table-header-group bg-gray-50 dark:bg-cyber-surface/50 text-gray-500 dark:text-slate-400 font-bold uppercase tracking-widest text-[10px] border-b border-gray-100 dark:border-cyber-border/30">
                         <tr>
                             <th className="px-6 py-4">Name</th>
                             <th className="px-6 py-4">Size</th>
                             <th className="px-6 py-4">Status</th>
-                            <th className="px-6 py-4">Created</th>
+                            <th className="px-6 py-4 hidden md:table-cell">Created</th>
                             <th className="px-6 py-4 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -41,10 +41,10 @@ export function DocumentList({
                             return (
                                 <tr 
                                     key={doc.document_id} 
-                                    className={"transition-colors group " + (isProcessing ? "bg-indigo-50/50 dark:bg-cyber-accent/5 cursor-wait" : "hover:bg-gray-50/50 dark:hover:bg-cyber-surface/50 cursor-pointer")}
+                                    className={"transition-colors group border-b border-gray-100 dark:border-cyber-border/20 flex flex-col sm:table-row p-4 sm:p-0 relative " + (isProcessing ? "bg-indigo-50/50 dark:bg-cyber-accent/5 cursor-wait" : "hover:bg-gray-50/50 dark:hover:bg-cyber-surface/50 cursor-pointer")}
                                     onClick={() => !isProcessing && onFileInfo(doc)}
                                 >
-                                    <td className="px-6 py-4">
+                                    <td className="px-0 sm:px-6 py-2 sm:py-4 block sm:table-cell">
                                         <div className="flex items-center gap-3">
                                             <div className="relative">
                                                 <div className={`p-2 rounded-lg ${colorClass} transition-transform group-hover:scale-110`}>
@@ -58,7 +58,7 @@ export function DocumentList({
                                             </div>
                                             <div className="min-w-0">
                                                 <div className="flex items-center gap-1.5">
-                                                    <p className="font-bold text-gray-900 dark:text-slate-100 truncate max-w-[200px]" title={doc.filename}>
+                                                    <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-slate-100 truncate max-w-[120px] sm:max-w-[200px]" title={doc.filename}>
                                                         {doc.filename}
                                                     </p>
                                                     {(doc.shares_count > 0 || doc.is_shared) && (
@@ -71,26 +71,42 @@ export function DocumentList({
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-gray-600 dark:text-slate-400 font-medium">
+                                    <td className="px-0 sm:px-6 py-1 sm:py-4 block sm:table-cell text-gray-600 dark:text-slate-400 font-medium">
                                         {formatBytes(doc.in_cloud_size || doc.original_size)}
                                     </td>
-                                    <td className="px-6 py-4">
+                                    <td className="px-0 sm:px-6 py-1 sm:py-4 block sm:table-cell">
                                         {isProcessing ? (
                                             <div className="flex items-center gap-2 text-indigo-600">
                                                 <Loader2 className="size-4 animate-spin" />
-                                                <span className="text-xs font-bold animate-pulse">Processing...</span>
+                                                <span className="text-[10px] sm:text-xs font-bold animate-pulse uppercase tracking-wider">
+                                                    {(() => {
+                                                        if (unlockingProgress[doc.document_id]) {
+                                                            const elapsed = Date.now() - unlockingProgress[doc.document_id];
+                                                            if (elapsed < 2000) return 'Fetching...';
+                                                            if (elapsed < 4000) return 'Extracting...';
+                                                            if (elapsed < 6000) return 'Restoring...';
+                                                            return 'Decrypting...';
+                                                        }
+                                                        return doc.status.replace('_', ' ');
+                                                    })()}
+                                                </span>
+                                            </div>
+                                        ) : doc.status === 'failed' ? (
+                                            <div className="flex items-center gap-1.5">
+                                                <AlertCircle className="size-4 text-red-500" />
+                                                <span className="text-[10px] sm:text-xs font-bold text-red-600 uppercase">Error</span>
                                             </div>
                                         ) : (
                                             <div className="flex items-center gap-1.5">
                                                 <Shield className="size-4 text-green-500" />
-                                                <span className="text-xs font-bold text-green-600 uppercase">Secured</span>
+                                                <span className="text-[10px] sm:text-xs font-bold text-green-600 uppercase">Locked</span>
                                             </div>
                                         )}
                                     </td>
-                                    <td className="px-6 py-4 text-gray-500 dark:text-slate-500 font-medium">
+                                    <td className="px-6 py-4 text-gray-500 dark:text-slate-500 font-medium hidden md:table-cell">
                                         {formatDate(doc.created_at)}
                                     </td>
-                                    <td className="px-6 py-4 text-right">
+                                    <td className="px-0 sm:px-6 py-2 sm:py-4 block sm:table-cell sm:text-right">
                                         <div className="flex items-center justify-end gap-2">
                                             <button
                                                 onClick={(e) => {

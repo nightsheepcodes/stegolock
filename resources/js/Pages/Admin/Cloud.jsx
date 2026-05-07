@@ -197,20 +197,20 @@ export default function CloudPage({ stats, users }) {
 
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-slate-50/50 dark:bg-cyber-void/10 border-b border-slate-100 dark:border-cyber-border/30">
+                            <thead className="hidden sm:table-header-group bg-slate-50/50 dark:bg-cyber-void/10 border-b border-slate-100 dark:border-cyber-border/30">
+                                <tr>
                                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">User Identity</th>
                                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Storage Consumption</th>
                                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Limit</th>
                                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Settings</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-50 dark:divide-cyber-border/10">
+                            <tbody className="divide-y divide-slate-50 dark:divide-cyber-border/10 flex flex-col sm:table-row-group">
                                 {filteredUsers.map(user => {
                                     const usagePct = user.storage_limit > 0 ? (user.storage_used / user.storage_limit) * 100 : 0;
                                     return (
-                                        <tr key={user.id} className="hover:bg-slate-50/50 dark:hover:bg-cyber-surface/50 transition-colors group">
-                                            <td className="px-6 py-4">
+                                        <tr key={user.id} className="hover:bg-slate-50/50 dark:hover:bg-cyber-surface/50 transition-colors group flex flex-col sm:table-row p-4 sm:p-0 relative border-b border-slate-100 dark:border-cyber-border/10">
+                                            <td className="px-0 sm:px-6 py-2 sm:py-4 block sm:table-cell">
                                                 <div className="flex items-center gap-3">
                                                     <div className="size-10 rounded-xl bg-slate-100 dark:bg-cyber-void border border-slate-200 dark:border-cyber-border/50 flex items-center justify-center text-slate-500 dark:text-slate-400">
                                                         <User className="size-5" />
@@ -221,8 +221,8 @@ export default function CloudPage({ stats, users }) {
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex flex-col gap-1.5 min-w-[150px]">
+                                            <td className="px-0 sm:px-6 py-1 sm:py-4 block sm:table-cell">
+                                                <div className="flex flex-col gap-1.5 w-full sm:min-w-[150px]">
                                                     <div className="flex items-center justify-between text-[10px] font-bold">
                                                         <span className="text-slate-500">{formatBytes(user.storage_used)}</span>
                                                         <span className={usagePct > 90 ? 'text-red-500' : 'text-cyan-500'}>
@@ -237,12 +237,12 @@ export default function CloudPage({ stats, users }) {
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-0 sm:px-6 py-1 sm:py-4 block sm:table-cell">
                                                 <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                                                     {formatBytes(user.storage_limit)}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 text-right">
+                                            <td className="px-0 sm:px-6 py-2 sm:py-4 block sm:table-cell text-right absolute top-4 right-4 sm:relative sm:top-0 sm:right-0">
                                                 <button 
                                                     onClick={() => handleUpdateQuota(user)}
                                                     className="p-2 rounded-lg bg-slate-100 dark:bg-cyber-void border border-slate-200 dark:border-cyber-border/50 text-slate-500 hover:text-cyan-500 hover:border-cyan-500/50 transition-all"

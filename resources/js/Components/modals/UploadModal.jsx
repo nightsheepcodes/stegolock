@@ -231,7 +231,7 @@ export default function UploadModal({ isOpen, onClose, allowUpload, uploaded, fo
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="bg-gradient-to-r from-cyan-600 to-indigo-600 dark:from-cyber-accent dark:to-indigo-500 p-8 text-white text-center relative overflow-hidden">
+                <div className="bg-gradient-to-r from-cyan-600 to-indigo-600 dark:from-cyber-accent dark:to-indigo-500 p-6 sm:p-8 text-white text-center relative overflow-hidden">
                     <button
                         onClick={() => {
                             resetAll();
@@ -243,13 +243,13 @@ export default function UploadModal({ isOpen, onClose, allowUpload, uploaded, fo
                     </button>
                     
                     <div className="relative z-10">
-                        <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 rounded-2xl backdrop-blur-md mb-4 rotate-3 group-hover:rotate-0 transition-transform duration-500">
-                            <Upload className="size-10 text-white" />
+                        <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-white/20 rounded-2xl backdrop-blur-md mb-4 rotate-3 group-hover:rotate-0 transition-transform duration-500">
+                            <Upload className="size-8 sm:size-10 text-white" />
                         </div>
-                        <h2 className="text-2xl font-black uppercase tracking-tight">
+                        <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight">
                             Lock New Document
                         </h2>
-                        <p className="text-cyan-100/80 text-xs font-bold uppercase tracking-widest mt-1">
+                        <p className="text-cyan-100/80 text-[10px] sm:text-xs font-bold uppercase tracking-widest mt-1">
                             Secure your files with Stegolock
                         </p>
                     </div>
@@ -259,7 +259,7 @@ export default function UploadModal({ isOpen, onClose, allowUpload, uploaded, fo
                     <div className="absolute bottom-0 left-0 w-24 h-24 bg-cyan-400/20 blur-2xl rounded-full translate-y-1/2 -translate-x-1/2"></div>
                 </div>
 
-                <div className="p-8">
+                <div className="p-6 sm:p-8">
                     {/* ===================== */}
                     {/* STEP 1: FILE INPUT */}
                     {/* ===================== */}
@@ -278,18 +278,18 @@ export default function UploadModal({ isOpen, onClose, allowUpload, uploaded, fo
                                 onChange={handleFileChange}
                             />
 
-                            <div className={`border-2 border-dashed rounded-[2rem] p-12 text-center transition-all group duration-300 pointer-events-none ${
+                            <div className={`border-2 border-dashed rounded-[2rem] p-8 sm:p-12 text-center transition-all group duration-300 pointer-events-none ${
                                 isDragging 
                                 ? 'border-cyan-500 bg-cyan-50/50 dark:border-cyber-accent dark:bg-cyber-accent/10 scale-[1.02] shadow-lg shadow-cyan-500/20' 
                                 : 'border-slate-200 dark:border-cyber-border hover:border-cyan-500 dark:hover:border-cyber-accent hover:bg-cyan-50/50 dark:hover:bg-cyber-accent/5'
                             }`}>
                                 <div className="flex justify-center mb-6">
-                                    <div className="bg-slate-50 dark:bg-cyber-surface p-6 rounded-3xl shadow-sm group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 border border-slate-100 dark:border-cyber-border">
-                                        <FileText className="size-12 text-slate-400 dark:text-slate-500 group-hover:text-cyan-500 dark:group-hover:text-cyber-accent transition-colors" />
+                                    <div className="bg-slate-50 dark:bg-cyber-surface p-4 sm:p-6 rounded-3xl shadow-sm group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 border border-slate-100 dark:border-cyber-border">
+                                        <FileText className="size-10 sm:size-12 text-slate-400 dark:text-slate-500 group-hover:text-cyan-500 dark:group-hover:text-cyber-accent transition-colors" />
                                     </div>
                                 </div>
 
-                                <p className="text-slate-900 dark:text-white font-black text-xl mb-2">
+                                <p className="text-slate-900 dark:text-white font-black text-lg sm:text-xl mb-2">
                                     {isDragging ? 'Drop it now!' : 'Drop file here'}
                                 </p>
                                 <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-8">

@@ -32,7 +32,7 @@ export default function Dashboard({ stats }) {
 
     return (
         <AdminLayout
-            noScroll={true}
+            noScroll={false}
             header={
                 <div className="flex items-center gap-3">
                     <div className="size-10 rounded-xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
@@ -55,12 +55,12 @@ export default function Dashboard({ stats }) {
 
             <div 
                 key={currentPage} 
-                className="h-full flex flex-col space-y-6 relative overflow-hidden animate-in fade-in slide-in-from-right-12 duration-500"
+                className="flex flex-col space-y-6 relative overflow-visible animate-in fade-in slide-in-from-right-12 duration-500"
             >
                 {/* PAGINATION CONTROLS (Superadmin Only) */}
                 {isSuperadmin && (
-                    <div className="fixed bottom-10 right-10 flex items-center gap-4 z-50 animate-in fade-in slide-in-from-right-10 duration-700">
-                        <div className="flex bg-white dark:bg-cyber-surface rounded-2xl border border-slate-200 dark:border-cyber-border shadow-2xl p-1.5 gap-1.5">
+                    <div className="fixed bottom-6 right-6 sm:bottom-10 sm:right-10 flex items-center gap-4 z-50 animate-in fade-in slide-in-from-right-10 duration-700">
+                        <div className="flex bg-white/90 dark:bg-cyber-surface/90 backdrop-blur-md rounded-2xl border border-slate-200 dark:border-cyber-border shadow-2xl p-1.5 gap-1.5">
                             <button 
                                 onClick={() => setCurrentPage(1)}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${
@@ -120,7 +120,7 @@ export default function Dashboard({ stats }) {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
                                             <p className="text-[9px] font-black text-slate-500 uppercase mb-1">Stego Covers</p>
                                             <p className="text-sm font-black">{formatBytes(stats.infrastructure.composition.covers)}</p>

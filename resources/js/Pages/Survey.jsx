@@ -78,13 +78,13 @@ export default function Survey() {
                         key={star}
                         type="button"
                         onClick={() => handleRatingClick(field, star)}
-                        className={`p-2 rounded-lg transition-all ${
+                        className={`p-1.5 sm:p-2 rounded-lg transition-all ${
                             value >= star
                                 ? 'text-yellow-400 scale-110'
                                 : 'text-slate-300 dark:text-slate-600 hover:text-yellow-300'
                         }`}
                     >
-                        <Star className={`size-8 ${value >= star ? 'fill-current' : ''}`} />
+                        <Star className={`size-6 sm:size-8 ${value >= star ? 'fill-current' : ''}`} />
                     </button>
                 ))}
                 <span className="ml-3 flex items-center text-sm text-slate-500 dark:text-slate-400">
@@ -152,7 +152,7 @@ export default function Survey() {
 
                 {/* Survey Form */}
                 <form onSubmit={handleSubmit} className="space-y-8">
-                    <div className="glass-panel p-8 rounded-3xl bg-white dark:bg-transparent border border-slate-200 dark:border-cyber-border space-y-8">
+                    <div className="glass-panel p-5 sm:p-8 rounded-3xl bg-white dark:bg-transparent border border-slate-200 dark:border-cyber-border space-y-8">
                         {/* Ratings */}
                         <div className="space-y-6">
                             <h2 className="text-xl font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-cyber-border pb-3">

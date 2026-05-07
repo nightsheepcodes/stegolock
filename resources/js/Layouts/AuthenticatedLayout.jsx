@@ -1,4 +1,4 @@
-import { Shield, Plus, ChevronDown, Upload, FolderOpen, Mail, Lock, User, Eye, EyeOff, AlertCircle, CheckCircle2, Loader2, HardDrive, X, Folder} from "lucide-react";
+import { Shield, Plus, ChevronDown, Upload, FolderOpen, Mail, Lock, User, Eye, EyeOff, AlertCircle, CheckCircle2, Loader2, HardDrive, X, Folder, Menu} from "lucide-react";
 import { Toaster } from 'sonner';
 
 import Dropdown from '@/Components/Dropdown';
@@ -67,29 +67,51 @@ export default function AuthenticatedLayout({
         }
     };
 
-    return (
-        <div className="flex min-h-screen bg-slate-50 dark:bg-cyber-surface transition-colors overflow-hidden">
+    const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
-            {/* LEFT SIDE (Navigation) */}
-            <Sidebar
-                totalStorage={totalStorage}
-                storageLimit={storageLimit}
-                hasProcessingDocs={hasProcessingDocs}
-                onNewFolderClick={() => {
-                    setFolderName('');
-                    setFolderErrors({});
-                    setShowFolderCreateModal(true);
-                }}
-            />
+    return (
+        <div className="flex min-h-screen bg-slate-50 dark:bg-cyber-surface transition-colors overflow-hidden relative">
+
+            {/* Mobile Sidebar Overlay */}
+            {isMobileSidebarOpen && (
+                <div 
+                    className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] lg:hidden"
+                    onClick={() => setIsMobileSidebarOpen(false)}
+                />
+            )}
+
+            {/* Sidebar */}
+            <div className={`fixed inset-y-0 left-0 z-[110] transform transition-transform duration-300 lg:relative lg:translate-x-0 ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                <Sidebar
+                    totalStorage={totalStorage}
+                    storageLimit={storageLimit}
+                    hasProcessingDocs={hasProcessingDocs}
+                    onNewFolderClick={() => {
+                        setFolderName('');
+                        setFolderErrors({});
+                        setShowFolderCreateModal(true);
+                    }}
+                    onClose={() => setIsMobileSidebarOpen(false)}
+                    isMobile={true}
+                />
+            </div>
 
             {/* RIGHT SIDE */}
             <div className="flex flex-col flex-1 h-screen overflow-hidden bg-slate-50 dark:bg-cyber-surface">
                 <header className="bg-white/80 dark:bg-cyber-void/90 backdrop-blur-xl border-b border-slate-200 dark:border-cyber-border/50 relative z-40 transition-colors">
                     <div className="max-w-[1600px] mx-auto px-4 lg:px-8 py-4">
                         {/* Row 1: Title & Actions */}
-                        <div className="flex items-center justify-between min-h-[40px]">
-                            <div className="flex-1 min-w-0 text-slate-900 dark:text-white transition-colors">
-                                {header}
+                        <div className="flex items-center justify-between min-h-[40px] gap-4">
+                            <div className="flex items-center gap-3 flex-1 min-w-0 text-slate-900 dark:text-white transition-colors">
+                                <button 
+                                    onClick={() => setIsMobileSidebarOpen(true)}
+                                    className="lg:hidden p-2 -ml-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-cyber-border/30 rounded-xl transition-colors"
+                                >
+                                    <Menu className="size-6" />
+                                </button>
+                                <div className="truncate text-lg sm:text-xl md:text-2xl font-black tracking-tight">
+                                    {header}
+                                </div>
                             </div>
 
                             <div className="flex items-center gap-3 shrink-0">

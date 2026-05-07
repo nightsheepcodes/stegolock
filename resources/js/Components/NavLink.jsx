@@ -28,7 +28,7 @@ export default function NavLink({
         <Link
             {...props}
             className={
-                'w-full flex items-center px-4 py-3 rounded-xl transition-all group ' +
+                'w-full flex items-center px-4 py-3.5 sm:py-3 rounded-xl transition-all group ' +
                 (active ? activeClasses : inactiveClasses) +
                 className
             }

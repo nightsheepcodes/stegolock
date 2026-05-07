@@ -67,7 +67,7 @@ export function SearchBar({
   );
 
   return (
-    <div className="flex gap-2">
+    <div className="flex flex-col sm:flex-row gap-2">
       <div className="relative flex-1">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-slate-400 dark:text-slate-500" />
         <input
@@ -79,17 +79,17 @@ export function SearchBar({
         />
       </div>
 
-      <div className="relative" ref={filterRef}>
+      <div className="relative w-full sm:w-auto" ref={filterRef}>
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all ${
+          className={`flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2 rounded-lg border transition-all ${
             showFilters || activeFiltersCount > 0
               ? 'bg-indigo-50 dark:bg-cyber-accent/20 border-indigo-200 dark:border-cyber-accent/50 text-indigo-700 dark:text-cyber-accent'
               : 'bg-white dark:bg-cyber-surface/50 border-slate-300/80 dark:border-cyber-accent/40 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-cyber-surface'
           }`}
         >
           <SlidersHorizontal className="size-4" />
-          <span className="text-sm font-bold">Filters</span>
+          <span className="text-sm font-bold hidden sm:inline">Filters</span>
           {activeFiltersCount > 0 && (
             <span className="bg-indigo-600 dark:bg-cyber-accent text-white dark:text-cyber-void text-xs font-bold rounded-full size-5 flex items-center justify-center shadow-sm">
               {activeFiltersCount}
@@ -99,7 +99,7 @@ export function SearchBar({
         </button>
 
         {showFilters && (
-          <div className="absolute top-full right-0 mt-2 w-80 bg-white dark:bg-cyber-surface/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200 dark:border-cyber-border/50 z-50 max-h-[calc(90vh-100px)] flex flex-col">
+          <div className="absolute top-full right-0 mt-2 w-[calc(100vw-3rem)] sm:w-80 bg-white dark:bg-cyber-surface/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200 dark:border-cyber-border/50 z-50 max-h-[calc(90vh-100px)] flex flex-col">
             <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-cyber-border/30">
               <h3 className="font-bold text-slate-900 dark:text-white">Filters & Sort</h3>
               {activeFiltersCount > 0 && (

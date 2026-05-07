@@ -204,25 +204,25 @@ export default function Users({ users = [] }) {
                         />
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                    <div className="flex flex-col sm:flex-row flex-wrap items-center gap-3 w-full lg:w-auto">
                         {/* Role Group Toggle (Superadmin only) */}
                         {isSuperadmin && (
-                            <div className="flex items-center bg-slate-50 dark:bg-cyber-void/50 rounded-xl border border-slate-200 dark:border-cyber-border/50 p-1">
+                            <div className="flex items-center w-full sm:w-auto bg-slate-50 dark:bg-cyber-void/50 rounded-xl border border-slate-200 dark:border-cyber-border/50 p-1">
                                 <button
                                     onClick={() => setRoleGroup('all')}
-                                    className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all ${roleGroup === 'all' ? 'bg-white dark:bg-cyber-surface text-indigo-500 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                    className={`flex-1 sm:flex-none px-3 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all ${roleGroup === 'all' ? 'bg-white dark:bg-cyber-surface text-indigo-500 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                                 >
                                     All
                                 </button>
                                 <button
                                     onClick={() => setRoleGroup('standard')}
-                                    className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all ${roleGroup === 'standard' ? 'bg-white dark:bg-cyber-surface text-indigo-500 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                    className={`flex-1 sm:flex-none px-3 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all ${roleGroup === 'standard' ? 'bg-white dark:bg-cyber-surface text-indigo-500 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                                 >
                                     Users
                                 </button>
                                 <button
                                     onClick={() => setRoleGroup('admin')}
-                                    className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all ${roleGroup === 'admin' ? 'bg-white dark:bg-cyber-surface text-indigo-500 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                    className={`flex-1 sm:flex-none px-3 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all ${roleGroup === 'admin' ? 'bg-white dark:bg-cyber-surface text-indigo-500 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                                 >
                                     Admins
                                 </button>
@@ -231,7 +231,7 @@ export default function Users({ users = [] }) {
 
                         {/* Role Filter (Superadmin only) */}
                         {isSuperadmin && roleGroup === 'all' && (
-                            <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-cyber-void/50 rounded-xl border border-slate-200 dark:border-cyber-border/50 min-w-[140px]">
+                            <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-cyber-void/50 rounded-xl border border-slate-200 dark:border-cyber-border/50 w-full sm:w-auto min-w-[140px]">
                                 <Shield className="size-4 text-slate-400" />
                                 <select 
                                     value={roleFilter}
@@ -248,7 +248,7 @@ export default function Users({ users = [] }) {
                         )}
 
                         {/* Storage Filter */}
-                        <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-cyber-void/50 rounded-xl border border-slate-200 dark:border-cyber-border/50 min-w-[140px]">
+                        <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-cyber-void/50 rounded-xl border border-slate-200 dark:border-cyber-border/50 w-full sm:w-auto min-w-[140px]">
                             <HardDrive className="size-4 text-slate-400" />
                             <select 
                                 value={storageFilter}
@@ -262,7 +262,7 @@ export default function Users({ users = [] }) {
                         </div>
 
                         {/* Sort Dropdown */}
-                        <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-cyber-void/50 rounded-xl border border-slate-200 dark:border-cyber-border/50 min-w-[140px]">
+                        <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-cyber-void/50 rounded-xl border border-slate-200 dark:border-cyber-border/50 w-full sm:w-auto min-w-[140px]">
                             <Filter className="size-4 text-slate-400" />
                             <select 
                                 value={sortBy}
@@ -283,8 +283,8 @@ export default function Users({ users = [] }) {
                 {/* Users Table */}
                 <div className="bg-white dark:bg-cyber-surface/30 rounded-2xl border border-slate-200 dark:border-cyber-border/50 overflow-hidden backdrop-blur-sm shadow-xl shadow-slate-200/50 dark:shadow-none">
                     <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-slate-50/50 dark:bg-cyber-void/30 border-b border-slate-200 dark:border-cyber-border/50">
+                        <thead className="hidden sm:table-header-group bg-slate-50/50 dark:bg-cyber-void/30 border-b border-slate-200 dark:border-cyber-border/50">
+                            <tr>
                                 <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">User Details</th>
                                 <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Status</th>
                                 {isSuperadmin && <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Access Level</th>}
@@ -293,7 +293,7 @@ export default function Users({ users = [] }) {
                                 <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-cyber-border/30">
+                        <tbody className="divide-y divide-slate-100 dark:divide-cyber-border/30 flex flex-col sm:table-row-group">
                             {processedUsers.length > 0 ? (
                                 processedUsers.map((user) => {
                                     const storagePercentage = (user.storage_used / user.storage_limit) * 100;
@@ -301,9 +301,9 @@ export default function Users({ users = [] }) {
                                         <tr 
                                             key={user.id} 
                                             onClick={() => handleViewHistory(user)}
-                                            className={`group/row cursor-pointer hover:bg-slate-50 dark:hover:bg-indigo-500/5 transition-all ${!user.is_active ? 'opacity-75' : ''}`}
+                                            className={`group/row cursor-pointer hover:bg-slate-50 dark:hover:bg-indigo-500/5 transition-all flex flex-col sm:table-row p-4 sm:p-0 relative ${!user.is_active ? 'opacity-75' : ''}`}
                                         >
-                                            <td className="px-6 py-4">
+                                            <td className="px-0 sm:px-6 py-2 sm:py-4 block sm:table-cell">
                                                 <div className="flex items-center gap-3">
                                                     <div className={`size-10 rounded-full bg-gradient-to-br ${user.is_active ? 'from-indigo-500 to-violet-600' : 'from-slate-400 to-slate-600'} flex items-center justify-center text-white font-black text-sm shadow-md group-hover/row:scale-110 transition-transform`}>
                                                         {user.name.charAt(0)}
@@ -316,7 +316,7 @@ export default function Users({ users = [] }) {
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-0 sm:px-6 py-1 sm:py-4 block sm:table-cell">
                                                 {user.is_active ? (
                                                     <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-green-600 dark:text-green-400 uppercase tracking-wider">
                                                         <CheckCircle2 className="size-3.5" /> Active
@@ -328,12 +328,12 @@ export default function Users({ users = [] }) {
                                                 )}
                                             </td>
                                             {isSuperadmin && (
-                                                <td className="px-6 py-4">
+                                                <td className="px-0 sm:px-6 py-1 sm:py-4 block sm:table-cell">
                                                     {getRoleBadge(user.role)}
                                                 </td>
                                             )}
-                                            <td className="px-6 py-4">
-                                                <div className="w-48 space-y-1.5">
+                                            <td className="px-0 sm:px-6 py-1 sm:py-4 block sm:table-cell">
+                                                <div className="w-full sm:w-48 space-y-1.5">
                                                     <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 dark:text-slate-400">
                                                         <span>{formatBytes(user.storage_used)} / {formatBytes(user.storage_limit)}</span>
                                                         <span>{Math.round(storagePercentage)}%</span>
@@ -348,13 +348,13 @@ export default function Users({ users = [] }) {
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-0 sm:px-6 py-1 sm:py-4 block sm:table-cell">
                                                 <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
                                                     <Calendar className="size-3.5 text-slate-400" />
                                                     {new Date(user.created_at).toLocaleDateString()}
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 text-right">
+                                            <td className="px-0 sm:px-6 py-2 sm:py-4 block sm:table-cell text-right absolute top-4 right-4 sm:relative sm:top-0 sm:right-0">
                                                 <div onClick={(e) => e.stopPropagation()}>
                                                     <Dropdown>
                                                         <Dropdown.Trigger>

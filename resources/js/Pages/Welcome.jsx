@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Shield, Lock, Layers, EyeOff, Share2, FileText, CheckCircle, ArrowRight, Github, ExternalLink, Users, Target, Info, Moon, Sun } from 'lucide-react';
+import { Shield, Lock, Layers, EyeOff, Share2, FileText, CheckCircle, ArrowRight, Github, ExternalLink, Users, Target, Info, Moon, Sun, Menu } from 'lucide-react';
 import { DecorativeBackground } from '@/Components/DecorativeBackground';
 import { useState, useEffect } from 'react';
 
@@ -22,6 +22,8 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
         }
     }, [darkMode]);
 
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
     return (
         <div className="relative min-h-screen bg-white dark:bg-cyber-void selection:bg-cyber-accent selection:text-white dark:selection:text-cyber-void transition-colors duration-300">
             <Head title="StegoLock - Secure Document Storage" />
@@ -29,24 +31,27 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
             <DecorativeBackground />
 
             {/* Navigation */}
-            <nav className="sticky top-0 z-50 glass-header">
+            <nav className="sticky top-0 z-50 glass-header border-b border-slate-200 dark:border-cyber-border/30">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-24 transition-all">
-                        <Link href="/" className="group">
+                    <div className="flex justify-between items-center h-20 sm:h-24 transition-all">
+                        <Link href="/" className="group shrink-0">
                             <div className="flex items-center gap-3">
-                                <div className="relative inline-flex items-center justify-center p-3 bg-gradient-to-br from-cyber-accent via-indigo-500 to-purple-600 rounded-xl shadow-lg shadow-cyan-500/40 dark:shadow-[0_0_20px_rgba(34,211,238,0.6)] group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                                    <Shield className="size-7 text-white drop-shadow-md relative z-10" />
+                                <div className="relative inline-flex items-center justify-center p-2.5 sm:p-3 bg-gradient-to-br from-cyber-accent via-indigo-500 to-purple-600 rounded-xl shadow-lg shadow-cyan-500/40 dark:shadow-[0_0_20px_rgba(34,211,238,0.6)] group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                                    <Shield className="size-6 sm:size-7 text-white drop-shadow-md relative z-10" />
                                     <div className="absolute inset-0 rounded-xl bg-gradient-to-tr from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                 </div>
-                                <span className="text-2xl font-[900] text-slate-900 dark:text-white tracking-tighter leading-[0.85] transform origin-left group-hover:scale-105 inline-block group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-cyber-accent group-hover:to-indigo-500 transition-all duration-300">
+                                <span className="text-xl sm:text-2xl font-[900] text-slate-900 dark:text-white tracking-tighter leading-[0.85] transform origin-left group-hover:scale-105 inline-block group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-cyber-accent group-hover:to-indigo-500 transition-all duration-300">
                                     Stego<span className="text-cyber-accent group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-cyber-accent group-hover:to-indigo-500 transition-all duration-300">Lock</span>
                                 </span>
                             </div>
                         </Link>
-                        <div className="flex items-center gap-4">
+
+                        {/* Desktop Actions */}
+                        <div className="hidden md:flex items-center gap-4">
                             <button 
                                 onClick={() => setDarkMode(!darkMode)}
                                 className="p-2 text-slate-400 hover:text-cyber-accent transition-colors"
+                                aria-label="Toggle Dark Mode"
                             >
                                 {darkMode ? <Moon className="size-5" /> : <Sun className="size-5" />}
                             </button>
@@ -58,14 +63,14 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                         router.visit(route('login', { redirect: 'survey' }));
                                     }
                                 }}
-                                className="px-4 py-2 text-sm font-medium text-slate-400 hover:text-cyber-accent transition"
+                                className="px-4 py-2 text-sm font-black uppercase tracking-widest text-slate-400 hover:text-cyber-accent transition"
                             >
                                 Survey
                             </button>
                             {auth.user ? (
                                 <Link
                                     href={route('myDocuments')}
-                                    className="btn-cyber"
+                                    className="px-6 py-3 bg-gradient-to-r from-cyber-accent to-indigo-500 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all active:scale-95"
                                 >
                                     Dashboard
                                 </Link>
@@ -73,18 +78,131 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                 <>
                                     <Link
                                         href={route('login')}
-                                        className="px-4 py-2 text-sm font-medium text-slate-400 hover:text-cyber-accent transition"
+                                        className="px-4 py-2 text-sm font-black uppercase tracking-widest text-slate-400 hover:text-cyber-accent transition"
                                     >
                                         Log in
                                     </Link>
                                     <Link
                                         href={route('register')}
-                                        className="btn-cyber"
+                                        className="px-6 py-3 bg-gradient-to-r from-cyber-accent to-indigo-500 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all active:scale-95"
                                     >
                                         Get Started
                                     </Link>
                                 </>
                             )}
+                        </div>
+
+                        {/* Mobile Action Controls */}
+                        <div className="flex md:hidden items-center gap-2">
+                            <button 
+                                onClick={() => setDarkMode(!darkMode)}
+                                className="p-2.5 text-slate-400 hover:text-cyber-accent transition-colors"
+                            >
+                                {darkMode ? <Moon className="size-6" /> : <Sun className="size-6" />}
+                            </button>
+                            <button
+                                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                                className="p-2.5 text-slate-500 dark:text-slate-400 hover:text-cyber-accent transition-colors"
+                            >
+                                {isMobileMenuOpen ? <X className="size-6" /> : <Menu className="size-6" />}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Mobile Menu Overlay */}
+                <div className={`fixed inset-0 z-[60] md:hidden transition-all duration-500 ease-in-out ${isMobileMenuOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}`}>
+                    {/* Glass Backdrop */}
+                    <div className="absolute inset-0 bg-white/95 dark:bg-cyber-void/95 backdrop-blur-2xl" />
+                    
+                    {/* Decorative Gradients */}
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-cyber-accent/10 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2" />
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/10 blur-[100px] rounded-full translate-y-1/2 -translate-x-1/2" />
+
+                    <div className="relative h-full flex flex-col p-8 pt-24">
+                        <div className="flex items-center justify-between mb-12">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-gradient-to-br from-cyber-accent to-indigo-500 rounded-lg shadow-lg shadow-cyan-500/20">
+                                    <Shield className="size-6 text-white" />
+                                </div>
+                                <span className="text-xl font-black tracking-tighter dark:text-white">StegoLock</span>
+                            </div>
+                            <button
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="p-3 rounded-xl bg-slate-100 dark:bg-cyber-surface text-slate-500 dark:text-slate-400 hover:text-cyber-accent transition-colors"
+                            >
+                                <X className="size-6" />
+                            </button>
+                        </div>
+                        
+                        <div className="flex-1 space-y-2">
+                            <button
+                                onClick={() => {
+                                    setIsMobileMenuOpen(false);
+                                    if (auth.user) {
+                                        router.visit(route('survey'));
+                                    } else {
+                                        router.visit(route('login', { redirect: 'survey' }));
+                                    }
+                                }}
+                                className="w-full flex items-center justify-between p-6 rounded-2xl bg-slate-50 dark:bg-cyber-surface/30 border border-slate-100 dark:border-cyber-border/30 group active:scale-[0.98] transition-all"
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 rounded-xl bg-white dark:bg-cyber-void text-indigo-500 shadow-sm">
+                                        <FileText className="size-5" />
+                                    </div>
+                                    <span className="text-lg font-bold text-slate-900 dark:text-white">Take Survey</span>
+                                </div>
+                                <ArrowRight className="size-5 text-slate-400 group-hover:text-cyber-accent transition-colors" />
+                            </button>
+
+                            {auth.user ? (
+                                <Link
+                                    href={route('myDocuments')}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="w-full flex items-center justify-between p-6 rounded-2xl bg-gradient-to-r from-cyber-accent/10 to-indigo-500/10 border border-cyber-accent/20 group active:scale-[0.98] transition-all"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-3 rounded-xl bg-cyber-accent text-white shadow-lg shadow-cyan-500/20">
+                                            <Target className="size-5" />
+                                        </div>
+                                        <span className="text-lg font-bold text-slate-900 dark:text-white">Access Dashboard</span>
+                                    </div>
+                                    <ArrowRight className="size-5 text-cyber-accent" />
+                                </Link>
+                            ) : (
+                                <>
+                                    <Link
+                                        href={route('login')}
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className="w-full flex items-center justify-between p-6 rounded-2xl bg-slate-50 dark:bg-cyber-surface/30 border border-slate-100 dark:border-cyber-border/30 group active:scale-[0.98] transition-all"
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className="p-3 rounded-xl bg-white dark:bg-cyber-void text-slate-500 shadow-sm">
+                                                <Lock className="size-5" />
+                                            </div>
+                                            <span className="text-lg font-bold text-slate-900 dark:text-white">Sign In</span>
+                                        </div>
+                                        <ArrowRight className="size-5 text-slate-400 group-hover:text-cyber-accent transition-colors" />
+                                    </Link>
+                                    <Link
+                                        href={route('register')}
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className="w-full flex items-center justify-between p-6 rounded-2xl bg-gradient-to-r from-cyber-accent to-indigo-600 text-white shadow-xl shadow-cyan-500/25 active:scale-[0.98] transition-all"
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <span className="text-lg font-black uppercase tracking-widest">Get Started</span>
+                                        </div>
+                                        <ArrowRight className="size-5 text-white" />
+                                    </Link>
+                                </>
+                            )}
+                        </div>
+
+                        <div className="mt-auto py-8 text-center">
+                            <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-600">
+                                StegoLock Security Layer v2.0
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -100,13 +218,13 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                     <span className="flex h-2 w-2 rounded-full bg-cyber-accent mr-2 animate-pulse shadow-glow-cyan"></span>
                                     Reconstruction-Dependent Security
                                 </div>
-                                <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.1]">
+                                <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.1]">
                                     Secure Digital Storage <br />
                                     <span className="text-cyber-accent-dark dark:text-glow-cyan">
                                         Through Invisibility.
                                     </span>
                                 </h1>
-                                <p className="text-xl text-slate-600 dark:text-slate-400 leading-relaxed">
+                                <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-400 leading-relaxed">
                                     StegoLock strengthens protection against unauthorized access through a hybrid cryptography-steganography model. Your documents aren't just encrypted—they're fragmented and hidden.
                                 </p>
                                 <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
@@ -255,8 +373,8 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                         <div className="absolute -top-20 -right-20 w-80 h-80 bg-cyber-accent/10 rounded-full blur-[100px]"></div>
                         <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-cyber-accent/5 rounded-full blur-[100px]"></div>
                         
-                        <h3 className="text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white relative z-10">Ready to secure your documents?</h3>
-                        <p className="text-slate-600 dark:text-slate-400 text-lg lg:text-xl max-w-2xl mx-auto relative z-10">
+                        <h3 className="text-3xl lg:text-5xl font-bold text-slate-900 dark:text-white relative z-10">Ready to secure your documents?</h3>
+                        <p className="text-lg lg:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto relative z-10">
                             Join organizations and professionals who trust StegoLock for their most sensitive digital assets.
                         </p>
                         <div className="flex flex-col sm:flex-row justify-center gap-4 relative z-10">

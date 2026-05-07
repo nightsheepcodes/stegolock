@@ -14,7 +14,7 @@ import { ViewToggle } from '@/Components/ViewToggle';
 import { DocumentList } from '@/Components/DocumentList';
 import DocumentCard from '@/Components/DocumentCard';
 import { ShareFileModal } from '@/Components/modals/ShareFileModal';
-import { MoveFileModal } from '@/Components/modals/MoveFileModal';
+import MoveFileModal from '@/Components/modals/MoveFileModal';
 import { FileInfoModal } from '@/Components/modals/FileInfoModal';
 import { DownloadReadyModal } from '@/Components/modals/DownloadReadyModal';
 import FileRetrievedModal from '@/Components/modals/FileRetrievedModal';
@@ -167,13 +167,13 @@ export default function StarredDocuments({ documents, totalStorage, storageLimit
             case 'fragmented': return 'Embedding file...';
             case 'mapped': return 'Embedding file...';
             case 'embedded': return 'Storing file...';
-            case 'stored': return 'Stored';
+            case 'stored': return 'Locked';
             case 'extracted': return 'Reconstructing file...';
             case 'reconstructed': return 'Decrypting file...';
             case 'decrypted': return 'Decrypted';
             case 'retrieved': return 'Retrieved';
             case 'failed': return 'Error';
-            default: return status ? status.charAt(0).toUpperCase() + status.slice(1) : '';
+            default: return status ? (status === 'stored' ? 'Locked' : status.charAt(0).toUpperCase() + status.slice(1)) : '';
         }
     };
 
@@ -327,11 +327,18 @@ export default function StarredDocuments({ documents, totalStorage, storageLimit
             {showDownloadReadyModal && (
                 <DownloadReadyModal
                     show={showDownloadReadyModal}
-                    onClose={() => setShowDownloadReadyModal(false)}
+                    onClose={() => {
+                        if (selectedDoc) {
+                            keepFile(selectedDoc.document_id, selectedDoc.filename, true, "Download Cancelled, File is still kept");
+                        }
+                        setShowDownloadReadyModal(false);
+                    }}
                     document={selectedDoc}
                     onDownload={handleDownloadAndProceed}
                     onCancel={() => {
-                        keepFile(selectedDoc.document_id, selectedDoc.filename);
+                        if (selectedDoc) {
+                            keepFile(selectedDoc.document_id, selectedDoc.filename, true, "Download Cancelled, File is still kept");
+                        }
                         setShowDownloadReadyModal(false);
                     }}
                 />

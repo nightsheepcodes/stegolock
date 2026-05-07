@@ -66,7 +66,7 @@ export default function DocumentCard({
             case 'fragmented': return 'Mapping file...';
             case 'mapped': return 'Embedding binaries...';
             case 'embedded': return 'Storing stego files...';
-            case 'stored': return 'Fetching from cloud...';
+            case 'stored': return 'Locked';
             case 'retrieved': return 'Extracting binaries...';
             case 'extracted': return 'Reconstructing file...';
             case 'reconstructed': return 'Finalizing decryption...';
@@ -173,7 +173,7 @@ export default function DocumentCard({
                 </div>
             </div>
 
-            <h3 className={`text-sm font-bold text-slate-800 dark:text-slate-100 my-2.5 truncate ${isProcessing ? 'text-center' : ''}`} title={doc.filename}>
+            <h3 className={`text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 my-2.5 truncate ${isProcessing ? 'text-center' : ''}`} title={doc.filename}>
                 {doc.filename}
             </h3>
 
@@ -201,10 +201,10 @@ export default function DocumentCard({
                     </Tooltip>
                 ) : (
                     <>
-                        <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
+                        <span className="text-[9px] sm:text-[10px] text-slate-500 dark:text-slate-400 font-medium">
                             {formatBytes(doc.in_cloud_size)}
                         </span>
-                        <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
+                        <span className="text-[9px] sm:text-[10px] text-slate-500 dark:text-slate-400 font-medium">
                             {formatDate(new Date(doc.created_at))}
                         </span>
                     </>
