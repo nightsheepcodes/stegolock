@@ -40,7 +40,7 @@ export function DownloadReadyModal({ show, onClose, document, onDownload, onCanc
                     <div className="grid grid-cols-2 gap-3">
                         <button 
                             onClick={onCancel || onClose}
-                            className="px-4 py-2.5 text-sm font-bold text-gray-700 dark:text-slate-300 bg-gray-100 dark:bg-cyber-surface hover:bg-gray-200 dark:hover:bg-cyber-border rounded-xl transition-all"
+                            className="px-4 py-2.5 text-sm font-bold text-indigo-600 dark:text-cyber-accent bg-indigo-50 dark:bg-cyber-accent/10 hover:bg-indigo-100 dark:hover:bg-cyber-accent/20 rounded-xl transition-all"
                         >
                             Keep File
                         </button>

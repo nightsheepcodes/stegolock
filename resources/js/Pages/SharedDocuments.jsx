@@ -275,6 +275,21 @@ export default function SharedDocuments({ documents, pendingShares, pendingFolde
         }
     };
 
+    const handleKeepFile = async (docId) => {
+        const doc = localDocs.find(d => d.document_id === docId);
+        const filename = doc?.filename || 'File';
+        const toastId = toast.loading(`Keeping ${filename}...`);
+        try {
+            await axios.post('/documents/keep', { document_id: docId });
+            toast.success(`${filename} is kept.`, { id: toastId });
+            setShowKeepFileModal(null);
+            setShowDownloadReadyModal(false);
+            router.reload();
+        } catch (err) {
+            toast.error(`Failed to keep ${filename}.`, { id: toastId });
+        }
+    };
+
     const getFileColor = (type) => {
         switch (type) {
             case 'pdf': return 'text-red-500 bg-red-50 dark:bg-red-500/10 dark:text-red-400';
@@ -633,13 +648,13 @@ export default function SharedDocuments({ documents, pendingShares, pendingFolde
                                                             <button onClick={() => { setOpenRowMenuId(null); handleUnlock(group.document_id); }} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-cyber-border/30">
                                                                 <Unlock className="size-4" /> Unlock File
                                                             </button>
-                                                            <button onClick={() => { setOpenRowMenuId(null); toast.info("Rename coming soon"); }} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-cyber-border/30">
+                                                            <button onClick={() => { setOpenRowMenuId(null); toast.info("Rename coming soon"); }} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-cyber-border/30 cursor-not-allowed">
                                                                 <Pencil className="size-4" /> Rename
                                                             </button>
-                                                            <button onClick={() => { setOpenRowMenuId(null); toast.info("Move coming soon"); }} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-cyber-border/30">
+                                                            <button onClick={() => { setOpenRowMenuId(null); toast.info("Move coming soon"); }} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-cyber-border/30 cursor-not-allowed">
                                                                 <FolderInput className="size-4" /> Move File
                                                             </button>
-                                                            <button onClick={() => { setOpenRowMenuId(null); toast.info("Sharing coming soon"); }} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-cyber-border/30">
+                                                            <button onClick={() => { setOpenRowMenuId(null); toast.info("Sharing coming soon"); }} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-cyber-border/30 cursor-not-allowed">
                                                                 <Share2 className="size-4" /> Share File
                                                             </button>
                                                             <button onClick={() => { 
@@ -649,7 +664,7 @@ export default function SharedDocuments({ documents, pendingShares, pendingFolde
                                                             }} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-cyber-border/30">
                                                                 <Info className="size-4" /> File Info
                                                             </button>
-                                                            <button onClick={() => { setOpenRowMenuId(null); toast.info("Delete coming soon"); }} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 font-bold">
+                                                            <button onClick={() => { setOpenRowMenuId(null); toast.info("Delete coming soon"); }} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-400 dark:text-red-900/40 hover:bg-red-50 dark:hover:bg-red-900/10 cursor-not-allowed">
                                                                 <Trash2 className="size-4" /> Delete
                                                             </button>
                                                         </div>
@@ -670,12 +685,13 @@ export default function SharedDocuments({ documents, pendingShares, pendingFolde
                 onClose={() => setShowDownloadReadyModal(false)}
                 document={localDocs.find(d => d.document_id === selectedDocId)}
                 onDownload={handleDownloadAndProceed}
+                onCancel={() => handleKeepFile(selectedDocId)}
             />
 
             <FileRetrievedModal 
                 show={showKeepFileModal}
                 onClose={() => setShowKeepFileModal(null)}
-                onKeep={() => setShowKeepFileModal(null)}
+                onKeep={() => handleKeepFile(selectedDocId)}
                 onDelete={() => { setShowKeepFileModal(null); toast.info("Contact owner to request deletion"); }}
             />
 

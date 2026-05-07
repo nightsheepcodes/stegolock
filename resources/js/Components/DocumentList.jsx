@@ -20,10 +20,10 @@ export function DocumentList({
     menuRef
 }) {
     return (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-cyber-void rounded-2xl shadow-sm border border-gray-100 dark:border-cyber-border/30 overflow-hidden">
             <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
-                    <thead className="bg-gray-50 text-gray-500 font-bold uppercase tracking-widest text-[10px] border-b border-gray-100">
+                    <thead className="bg-gray-50 dark:bg-cyber-surface/50 text-gray-500 dark:text-slate-400 font-bold uppercase tracking-widest text-[10px] border-b border-gray-100 dark:border-cyber-border/30">
                         <tr>
                             <th className="px-6 py-4">Name</th>
                             <th className="px-6 py-4">Size</th>
@@ -32,7 +32,7 @@ export function DocumentList({
                             <th className="px-6 py-4 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-50">
+                    <tbody className="divide-y divide-gray-50 dark:divide-cyber-border/20">
                         {documents.map(doc => {
                             const Icon = getFileIcon(doc.file_type || '');
                             const colorClass = getFileColor(doc.file_type || '');
@@ -41,7 +41,7 @@ export function DocumentList({
                             return (
                                 <tr 
                                     key={doc.document_id} 
-                                    className={"transition-colors group " + (isProcessing ? "bg-indigo-50/50 cursor-wait" : "hover:bg-gray-50/50 cursor-pointer")}
+                                    className={"transition-colors group " + (isProcessing ? "bg-indigo-50/50 dark:bg-cyber-accent/5 cursor-wait" : "hover:bg-gray-50/50 dark:hover:bg-cyber-surface/50 cursor-pointer")}
                                     onClick={() => !isProcessing && onFileInfo(doc)}
                                 >
                                     <td className="px-6 py-4">
@@ -71,7 +71,7 @@ export function DocumentList({
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-gray-600 font-medium">
+                                    <td className="px-6 py-4 text-gray-600 dark:text-slate-400 font-medium">
                                         {formatBytes(doc.in_cloud_size || doc.original_size)}
                                     </td>
                                     <td className="px-6 py-4">
@@ -87,7 +87,7 @@ export function DocumentList({
                                             </div>
                                         )}
                                     </td>
-                                    <td className="px-6 py-4 text-gray-500 font-medium">
+                                    <td className="px-6 py-4 text-gray-500 dark:text-slate-500 font-medium">
                                         {formatDate(doc.created_at)}
                                     </td>
                                     <td className="px-6 py-4 text-right">
@@ -97,7 +97,7 @@ export function DocumentList({
                                                     e.stopPropagation();
                                                     onToggleStar(doc.document_id);
                                                 }}
-                                                className={`p-2 rounded-lg transition-colors ${doc.is_starred ? 'text-yellow-400 bg-yellow-50' : 'text-gray-400 hover:bg-gray-100'}`}
+                                                className={`p-2 rounded-lg transition-colors ${doc.is_starred ? 'text-yellow-400 bg-yellow-50 dark:bg-yellow-400/10 shadow-glow-yellow' : 'text-gray-400 dark:text-slate-600 hover:bg-gray-100 dark:hover:bg-cyber-border/50'}`}
                                             >
                                                 <Star className={`size-4 ${doc.is_starred ? 'fill-current' : ''}`} />
                                             </button>
@@ -108,7 +108,7 @@ export function DocumentList({
                                                         e.stopPropagation();
                                                         setOpenMenuId(openMenuId === doc.document_id ? null : doc.document_id);
                                                     }}
-                                                    className={`p-2 rounded-lg transition-colors ${openMenuId === doc.document_id ? 'bg-indigo-50 text-indigo-600' : 'text-gray-400 hover:bg-gray-100'}`}
+                                                    className={`p-2 rounded-lg transition-colors ${openMenuId === doc.document_id ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-slate-600 hover:bg-gray-100 dark:hover:bg-cyber-border/50'}`}
                                                 >
                                                     <MoreVertical className="size-4" />
                                                 </button>
@@ -116,22 +116,22 @@ export function DocumentList({
                                                     <div
                                                         ref={(node) => { menuRef.current = node; refs.setFloating(node); }}
                                                         style={{ position: strategy, top: y ?? 0, left: x ?? 0 }}
-                                                        className="w-48 bg-white border border-gray-100 rounded-xl shadow-xl z-[60] overflow-hidden py-1 text-left"
+                                                        className="w-48 bg-white dark:bg-cyber-surface border border-gray-100 dark:border-cyber-border/50 rounded-xl shadow-xl z-[60] overflow-hidden py-1 text-left"
                                                     >
-                                                        <button onClick={() => onUnlock(doc.document_id)} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 transition-colors">
-                                                            <Unlock className="size-4 text-gray-400" /> Unlock
+                                                        <button onClick={() => onUnlock(doc.document_id)} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors">
+                                                            <Unlock className="size-4 text-gray-400 dark:text-slate-500" /> Unlock
                                                         </button>
-                                                        <button onClick={() => onRename(doc)} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 transition-colors">
-                                                            <Pencil className="size-4 text-gray-400" /> Rename
+                                                        <button onClick={() => onRename(doc)} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors">
+                                                            <Pencil className="size-4 text-gray-400 dark:text-slate-500" /> Rename
                                                         </button>
-                                                        <button onClick={() => onMove(doc.document_id)} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 transition-colors">
-                                                            <FolderInput className="size-4 text-gray-400" /> Move
+                                                        <button onClick={() => onMove(doc.document_id)} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors">
+                                                            <FolderInput className="size-4 text-gray-400 dark:text-slate-500" /> Move
                                                         </button>
-                                                        <button onClick={() => onShare(doc)} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 transition-colors">
-                                                            <Info className="size-4 text-gray-400" /> Share
+                                                        <button onClick={() => onShare(doc)} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors">
+                                                            <Info className="size-4 text-gray-400 dark:text-slate-500" /> Share
                                                         </button>
-                                                        <div className="h-px bg-gray-100 my-1" />
-                                                        <button onClick={() => onDelete(doc.document_id)} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                                                        <div className="h-px bg-gray-100 dark:bg-cyber-border/30 my-1" />
+                                                        <button onClick={() => onDelete(doc.document_id)} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors font-bold">
                                                             <Trash2 className="size-4" /> Delete
                                                         </button>
                                                     </div>

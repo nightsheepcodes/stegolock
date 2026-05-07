@@ -222,56 +222,56 @@ export default function DocumentCard({
                         top: y ?? 0,
                         left: x ?? 0
                     }}
-                    className="w-48 bg-white border rounded-xl shadow-lg z-50 overflow-hidden py-1"
+                    className="w-48 bg-white dark:bg-cyber-surface border border-slate-200 dark:border-cyber-border rounded-xl shadow-xl z-50 overflow-hidden py-1"
                     onClick={(e) => e.stopPropagation()}
                 >
                     <button
                         onClick={() => { onUnlock(doc.document_id); setOpenMenu(false); }}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-50 text-left">
-                        <Unlock className="w-4 h-4 text-gray-600" />
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-cyber-border/30 text-slate-700 dark:text-slate-300 text-left transition-colors">
+                        <Unlock className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                         Unlock File
                     </button>
-
-                    <div className="border-t" />
+                    
+                    <div className="border-t border-slate-100 dark:border-cyber-border/30" />
 
                     <button
                         onClick={() => { onRename(doc); setOpenMenu(false); }}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-50 text-left">
-                        <Pencil className="w-4 h-4 text-gray-600" />
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-cyber-border/30 text-slate-700 dark:text-slate-300 text-left transition-colors">
+                        <Pencil className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                         Rename
                     </button>
 
                     <button
                         onClick={() => { onMove(doc.document_id); setOpenMenu(false); }}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-50 text-left">
-                        <FolderInput className="w-4 h-4 text-gray-600" />
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-cyber-border/30 text-slate-700 dark:text-slate-300 text-left transition-colors">
+                        <FolderInput className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                         Move File
                     </button>
 
-                    <div className="border-t" />
+                    <div className="border-t border-slate-100 dark:border-cyber-border/30" />
 
                     {doc.is_owner && (
                         <button 
                             onClick={() => { onShare(doc); setOpenMenu(false); }}
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-50 text-left">
-                            <Share2 className="w-4 h-4 text-gray-600" />
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-cyber-border/30 text-slate-700 dark:text-slate-300 text-left transition-colors">
+                            <Share2 className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                             Share File
                         </button>
                     )}
 
                     <button
                         onClick={() => { onFileInfo(doc); setOpenMenu(false); }}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-50 text-left">
-                        <Info className="w-4 h-4 text-gray-600" />
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-cyber-border/30 text-slate-700 dark:text-slate-300 text-left transition-colors">
+                        <Info className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                         File Info
                     </button>
 
-                    <div className="border-t" />
+                    <div className="border-t border-slate-100 dark:border-cyber-border/30" />
 
                     <button
                         onClick={() => { onDelete(doc.document_id); setOpenMenu(false); }}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-red-50 text-red-600 text-left">
-                        <Trash2 className="w-4 h-4 text-red-500" />
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 text-left transition-colors font-bold">
+                        <Trash2 className="w-4 h-4" />
                         Delete
                     </button>
                 </div>

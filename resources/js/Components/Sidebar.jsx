@@ -98,7 +98,7 @@ export default function Sidebar({
             {/* HEADER */}
             <div className="w-full px-6">
                 <div className="flex items-center justify-between my-4">
-                    <Link href="/myDocuments" className="group">
+                    <Link href="/" className="group">
                         <div className="flex items-center space-x-3 my-3">
                             <div className="relative inline-flex items-center justify-center p-2.5 bg-gradient-to-br from-cyber-accent via-indigo-500 to-purple-600 rounded-xl shadow-lg shadow-cyan-500/40 dark:shadow-[0_0_20px_rgba(34,211,238,0.6)] group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                                 <Shield className="size-6 text-white drop-shadow-md relative z-10" />

@@ -500,6 +500,11 @@ export default function MyDocuments({ documents, folders, currentFolder, breadcr
                 onClose={() => setShowDownloadReadyModal(false)}
                 document={Array.isArray(localDocs) ? localDocs.find(d => d.document_id === selectedDocId) : undefined}
                 onDownload={handleDownloadAndProceed}
+                onCancel={() => {
+                    const doc = Array.isArray(localDocs) ? localDocs.find(d => d.document_id === selectedDocId) : null;
+                    keepFile(selectedDocId, doc?.filename);
+                    setShowDownloadReadyModal(false);
+                }}
             />
 
             <RenameFileModal 

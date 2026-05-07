@@ -14,8 +14,10 @@ import { ViewToggle } from '@/Components/ViewToggle';
 import { DocumentList } from '@/Components/DocumentList';
 import DocumentCard from '@/Components/DocumentCard';
 import { ShareFileModal } from '@/Components/modals/ShareFileModal';
+import { MoveFileModal } from '@/Components/modals/MoveFileModal';
 import { FileInfoModal } from '@/Components/modals/FileInfoModal';
 import { DownloadReadyModal } from '@/Components/modals/DownloadReadyModal';
+import FileRetrievedModal from '@/Components/modals/FileRetrievedModal';
 import { useDocumentStatusPolling } from '@/hooks/useDocumentStatusPolling';
 import { useDocumentActions } from '@/hooks/useDocumentActions';
 import {
@@ -35,9 +37,11 @@ export default function StarredDocuments({ documents, totalStorage, storageLimit
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedDocId, setSelectedDocId] = useState(null);
     const [showShareModal, setShowShareModal] = useState(false);
+    const [showMoveModal, setShowMoveModal] = useState(false);
     const [showInfoModal, setShowInfoModal] = useState(false);
     const [selectedDoc, setSelectedDoc] = useState(null);
     const [showDownloadReadyModal, setShowDownloadReadyModal] = useState(false);
+    const [showKeepFileModal, setShowKeepFileModal] = useState(null);
     const { 
         localDocs, 
         setLocalDocs, 
@@ -45,6 +49,7 @@ export default function StarredDocuments({ documents, totalStorage, storageLimit
         updateUnlockingProgress 
     } = useDocumentStatusPolling(documents, (doc) => {
         setSelectedDoc(doc);
+        setSelectedDocId(doc.document_id);
         setShowDownloadReadyModal(true);
     });
 
@@ -63,10 +68,10 @@ export default function StarredDocuments({ documents, totalStorage, storageLimit
         setSelectedDocForShare: () => {}, // Not used in Starred currently
         setSelectedDocForInfo: setSelectedDoc,
         setShowDeleteModal,
-        setShowMoveModal: () => {}, 
+        setShowMoveModal: (id) => { setSelectedDocId(id); setShowMoveModal(true); }, 
         setShowShareModal,
         setShowInfoModal,
-        setShowKeepFileModal: () => {} 
+        setShowKeepFileModal 
     });
 
     // Custom toggle star for Starred view (removes if unstarred)
@@ -95,6 +100,7 @@ export default function StarredDocuments({ documents, totalStorage, storageLimit
     const handleDownloadAndProceed = (docId) => {
         window.location.href = `/documents/download/${docId}`;
         setShowDownloadReadyModal(false);
+        setShowKeepFileModal(docId);
     };
 
     const [viewMode, setViewMode] = useState(() => {
@@ -304,6 +310,12 @@ export default function StarredDocuments({ documents, totalStorage, storageLimit
                 />
             )}
 
+            <MoveFileModal 
+                show={showMoveModal}
+                onClose={() => setShowMoveModal(false)}
+                onMove={handleMove}
+            />
+
             {showInfoModal && (
                 <FileInfoModal
                     show={showInfoModal}
@@ -324,6 +336,13 @@ export default function StarredDocuments({ documents, totalStorage, storageLimit
                     }}
                 />
             )}
+
+            <FileRetrievedModal 
+                show={showKeepFileModal}
+                onClose={() => setShowKeepFileModal(null)}
+                onKeep={() => keepFile(selectedDocId || selectedDoc?.document_id, selectedDoc?.filename)}
+                onDelete={() => { setShowDeleteModal(true); setShowKeepFileModal(null); }}
+            />
         </AuthenticatedLayout>
     );
 }
