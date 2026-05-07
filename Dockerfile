@@ -60,5 +60,5 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 # If PORT is not set, default to 80
 RUN sed -i 's/80/${PORT}/g' /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf
 
-# Start two queue workers in the background and then run Apache
-CMD ["/bin/bash", "-c", "rm -f /etc/apache2/mods-enabled/mpm_event.load /etc/apache2/mods-enabled/mpm_event.conf && rm -f /etc/apache2/mods-enabled/mpm_worker.load /etc/apache2/mods-enabled/mpm_worker.conf && a2enmod mpm_prefork && (php artisan queue:work --tries=3 &) && (php artisan queue:work --tries=3 &) && apache2-foreground"]
+# Start two queue workers in the background as www-data and then run Apache
+CMD ["/bin/bash", "-c", "rm -f /etc/apache2/mods-enabled/mpm_event.load /etc/apache2/mods-enabled/mpm_event.conf && rm -f /etc/apache2/mods-enabled/mpm_worker.load /etc/apache2/mods-enabled/mpm_worker.conf && a2enmod mpm_prefork && (su -s /bin/bash -c 'php artisan queue:work --tries=3' www-data &) && (su -s /bin/bash -c 'php artisan queue:work --tries=3' www-data &) && apache2-foreground"]
