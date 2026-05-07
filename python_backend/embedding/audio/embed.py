@@ -30,7 +30,13 @@ def embed_wav(input_wav, output_wav, payload_file):
 
     # Perform LSB replacement using vectorized operations
     # Zero out the LSB and OR it with the payload bits
-    audio_flat[:num_bits] = (audio_flat[:num_bits] & ~1) | payload_bits
+    # Use -2 for signed integers (NumPy handles this better than ~1 in some contexts)
+    # or better yet, bitwise_and with a mask that matches the dtype
+    if audio_flat.dtype == np.uint8:
+        audio_flat[:num_bits] = (audio_flat[:num_bits] & 0xFE) | payload_bits
+    else:
+        # For signed int16, bitwise_and with -2 is correct and safe in NumPy
+        audio_flat[:num_bits] = (audio_flat[:num_bits] & ~1) | payload_bits
 
     # Reshape back to original shape
     audio_embedded = audio_flat.reshape(original_shape)

@@ -29,8 +29,9 @@ def embed(input_text_file, output_text_file, data_file):
 
     # Perform LSB replacement using vectorized operations
     # Zero out the LSB and OR it with the payload bits
+    # Use 0xFE for uint8 (cover_bytes is uint8)
     cover_bytes[offset : offset + payload_len] = (
-        cover_bytes[offset : offset + payload_len] & ~1
+        cover_bytes[offset : offset + payload_len] & 0xFE
     ) | payload_bits
 
     with open(output_text_file, 'wb') as f:
