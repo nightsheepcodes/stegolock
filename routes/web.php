@@ -63,6 +63,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/documents/delete', [DocumentController::class, 'delete'])
         ->name('documents.delete');
 
+    Route::post('/documents/check-existence', [DocumentController::class, 'checkExistence']);
     Route::get('/documents/status/{id}', [DocumentController::class, 'getStatus']);
 
     Route::get('/documents/download/{id}', [DocumentController::class, 'download']);

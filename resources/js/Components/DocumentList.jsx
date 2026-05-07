@@ -1,4 +1,4 @@
-import { MoreVertical, Shield, Loader2, Star, Unlock, FolderInput, Info, Trash2, Pencil, FileText } from 'lucide-react';
+import { MoreVertical, Shield, Loader2, Star, Unlock, FolderInput, Info, Trash2, Pencil, FileText, Users } from 'lucide-react';
 import { formatBytes, formatDate, getFileColor, getFileIcon } from '@/Utils/fileUtils';
 
 export function DocumentList({ 

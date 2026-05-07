@@ -388,6 +388,35 @@ class DocumentController extends Controller
     }
 
     /**
+     * Checks if a document already exists for the user
+     */
+    public function checkExistence(Request $request)
+    {
+        $filename = $request->filename;
+        $folderId = $request->folder_id;
+
+        $match = Document::with('folder')
+            ->where('user_id', Auth::id())
+            ->where('filename', $filename)
+            ->where(function ($query) use ($folderId) {
+                if ($folderId) {
+                    $query->where('folder_id', $folderId);
+                } else {
+                    $query->whereNull('folder_id');
+                }
+            })
+            ->first();
+
+        return response()->json([
+            'exists' => (bool)$match,
+            'match' => $match ? [
+                'filename' => $match->filename,
+                'folder' => $match->folder ? $match->folder->name : 'Root'
+            ] : null
+        ]);
+    }
+
+    /**
      * Uploads the document
      */
     public function upload(Request $request)
@@ -432,9 +461,18 @@ class DocumentController extends Controller
             }
 
         } catch (QueryException $e) {
+            // Log the actual error for debugging
+            \Illuminate\Support\Facades\Log::error('Upload failed: ' . $e->getMessage());
+
+            // Check if it's actually a duplicate key error (SQLSTATE 23000)
+            if ($e->getCode() == '23000') {
+                return response()->json([
+                    'errors' => ['file' => ['A file with identical content or name already exists in your vault.']]
+                ], 422);
+            }
 
             return response()->json([
-                'errors' => ['file' => ['You already uploaded this document']]
+                'errors' => ['file' => ['Database error: ' . $e->getMessage()]]
             ], 422);
         }
 

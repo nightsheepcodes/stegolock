@@ -12,8 +12,11 @@ export default function UploadModal({ isOpen, onClose, allowUpload, uploaded, fo
     const [documentId, setDocumentId] = useState(null);
     const [toastId, setToastId] = useState(null);
     const [status, setStatus] = useState(null);
+    const [duplicateMatch, setDuplicateMatch] = useState(null);
 
     const [locked, setLocked] = useState(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const dragCounter = useRef(0);
 
     const allowedTypes = [
         'application/pdf',
@@ -21,6 +24,8 @@ export default function UploadModal({ isOpen, onClose, allowUpload, uploaded, fo
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'text/plain',
     ];
+
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
 
     const form = useForm({
         file: null,
@@ -30,14 +35,71 @@ export default function UploadModal({ isOpen, onClose, allowUpload, uploaded, fo
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
+        processFile(file);
+    };
+
+    const handleDragEnter = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounter.current++;
+        if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+            setIsDragging(true);
+        }
+    };
+
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.dataTransfer.dropEffect = 'copy';
+        if (!isDragging) setIsDragging(true);
+    };
+
+    const handleDragLeave = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounter.current--;
+        if (dragCounter.current === 0) {
+            setIsDragging(false);
+        }
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+        dragCounter.current = 0;
+        
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            const file = e.dataTransfer.files[0];
+            processFile(file);
+            e.dataTransfer.clearData();
+        }
+    };
+
+    const processFile = (file) => {
         if (!file) return;
 
         // reset previous error
         setFileError(null);
 
-        // validate type
-        if (!allowedTypes.includes(file.type)) {
+        // validate type (MIME + Extension fallback)
+        const fileExtension = file.name.split('.').pop().toLowerCase();
+        const allowedExtensions = ['pdf', 'doc', 'docx', 'txt'];
+        
+        const isAllowedType = allowedTypes.includes(file.type);
+        const isAllowedExtension = allowedExtensions.includes(fileExtension);
+
+        if (!isAllowedType && !isAllowedExtension) {
             setFileError('Invalid file type. Only PDF, DOC, DOCX, and TXT are allowed.');
+            form.setData('file', null);
+            setConfirmStep(false);
+            setFilePreview(null);
+            return;
+        }
+
+        // validate size
+        if (file.size > MAX_FILE_SIZE) {
+            setFileError('File is too large. Maximum size allowed is 5MB.');
             form.setData('file', null);
             setConfirmStep(false);
             setFilePreview(null);
@@ -53,6 +115,19 @@ export default function UploadModal({ isOpen, onClose, allowUpload, uploaded, fo
         });
 
         setConfirmStep(true);
+
+        // Check for duplicate existence (non-blocking warning)
+        try {
+            const res = await axios.post('/documents/check-existence', {
+                filename: file.name,
+                folder_id: folderId
+            });
+            if (res.data.exists) {
+                setDuplicateMatch(res.data.match);
+            }
+        } catch (err) {
+            console.error('Existence check failed:', err);
+        }
     };
 
     const handleBeforeUnload = (e) => {
@@ -65,6 +140,7 @@ export default function UploadModal({ isOpen, onClose, allowUpload, uploaded, fo
         setFilePreview(null);
         setConfirmStep(false);
         setFileError(null);
+        setDuplicateMatch(null);
     };
 
     const handleUpload = async () => {
@@ -79,6 +155,7 @@ export default function UploadModal({ isOpen, onClose, allowUpload, uploaded, fo
 
         const toastId = toast.loading('Locking file...', { duration: 3000 });
         setToastId(toastId);
+        
         try {
             const formData = new FormData();
             formData.append('file', file);
@@ -98,32 +175,33 @@ export default function UploadModal({ isOpen, onClose, allowUpload, uploaded, fo
 
             // Lock
             setDocumentId(res.data['document_id']);
-            try {
-                // Dispatch Lock request
-                const resp = await axios.post('/documents/lock', {
-                    document_id: res.data['document_id'],
-                    temp_path: res.data['temp_path']
-                });
+            
+            // Dispatch Lock request
+            const resp = await axios.post('/documents/lock', {
+                document_id: res.data['document_id'],
+                temp_path: res.data['temp_path']
+            });
 
-                if (resp.data.status === 'processing') {
-                    toast.dismiss(toastId);
-                }
-                
-            } finally {
-                // disable warning after request finishes
-                window.removeEventListener('beforeunload', handleBeforeUnload);
-                allowUpload();
-                
-                // Small delay to ensure state propagates before reload
-                setTimeout(() => {
-                    router.reload();
-                }, 100);
+            if (resp.data.status === 'processing') {
+                toast.dismiss(toastId);
             }
+            
+            // disable warning after request finishes
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+            
+            // Small delay to ensure state propagates before reload
+            setTimeout(() => {
+                router.reload();
+            }, 100);
 
         } catch (err) {
             console.log('Error: ', err);
             const errorMessage = err.response?.data?.errors?.file?.[0] || 'Failed to process document. Please try again.';
             toast.error(errorMessage, { id: toastId });
+        } finally {
+            // ALWAYS allow upload again after process finishes (success or error)
+            allowUpload();
+            window.removeEventListener('beforeunload', handleBeforeUnload);
         }
     };
 
@@ -177,7 +255,13 @@ export default function UploadModal({ isOpen, onClose, allowUpload, uploaded, fo
                     {/* STEP 1: FILE INPUT */}
                     {/* ===================== */}
                     {!confirmStep && (
-                        <label className="block cursor-pointer group">
+                        <label 
+                            className="block cursor-pointer group"
+                            onDragEnter={handleDragEnter}
+                            onDragOver={handleDragOver}
+                            onDragLeave={handleDragLeave}
+                            onDrop={handleDrop}
+                        >
                             <input
                                 type="file"
                                 className="hidden"
@@ -185,7 +269,11 @@ export default function UploadModal({ isOpen, onClose, allowUpload, uploaded, fo
                                 onChange={handleFileChange}
                             />
 
-                            <div className="border-2 border-dashed border-slate-200 dark:border-cyber-border rounded-[2rem] p-12 text-center hover:border-cyan-500 dark:hover:border-cyber-accent hover:bg-cyan-50/50 dark:hover:bg-cyber-accent/5 transition-all group duration-300">
+                            <div className={`border-2 border-dashed rounded-[2rem] p-12 text-center transition-all group duration-300 pointer-events-none ${
+                                isDragging 
+                                ? 'border-cyan-500 bg-cyan-50/50 dark:border-cyber-accent dark:bg-cyber-accent/10 scale-[1.02] shadow-lg shadow-cyan-500/20' 
+                                : 'border-slate-200 dark:border-cyber-border hover:border-cyan-500 dark:hover:border-cyber-accent hover:bg-cyan-50/50 dark:hover:bg-cyber-accent/5'
+                            }`}>
                                 <div className="flex justify-center mb-6">
                                     <div className="bg-slate-50 dark:bg-cyber-surface p-6 rounded-3xl shadow-sm group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 border border-slate-100 dark:border-cyber-border">
                                         <FileText className="size-12 text-slate-400 dark:text-slate-500 group-hover:text-cyan-500 dark:group-hover:text-cyber-accent transition-colors" />
@@ -193,14 +281,16 @@ export default function UploadModal({ isOpen, onClose, allowUpload, uploaded, fo
                                 </div>
 
                                 <p className="text-slate-900 dark:text-white font-black text-xl mb-2">
-                                    Drop file here
+                                    {isDragging ? 'Drop it now!' : 'Drop file here'}
                                 </p>
                                 <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-8">
-                                    or <span className="text-cyan-600 dark:text-cyber-accent underline underline-offset-4">browse your device</span>
+                                    {isDragging ? 'Release to secure' : <>or <span className="text-cyan-600 dark:text-cyber-accent underline underline-offset-4">browse your device</span></>}
                                 </p>
 
-                                <div className="inline-flex items-center gap-2 px-6 py-3 bg-white dark:bg-cyber-surface border border-slate-200 dark:border-cyber-border rounded-2xl text-xs font-black uppercase tracking-widest text-slate-700 dark:text-slate-300 shadow-sm group-hover:shadow-lg transition-all">
-                                    Supported: PDF, DOC, TXT
+                                <div className="inline-flex items-center gap-2 px-6 py-3 bg-white dark:bg-cyber-surface border border-slate-200 dark:border-cyber-border rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-700 dark:text-slate-300 shadow-sm group-hover:shadow-lg transition-all">
+                                    <span className="text-cyan-600 dark:text-cyber-accent">Supported:</span> PDF, DOC, TXT
+                                    <span className="mx-1 text-slate-300">|</span>
+                                    <span className="text-cyan-600 dark:text-cyber-accent">Max:</span> 5MB
                                 </div>
                             </div>
 
@@ -241,6 +331,20 @@ export default function UploadModal({ isOpen, onClose, allowUpload, uploaded, fo
                                     </p>
                                 </div>
                             </div>
+
+                            {duplicateMatch && (
+                                <div className="p-4 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20 rounded-2xl text-sm font-bold flex flex-col gap-1">
+                                    <div className="flex items-center gap-3">
+                                        <ShieldAlert className="size-5 text-amber-600 dark:text-amber-500 shrink-0" />
+                                        <span className="text-amber-800 dark:text-amber-400">
+                                            "{duplicateMatch.filename}" already exists in <span className="underline">{duplicateMatch.folder}</span>.
+                                        </span>
+                                    </div>
+                                    <p className="text-[10px] text-amber-600/70 ml-8 font-medium uppercase tracking-wider">
+                                        Duplicate content or filenames may cause errors.
+                                    </p>
+                                </div>
+                            )}
 
                             {fileError && (
                                 <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 text-red-600 dark:text-red-400 rounded-2xl text-sm font-bold flex items-center gap-3">
