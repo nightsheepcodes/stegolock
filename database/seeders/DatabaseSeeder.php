@@ -24,5 +24,8 @@ class DatabaseSeeder extends Seeder
 
         // Seed Wiki Feeds
         $this->call(WikiFeedsSeeder::class);
+
+        // Seed Survey Questions
+        $this->call(SurveySeeder::class);
     }
 }

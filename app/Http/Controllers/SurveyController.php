@@ -3,17 +3,29 @@
 namespace App\Http\Controllers;
 
 use App\Models\SurveyResponse;
+use App\Models\SurveyQuestion;
+use App\Models\SurveyAnswer;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
 
 class SurveyController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
     /**
      * Display the survey form.
      */
     public function index()
     {
-        return Inertia::render('Survey');
+        $questions = SurveyQuestion::orderBy('order')->get()->groupBy('category');
+        
+        return Inertia::render('Survey', [
+            'questions' => $questions
+        ]);
     }
 
     /**
@@ -21,21 +33,34 @@ class SurveyController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'experience_rating' => 'nullable|integer|min:1|max:5',
-            'ease_of_use_rating' => 'nullable|integer|min:1|max:5',
-            'security_confidence_rating' => 'nullable|integer|min:1|max:5',
-            'features_used' => 'nullable|string',
-            'improvements_suggested' => 'nullable|string',
+        $questions = SurveyQuestion::all();
+        
+        // Build validation rules for all question codes
+        $rules = [
             'additional_comments' => 'nullable|string',
-            'would_recommend' => 'nullable|boolean',
-        ]);
+        ];
+        
+        foreach ($questions as $question) {
+            $rules[strtolower($question->code)] = 'required|integer|min:1|max:5';
+        }
 
-        // Add authenticated user's info
-        $validated['name'] = $request->user()->name;
-        $validated['email'] = $request->user()->email;
+        $validated = $request->validate($rules);
 
-        SurveyResponse::create($validated);
+        DB::transaction(function () use ($request, $questions, $validated) {
+            $response = SurveyResponse::create([
+                'user_id' => $request->user()->id,
+                'additional_comments' => $validated['additional_comments'] ?? null,
+            ]);
+
+            foreach ($questions as $question) {
+                $field = strtolower($question->code);
+                SurveyAnswer::create([
+                    'survey_response_id' => $response->id,
+                    'survey_question_id' => $question->id,
+                    'rating' => $validated[$field],
+                ]);
+            }
+        });
 
         return redirect()->back()->with('success', 'Thank you for your feedback!');
     }
