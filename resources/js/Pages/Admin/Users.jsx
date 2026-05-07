@@ -5,7 +5,7 @@ import {
     MoreVertical, Pencil, Trash2, Mail, Calendar, 
     HardDrive, CheckCircle2, XCircle, Filter
 } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import CreateUserModal from '@/Components/Admin/CreateUserModal';
 import UserActivityModal from '@/Components/Admin/UserActivityModal';
 import Dropdown from '@/Components/Dropdown';

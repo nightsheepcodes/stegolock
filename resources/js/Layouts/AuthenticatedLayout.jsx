@@ -3,7 +3,7 @@ import { Toaster } from 'sonner';
 
 import Dropdown from '@/Components/Dropdown';
 
-import { Sidebar } from "@/Components/Sidebar";
+import Sidebar from "@/Components/Sidebar";
 
 import { Link, usePage, router } from '@inertiajs/react';
 import React, { useState, useEffect } from 'react';

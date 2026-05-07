@@ -36,7 +36,7 @@ const MenuButton = ({ icon: Icon, label, onClick, className = ""}) => (
     </button>
 );
 
-export function Sidebar({
+export default function Sidebar({
   folders,
   selectedFolder,
   onSelectFolder,
