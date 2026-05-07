@@ -68,9 +68,9 @@ export default function Users({ users = [] }) {
 
         // 3. Storage Filter
         if (storageFilter === 'near-limit') {
-            result = result.filter(user => (user.storage_used / user.storage_limit) >= 0.9);
+            result = result.filter(user => user.storage_limit > 0 && (user.storage_used / user.storage_limit) > 0.9);
         } else if (storageFilter === 'high-usage') {
-            result = result.filter(user => (user.storage_used / user.storage_limit) >= 0.5);
+            result = result.filter(user => user.storage_limit > 0 && (user.storage_used / user.storage_limit) > 0.5);
         }
 
         // 4. Sorting
@@ -87,7 +87,7 @@ export default function Users({ users = [] }) {
         });
 
         return result;
-    }, [users, search, roleFilter, storageFilter, sortBy]);
+    }, [users, search, roleGroup, roleFilter, storageFilter, sortBy]);
 
     const formatBytes = (bytes, decimals = 2) => {
         if (!+bytes) return '0 Bytes';
@@ -256,8 +256,8 @@ export default function Users({ users = [] }) {
                                 className="bg-transparent border-none text-xs font-bold text-slate-700 dark:text-slate-300 focus:ring-0 cursor-pointer w-full p-0"
                             >
                                 <option value="all">Any Storage</option>
-                                <option value="near-limit">Near Limit (>90%)</option>
-                                <option value="high-usage">High Usage (>50%)</option>
+                                <option value="near-limit">Near Limit (&gt;90%)</option>
+                                <option value="high-usage">High Usage (&gt;50%)</option>
                             </select>
                         </div>
 
@@ -476,15 +476,12 @@ export default function Users({ users = [] }) {
                             }, {
                                 onSuccess: () => {
                                     setShowCreateModal(false);
-                                },
-                                onError: (errors) => {
-                                    console.error('Failed to create user:', errors);
-                                    // Keep modal open to show errors
                                 }
                             });
                         }
                     }}
                     editUser={editingUser}
+                    errors={usePage().props.errors}
                 />
 
                 <UserActivityModal 

@@ -31,6 +31,12 @@ export default function UploadModal({ isOpen, onClose, allowUpload, uploaded, fo
         file: null,
     });
 
+    useEffect(() => {
+        if (!isOpen) {
+            resetAll();
+        }
+    }, [isOpen]);
+
     if (!isOpen) return null;
 
     const handleFileChange = (e) => {
@@ -76,7 +82,7 @@ export default function UploadModal({ isOpen, onClose, allowUpload, uploaded, fo
         }
     };
 
-    const processFile = (file) => {
+    const processFile = async (file) => {
         if (!file) return;
 
         // reset previous error
@@ -141,6 +147,8 @@ export default function UploadModal({ isOpen, onClose, allowUpload, uploaded, fo
         setConfirmStep(false);
         setFileError(null);
         setDuplicateMatch(null);
+        setDocumentId(null);
+        setStatus(null);
     };
 
     const handleUpload = async () => {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 
-export default function CreateUserModal({ isOpen, onClose, onSubmit, editUser }) {
+export default function CreateUserModal({ isOpen, onClose, onSubmit, editUser, errors = {} }) {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -39,7 +39,6 @@ export default function CreateUserModal({ isOpen, onClose, onSubmit, editUser })
             status,
             userId: editUser?.id 
         });
-        onClose();
     };
 
     return (
@@ -69,6 +68,7 @@ export default function CreateUserModal({ isOpen, onClose, onSubmit, editUser })
                                 className="w-full rounded-xl border border-slate-800 bg-slate-800/50 py-2.5 pl-10 pr-4 text-sm text-white focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/50 focus:outline-none"
                             />
                         </div>
+                        {errors.name && <p className="mt-1 text-xs font-bold text-red-500">{errors.name}</p>}
                     </div>
 
                     <div>
@@ -84,6 +84,7 @@ export default function CreateUserModal({ isOpen, onClose, onSubmit, editUser })
                                 className="w-full rounded-xl border border-slate-800 bg-slate-800/50 py-2.5 pl-10 pr-4 text-sm text-white focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/50 focus:outline-none"
                             />
                         </div>
+                        {errors.email && <p className="mt-1 text-xs font-bold text-red-500">{errors.email}</p>}
                     </div>
 
                     <div>
@@ -106,6 +107,7 @@ export default function CreateUserModal({ isOpen, onClose, onSubmit, editUser })
                                 {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                             </button>
                         </div>
+                        {errors.password && <p className="mt-1 text-xs font-bold text-red-500">{errors.password}</p>}
                     </div>
 
                     <div>

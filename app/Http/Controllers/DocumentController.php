@@ -410,6 +410,7 @@ class DocumentController extends Controller
         return response()->json([
             'exists' => (bool)$match,
             'match' => $match ? [
+                'id' => $match->document_id,
                 'filename' => $match->filename,
                 'folder' => $match->folder ? $match->folder->name : 'Root'
             ] : null
