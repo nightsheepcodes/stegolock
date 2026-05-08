@@ -21,6 +21,9 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 # Install PHP extensions
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
+# Configure PHP settings for large file uploads
+RUN echo "upload_max_filesize = 50M\npost_max_size = 50M\nmemory_limit = 512M\nmax_execution_time = 300" > /usr/local/etc/php/conf.d/uploads.ini
+
 # Enable Apache mod_rewrite and forcefully ensure only mpm_prefork is active
 RUN a2enmod rewrite \
     && rm -f /etc/apache2/mods-enabled/mpm_event.load /etc/apache2/mods-enabled/mpm_event.conf \
