@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { usePage } from '@inertiajs/react';
 import { X, History, FileText, User, Clock, CheckCircle2, Share2, Unlock, Trash2, ShieldCheck, Loader2, AlertCircle, Lock, Zap, Search, Activity, Gauge } from 'lucide-react';
 import { formatDate, formatBytes } from '@/Utils/fileUtils';
 import axios from 'axios';
@@ -11,6 +12,8 @@ export function FileInfoModal({ document: doc, onClose }) {
   const [isVerifying, setIsVerifying] = useState(false);
   const [verifyResult, setVerifyResult] = useState(null);
 
+  const { auth } = usePage().props;
+  const isOwner = auth.user.id === doc.user_id;
   const isShared = doc.shares_count > 0 || doc.is_shared;
 
   useEffect(() => {
@@ -158,25 +161,27 @@ export function FileInfoModal({ document: doc, onClose }) {
                     Activity
                 </div>
               </button>
-              <button
-                onClick={() => setActiveTab('performance')}
-                className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${
-                  activeTab === 'performance' 
-                    ? 'bg-white text-indigo-600 dark:bg-cyber-accent dark:text-white shadow-lg' 
-                    : 'text-indigo-100 dark:text-slate-400 hover:bg-white/10 dark:hover:bg-cyber-accent/10'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                    <Gauge className="size-3" />
-                    Performance
-                </div>
-              </button>
+              {isOwner && (
+                <button
+                  onClick={() => setActiveTab('performance')}
+                  className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${
+                    activeTab === 'performance' 
+                      ? 'bg-white text-indigo-600 dark:bg-cyber-accent dark:text-white shadow-lg' 
+                      : 'text-indigo-100 dark:text-slate-400 hover:bg-white/10 dark:hover:bg-cyber-accent/10'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                      <Gauge className="size-3" />
+                      Performance
+                  </div>
+                </button>
+              )}
           </div>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar min-h-[400px]">
-            {activeTab === 'activity' ? (
+            {activeTab === 'activity' || !isOwner ? (
                 <>
                     {/* File Stats Summary */}
                     <div className="grid grid-cols-2 gap-4">

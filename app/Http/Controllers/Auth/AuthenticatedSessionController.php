@@ -115,6 +115,11 @@ class AuthenticatedSessionController extends Controller
             session()->forget('master_key_token');
         }
 
+        $user = Auth::user();
+        if ($user) {
+            $user->update(['last_logout_at' => now()]);
+        }
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

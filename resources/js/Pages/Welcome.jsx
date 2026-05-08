@@ -95,16 +95,18 @@ export default function Welcome({ auth, laravelVersion, phpVersion, hasCompleted
                         </div>
 
                         {/* Mobile Action Controls */}
-                        <div className="flex md:hidden items-center gap-2">
+                        <div className="relative z-50 flex md:hidden items-center gap-2">
                             <button 
                                 onClick={() => setDarkMode(!darkMode)}
                                 className="p-2.5 text-slate-400 hover:text-cyber-accent transition-colors"
+                                aria-label="Toggle Dark Mode"
                             >
                                 {darkMode ? <Moon className="size-6" /> : <Sun className="size-6" />}
                             </button>
                             <button
                                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                                 className="p-2.5 text-slate-500 dark:text-slate-400 hover:text-cyber-accent transition-colors"
+                                aria-label="Toggle Menu"
                             >
                                 {isMobileMenuOpen ? <X className="size-6" /> : <Menu className="size-6" />}
                             </button>
@@ -113,7 +115,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion, hasCompleted
                 </div>
 
                 {/* Mobile Menu Overlay */}
-                <div className={`fixed inset-0 z-[60] md:hidden transition-all duration-500 ease-in-out ${isMobileMenuOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}`}>
+                <div className={`fixed inset-0 z-[60] md:hidden transition-all duration-500 ease-in-out ${isMobileMenuOpen ? 'translate-x-0 opacity-100 pointer-events-auto' : 'translate-x-full opacity-0 pointer-events-none'}`}>
                     {/* Glass Backdrop */}
                     <div className="absolute inset-0 bg-white/95 dark:bg-cyber-void/95 backdrop-blur-2xl" />
                     
@@ -138,6 +140,20 @@ export default function Welcome({ auth, laravelVersion, phpVersion, hasCompleted
                         </div>
                         
                         <div className="flex-1 space-y-2">
+                            <a
+                                href="#how-it-works"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="w-full flex items-center justify-between p-6 rounded-2xl bg-slate-50 dark:bg-cyber-surface/30 border border-slate-100 dark:border-cyber-border/30 group active:scale-[0.98] transition-all"
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 rounded-xl bg-white dark:bg-cyber-void text-cyber-accent shadow-sm">
+                                        <Layers className="size-5" />
+                                    </div>
+                                    <span className="text-lg font-bold text-slate-900 dark:text-white">How it Works</span>
+                                </div>
+                                <ArrowRight className="size-5 text-slate-400 group-hover:text-cyber-accent transition-colors" />
+                            </a>
+
                             {!hasCompletedSurvey && (
                                 <button
                                     onClick={() => {

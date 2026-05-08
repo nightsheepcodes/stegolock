@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react';
-import { PlayCircle, Shield, Lock, CheckCircle2, ChevronRight, X, Unlock, Share2, Trash2, LogOut } from 'lucide-react';
-import { router } from '@inertiajs/react';
+import { PlayCircle, Shield, Lock, CheckCircle2, ChevronRight, X, Unlock, Share2, Trash2, LogOut, Loader2, Check } from 'lucide-react';
+import { router, usePage } from '@inertiajs/react';
+import axios from 'axios';
 import { ConfirmModal } from '@/Components/modals/ConfirmModal';
 
 export function EvaluationTourWidget({ onExploreMore }) {
     const [isActive, setIsActive] = useState(false);
     const [currentStep, setCurrentStep] = useState(0);
     const [showQuitModal, setShowQuitModal] = useState(false);
+    const [isVerified, setIsVerified] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { auth } = usePage().props;
 
     useEffect(() => {
         // Check if evaluation mode is active
@@ -16,22 +20,60 @@ export function EvaluationTourWidget({ onExploreMore }) {
                 const step = parseInt(localStorage.getItem('evaluation_step') || '0', 10);
                 setIsActive(mode);
                 setCurrentStep(step);
+                
+                if (mode) {
+                    checkBackendVerification(step);
+                }
+            }
+        };
+
+        const checkBackendVerification = async (step) => {
+            try {
+                const response = await axios.get(route('tour.verify'), {
+                    params: { step }
+                });
+                if (response.data.isVerified) {
+                    setIsVerified(true);
+                }
+            } catch (error) {
+                console.error("Verification check failed", error);
             }
         };
 
         checkMode();
+
+        const handleActionCompleted = (e) => {
+            const { type } = e.detail;
+            const currentStepRequired = steps[currentStep]?.requiredAction;
+            
+            if (type === currentStepRequired) {
+                setIsVerified(true);
+            }
+        };
+        
+        // Polling for verification while active
+        const pollInterval = setInterval(() => {
+            if (isActive && !isVerified) {
+                checkBackendVerification(currentStep);
+            }
+        }, 5000);
         
         // Listen for storage changes if multiple tabs are open
         window.addEventListener('storage', checkMode);
         
         // Custom event for immediate updates within the same window
         window.addEventListener('eval-tour-updated', checkMode);
+
+        // Action verification listener
+        window.addEventListener('stegolock-action-completed', handleActionCompleted);
         
         return () => {
             window.removeEventListener('storage', checkMode);
             window.removeEventListener('eval-tour-updated', checkMode);
+            window.removeEventListener('stegolock-action-completed', handleActionCompleted);
+            clearInterval(pollInterval);
         };
-    }, []);
+    }, [currentStep, isActive, isVerified]);
 
     if (!isActive) return null;
 
@@ -40,59 +82,78 @@ export function EvaluationTourWidget({ onExploreMore }) {
             title: "Speed Test",
             icon: <Lock className="size-5 text-cyan-500" />,
             instruction: "Let's test the system's speed! Click 'New' on the left sidebar and select 'Upload and Lock a File'. Choose any sample document (txt, doc/docx, or pdf) to upload.",
-            actionText: "I've Locked a File"
+            actionText: "I've Locked a File",
+            requiredAction: 'lock'
         },
         {
             title: "Double Duty",
             icon: <Lock className="size-5 text-cyan-500" />,
             instruction: "Can the system handle two things at once? While your first file is still locking, click 'New' and upload a second file right away!",
-            actionText: "I've Locked Another"
+            actionText: "I've Locked Another",
+            requiredAction: 'lock'
         },
         {
             title: "The Magic Trick",
             icon: <Unlock className="size-5 text-emerald-500" />,
             instruction: "Once a file is locked, hover over its card, click the three dots (⋮), and select 'Unlock'. Wait a moment as StegoLock reconstructs your original file for you to download!",
-            actionText: "I've Unlocked the File"
+            actionText: "I've Unlocked the File",
+            requiredAction: 'unlock'
         },
         {
             title: "Sharing is Caring",
             icon: <Share2 className="size-5 text-indigo-500" />,
             instruction: "Let's test security. Click the three dots (⋮) on your other file and select 'Share'. Type in 'user@example.com' and share it. (You can check 'Shared With Me' later to see it!)",
-            actionText: "I've Shared the File"
+            actionText: "I've Shared the File",
+            requiredAction: 'share'
         },
         {
             title: "Clean Up",
             icon: <Trash2 className="size-5 text-rose-500" />,
             instruction: "Let's keep things tidy. Click the three dots (⋮) on your file and select 'Delete' to permanently remove it from your StegoVault (your StegoLock cloud storage).",
-            actionText: "I've Deleted the File"
+            actionText: "I've Deleted the File",
+            requiredAction: 'delete'
         },
         {
             title: "See You Later",
             icon: <LogOut className="size-5 text-amber-500" />,
             instruction: "Finally, let's test the login system. Open your profile menu (top right) and 'Log Out'. Then, log right back in. (This guide will be waiting for you when you return!)",
-            actionText: "I've Logged Back In"
+            actionText: "I've Logged Back In",
+            requiredAction: 'login' // Verified by the fact the widget re-mounts after login
         },
         {
             title: "Tour Complete!",
             icon: <CheckCircle2 className="size-5 text-green-500" />,
             instruction: "Awesome job! You've just tested all of StegoLock's main features. Feel free to explore more, or proceed to the survey when you're ready!",
-            actionText: "Proceed to Survey"
+            actionText: "Proceed to Survey",
+            requiredAction: null
         }
     ];
 
-    const handleNext = () => {
+    const handleNext = async () => {
+        if (!isVerified && steps[currentStep].requiredAction) return;
+
         if (currentStep < steps.length - 1) {
             const next = currentStep + 1;
             localStorage.setItem('evaluation_step', next.toString());
             setCurrentStep(next);
+            setIsVerified(false);
             window.dispatchEvent(new Event('eval-tour-updated'));
         } else {
             // Finish Tour
-            localStorage.setItem('evaluation_mode', 'false');
-            localStorage.removeItem('evaluation_step');
-            setIsActive(false);
-            window.dispatchEvent(new Event('eval-tour-updated'));
-            window.location.href = '/survey';
+            setIsSubmitting(true);
+            try {
+                await axios.post(route('tour.complete'));
+                
+                localStorage.setItem('evaluation_mode', 'false');
+                localStorage.removeItem('evaluation_step');
+                setIsActive(false);
+                window.dispatchEvent(new Event('eval-tour-updated'));
+                window.location.href = '/survey';
+            } catch (error) {
+                console.error("Failed to complete tour", error);
+            } finally {
+                setIsSubmitting(false);
+            }
         }
     };
 
@@ -185,10 +246,20 @@ export function EvaluationTourWidget({ onExploreMore }) {
                         )}
                         <button
                             onClick={handleNext}
-                            className="flex items-center justify-center gap-2 px-5 py-3 sm:py-2.5 bg-slate-900 hover:bg-indigo-600 dark:bg-cyber-accent dark:hover:bg-cyan-400 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-slate-900/20 dark:shadow-cyan-500/30"
+                            disabled={(!isVerified && steps[currentStep].requiredAction) || isSubmitting}
+                            className={`flex items-center justify-center gap-2 px-5 py-3 sm:py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg ${
+                                isVerified || !steps[currentStep].requiredAction
+                                    ? 'bg-slate-900 hover:bg-indigo-600 dark:bg-cyber-accent dark:hover:bg-cyan-400 text-white shadow-slate-900/20 dark:shadow-cyan-500/30'
+                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
+                            }`}
                         >
+                            {isSubmitting ? (
+                                <Loader2 className="size-3.5 animate-spin" />
+                            ) : isVerified ? (
+                                <Check className="size-3.5" />
+                            ) : null}
                             {steps[currentStep].actionText}
-                            <ChevronRight className="size-3.5" />
+                            {!isSubmitting && <ChevronRight className="size-3.5" />}
                         </button>
                     </div>
                 </div>

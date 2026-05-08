@@ -105,6 +105,11 @@ export function ShareFileModal({ document: doc, onClose }) {
         });
         
         toast.success(response.data.message || `File shared with ${targetEmail}`);
+        
+        window.dispatchEvent(new CustomEvent('stegolock-action-completed', { 
+            detail: { type: 'share' } 
+        }));
+
         setEmail('');
         setShowConfirm(false);
         fetchRecipients();

@@ -66,7 +66,7 @@ export default function DocumentCard({
             case 'fragmented': return 'Mapping file...';
             case 'mapped': return 'Embedding binaries...';
             case 'embedded': return 'Storing stego files...';
-            case 'stored': return 'Locked';
+            case 'stored': return 'Retrieving stego files...';
             case 'retrieved': return 'Extracting binaries...';
             case 'extracted': return 'Reconstructing file...';
             case 'reconstructed': return 'Finalizing decryption...';

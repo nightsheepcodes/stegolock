@@ -37,6 +37,7 @@ class HandleInertiaRequests extends Middleware
                     'email',
                     'role',
                     'created_at',
+                    'tour_completed_at',
                 ]),
             ],
             'pendingSharesCount' => $request->user() 

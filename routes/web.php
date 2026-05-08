@@ -108,6 +108,11 @@ Route::middleware('auth')->group(function () {
         ->name('folders.share');
     Route::post('/folders/share/accept', [DocumentController::class, 'acceptFolderShare'])
         ->name('folders.share.accept');
+
+    Route::post('/tour/complete', [TourController::class, 'complete'])
+        ->name('tour.complete');
+    Route::get('/tour/verify', [TourController::class, 'verify'])
+        ->name('tour.verify');
 });
 
 Route::get('/capacity/check', [CapacityController::class, 'check'])->name('capacity.check');

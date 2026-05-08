@@ -39,6 +39,10 @@ export function useDocumentActions({
                 setLocalDocs(prev => prev.map(doc => 
                     doc.document_id === id ? { ...doc, status: resp.data.status } : doc
                 ));
+
+                window.dispatchEvent(new CustomEvent('stegolock-action-completed', { 
+                    detail: { type: 'unlock' } 
+                }));
             }
         } catch (err) {
             console.error('Unlock failed:', err);
@@ -69,6 +73,9 @@ export function useDocumentActions({
                 document_id: docId,
             });
             toast.success('Document deleted successfully', { id: toastId });
+            window.dispatchEvent(new CustomEvent('stegolock-action-completed', { 
+                detail: { type: 'delete' } 
+            }));
             await sleep(1000);
             router.reload();
         } catch (err) {

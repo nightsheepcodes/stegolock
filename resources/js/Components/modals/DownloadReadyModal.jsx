@@ -5,7 +5,7 @@ export function DownloadReadyModal({ show, onClose, document, onDownload, onCanc
     if (!show || !document) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4" onClick={onClose}>
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
             <div 
                 className="bg-white dark:bg-cyber-void rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all border border-slate-200 dark:border-cyber-border" 
                 onClick={(e) => e.stopPropagation()}

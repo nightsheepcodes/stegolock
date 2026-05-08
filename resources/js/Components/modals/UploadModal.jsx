@@ -191,6 +191,10 @@ export default function UploadModal({ isOpen, onClose, allowUpload, uploaded, fo
                 temp_path: res.data['temp_path']
             });
 
+            window.dispatchEvent(new CustomEvent('stegolock-action-completed', { 
+                detail: { type: 'lock' } 
+            }));
+
             if (resp.data.status === 'processing') {
                 toast.dismiss(toastId);
             }

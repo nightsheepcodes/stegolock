@@ -671,6 +671,13 @@ class DocumentController extends Controller
                 'user_id' => Auth::id(),
                 'action' => 'unlocked'
             ]);
+        } else {
+            // Log activity for owner unlocking the file
+            DocumentActivity::create([
+                'document_id' => $document->document_id,
+                'user_id' => Auth::id(),
+                'action' => 'unlocked'
+            ]);
         }
 
         if (!in_array($document->status, ['stored', 'decrypted', 'retrieved'])) {

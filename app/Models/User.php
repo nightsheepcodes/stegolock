@@ -29,6 +29,8 @@ class User extends Authenticatable
         'is_active',
         'storage_used',
         'storage_limit',
+        'tour_completed_at',
+        'last_logout_at',
     ];
 
     /**
@@ -67,6 +69,8 @@ class User extends Authenticatable
             'storage_used' => 'integer',
             'storage_limit' => 'integer',
             'is_active' => 'boolean',
+            'tour_completed_at' => 'datetime',
+            'last_logout_at' => 'datetime',
         ];
     }
 
