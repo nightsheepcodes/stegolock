@@ -1,4 +1,4 @@
-import { Shield, Plus, ChevronDown, Upload, FolderOpen, Mail, Lock, User, Eye, EyeOff, AlertCircle, CheckCircle2, Loader2, HardDrive, X, Folder, Menu} from "lucide-react";
+import { Shield, Plus, ChevronDown, Upload, FolderOpen, Mail, Lock, User, Eye, EyeOff, AlertCircle, CheckCircle2, Loader2, HardDrive, X, Folder, Menu, PlayCircle} from "lucide-react";
 import { Toaster } from 'sonner';
 
 import Dropdown from '@/Components/Dropdown';
@@ -13,6 +13,9 @@ import TextInput from '@/Components/TextInput';
 import InputError from '@/Components/InputError';
 import CreateFolderModal from '@/Components/modals/CreateFolderModal';
 import UploadModal from '@/Components/modals/UploadModal';
+import { TourGuideModal } from '@/Components/modals/TourGuideModal';
+import { EvaluationTourWidget } from '@/Components/EvaluationTourWidget';
+import { GuideContentModal } from '@/Components/modals/GuideContentModal';
 import useInactivityTimeout from '@/hooks/useInactivityTimeout';
 
  export default function AuthenticatedLayout({
@@ -35,6 +38,16 @@ import useInactivityTimeout from '@/hooks/useInactivityTimeout';
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [currentFolderId, setCurrentFolderId] = useState(null);
+    const [showTourModal, setShowTourModal] = useState(false);
+    const [showGuideContentModal, setShowGuideContentModal] = useState(false);
+
+    useEffect(() => {
+        // Only show once per user across the whole app
+        if (typeof window !== 'undefined' && !localStorage.getItem('stegolock_tour_completed')) {
+            const timer = setTimeout(() => setShowTourModal(true), 500);
+            return () => clearTimeout(timer);
+        }
+    }, []);
 
     useEffect(() => {
         const handleTriggerUpload = (e) => {
@@ -138,6 +151,11 @@ import useInactivityTimeout from '@/hooks/useInactivityTimeout';
                                         </div>
                                         
                                         <div className="space-y-0.5 px-2">
+                                            <button onClick={() => setShowTourModal(true)} className="w-full flex items-center gap-3 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-cyber-border/30 transition-colors rounded-xl group text-left">
+                                                <PlayCircle className="size-4 text-slate-400 group-hover:text-cyan-500 dark:group-hover:text-cyber-accent transition-colors" />
+                                                Quick Start Guide
+                                            </button>
+
                                             <Dropdown.Link href={route('profile.edit')} className="flex items-center gap-3 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-cyber-border/30 transition-colors rounded-xl group">
                                                 <User className="size-4 text-slate-400 group-hover:text-cyber-accent transition-colors" />
                                                 Manage Account
@@ -192,6 +210,24 @@ import useInactivityTimeout from '@/hooks/useInactivityTimeout';
                         processing={folderProcessing}
                         title="New Root Folder"
                         subtitle="Organize your top-level workspace"
+                    />
+
+                    <TourGuideModal 
+                        show={showTourModal} 
+                        onClose={() => setShowTourModal(false)} 
+                        onExploreMore={() => {
+                            setShowTourModal(false);
+                            setShowGuideContentModal(true);
+                        }}
+                    />
+
+                    <EvaluationTourWidget 
+                        onExploreMore={() => setShowGuideContentModal(true)}
+                    />
+
+                    <GuideContentModal 
+                        show={showGuideContentModal} 
+                        onClose={() => setShowGuideContentModal(false)} 
                     />
 
                     <Toaster position="top-center" richColors />

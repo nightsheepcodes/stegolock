@@ -14,6 +14,7 @@ class SurveyResponse extends Model
         'respondent_name',
         'respondent_email',
         'respondent_role',
+        'internet_access',
         'additional_comments',
     ];
 

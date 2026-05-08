@@ -23,7 +23,17 @@ export default function Survey({ questions, user: propUser }) {
     const user = propUser || auth?.user;
 
     const [view, setView] = useState('options'); // 'options', 'privacy', 'profile', 'instructions', 'survey', 'comments', 'completed'
+    const [lastActiveView, setLastActiveView] = useState(null);
     const [currentStep, setCurrentStep] = useState(0);
+
+    const handleSetView = (newView) => {
+        if (newView !== 'options' && newView !== 'completed') {
+            setLastActiveView(newView);
+        }
+        setView(newView);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
     const [theme, setTheme] = useState(() => {
         if (typeof window !== 'undefined') {
             return localStorage.getItem('stegolock_theme') || 'dark';
@@ -53,6 +63,7 @@ export default function Survey({ questions, user: propUser }) {
             respondent_email: user?.email || '',
             respondent_role: '',
             other_role: '',
+            internet_access: '',
             additional_comments: '',
         };
         
@@ -81,8 +92,7 @@ export default function Survey({ questions, user: propUser }) {
     const progress = (answeredCount / totalQuestions) * 100;
 
     const handleAgree = () => {
-        setView('profile');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        handleSetView('profile');
     };
 
     const handleStartSurvey = () => {
@@ -90,8 +100,7 @@ export default function Survey({ questions, user: propUser }) {
         if (data.respondent_role === 'Others' && data.other_role) {
             setData('respondent_role', data.other_role);
         }
-        setView('instructions');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        handleSetView('instructions');
     };
 
     const handleFinish = (e) => {
@@ -104,12 +113,15 @@ export default function Survey({ questions, user: propUser }) {
         }
 
         post(route('survey.store'), {
-            onSuccess: () => setView('completed'),
+            onSuccess: () => {
+                setLastActiveView(null);
+                handleSetView('completed');
+            },
         });
     };
 
     return (
-        <div className="relative min-h-screen bg-slate-50 dark:bg-cyber-void transition-colors duration-500 overflow-x-hidden flex flex-col selection:bg-cyber-accent selection:text-white">
+        <div className="relative min-h-screen bg-slate-50 dark:bg-cyber-void transition-colors duration-500 overflow-clip flex flex-col selection:bg-cyber-accent selection:text-white">
             <Head title="StegoLock - Survey" />
             <DecorativeBackground />
 
@@ -129,44 +141,49 @@ export default function Survey({ questions, user: propUser }) {
             </div>
 
             {/* Persistent Content Wrapper */}
-            <div className="relative z-10 flex-1 flex flex-col items-center p-4 sm:p-8">
-                <div className="max-w-5xl w-full space-y-12">
+            <div className="relative z-10 flex-1 flex flex-col items-center px-4 pb-4 sm:px-8 sm:pb-8">
+                <div className="max-w-5xl w-full space-y-6 sm:space-y-8">
                     
                     {/* Persistent Header Section */}
                     {view !== 'options' && (
-                        <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-700">
-                            {/* Brand Title */}
-                            <div className={`space-y-2 ${view === 'completed' ? 'text-center' : 'text-left'}`}>
-                                <div className={`flex items-center gap-4 ${view === 'completed' ? 'justify-center' : ''}`}>
-                                    <Shield className="size-8 text-cyber-accent" />
-                                    <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
-                                        <button className="group/brand relative inline-block focus:outline-none">
-                                            <span className="relative z-10 transition-opacity duration-500 group-hover/brand:opacity-0">
-                                                StegoLock
-                                            </span>
-                                            <span className="absolute inset-0 z-20 text-transparent bg-clip-text bg-gradient-to-r from-cyber-accent to-indigo-600 opacity-0 group-hover/brand:opacity-100 transition-opacity duration-500">
-                                                StegoLock
-                                            </span>
-                                        </button> App System Quality Assessment
-                                    </h1>
+                        <div className="sticky top-[-1rem] sm:top-[-2rem] z-[60] bg-slate-50 dark:bg-cyber-void pt-4 pb-2 sm:pt-8 sm:pb-4 animate-in fade-in slide-in-from-top-4 duration-700 border-b border-slate-200/50 dark:border-cyber-border/50">
+                            <div className="space-y-8">
+                                {/* Brand Title */}
+                                <div className={`space-y-2 ${view === 'completed' ? 'text-center' : 'text-left'}`}>
+                                    <div className={`flex items-center gap-4 ${view === 'completed' ? 'justify-center' : ''}`}>
+                                        <Shield className="size-8 text-cyber-accent" />
+                                        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
+                                            <button 
+                                                onClick={() => handleSetView('options')}
+                                                className="group/brand relative inline-block focus:outline-none"
+                                            >
+                                                <span className="relative z-10 transition-opacity duration-500 group-hover/brand:opacity-0">
+                                                    StegoLock
+                                                </span>
+                                                <span className="absolute inset-0 z-20 text-transparent bg-clip-text bg-gradient-to-r from-cyber-accent to-indigo-600 opacity-0 group-hover/brand:opacity-100 transition-opacity duration-500">
+                                                    StegoLock
+                                                </span>
+                                            </button> App System Quality Assessment
+                                        </h1>
+                                    </div>
+                                    <p className={`text-cyber-accent font-black uppercase tracking-widest text-xs ${view === 'completed' ? '' : 'ml-12'}`}>based on ISO/IEC 25010</p>
                                 </div>
-                                <p className={`text-cyber-accent font-black uppercase tracking-widest text-xs ${view === 'completed' ? '' : 'ml-12'}`}>based on ISO/IEC 25010</p>
-                            </div>
 
-                            {/* Persistent Breadcrumb Header */}
-                            {view !== 'completed' && (
-                                <div className="grid grid-cols-3 border-b border-slate-200 dark:border-cyber-border">
-                                    <div className={`py-4 text-center border-r border-slate-200 dark:border-cyber-border transition-all duration-500 ${view === 'privacy' ? 'bg-white/50 dark:bg-cyber-surface/30' : ''}`}>
-                                        <span className={`text-[10px] sm:text-xs font-black tracking-widest uppercase transition-colors ${view === 'privacy' ? 'text-cyber-accent' : 'text-slate-400'}`}>Consent</span>
+                                {/* Persistent Breadcrumb Header */}
+                                {view !== 'completed' && (
+                                    <div className="grid grid-cols-3 border-b border-slate-200 dark:border-cyber-border">
+                                        <div className={`py-4 text-center border-r border-slate-200 dark:border-cyber-border transition-all duration-500 ${view === 'privacy' ? 'bg-white/50 dark:bg-cyber-surface/30' : ''}`}>
+                                            <span className={`text-[10px] sm:text-xs font-black tracking-widest uppercase transition-colors ${view === 'privacy' ? 'text-cyber-accent' : 'text-slate-400'}`}>Consent</span>
+                                        </div>
+                                        <div className={`py-4 text-center border-r border-slate-200 dark:border-cyber-border transition-all duration-500 ${view === 'profile' ? 'bg-white/50 dark:bg-cyber-surface/30' : ''}`}>
+                                            <span className={`text-[10px] sm:text-xs font-black tracking-widest uppercase transition-colors ${view === 'profile' ? 'text-cyber-accent' : 'text-slate-400'}`}>Basic Profile</span>
+                                        </div>
+                                        <div className={`py-4 text-center transition-all duration-500 ${['instructions', 'survey', 'comments'].includes(view) ? 'bg-white/50 dark:bg-cyber-surface/30' : ''}`}>
+                                            <span className={`text-[10px] sm:text-xs font-black tracking-widest uppercase transition-colors ${['instructions', 'survey', 'comments'].includes(view) ? 'text-cyber-accent' : 'text-slate-400'}`}>Assessment</span>
+                                        </div>
                                     </div>
-                                    <div className={`py-4 text-center border-r border-slate-200 dark:border-cyber-border transition-all duration-500 ${view === 'profile' ? 'bg-white/50 dark:bg-cyber-surface/30' : ''}`}>
-                                        <span className={`text-[10px] sm:text-xs font-black tracking-widest uppercase transition-colors ${view === 'profile' ? 'text-cyber-accent' : 'text-slate-400'}`}>Basic Profile</span>
-                                    </div>
-                                    <div className={`py-4 text-center transition-all duration-500 ${['instructions', 'survey', 'comments'].includes(view) ? 'bg-white/50 dark:bg-cyber-surface/30' : ''}`}>
-                                        <span className={`text-[10px] sm:text-xs font-black tracking-widest uppercase transition-colors ${['instructions', 'survey', 'comments'].includes(view) ? 'text-cyber-accent' : 'text-slate-400'}`}>Assessment</span>
-                                    </div>
-                                </div>
-                            )}
+                                )}
+                            </div>
                         </div>
                     )}
 
@@ -193,7 +210,7 @@ export default function Survey({ questions, user: propUser }) {
                                     <div className="space-y-4">
                                         <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight uppercase leading-tight">
                                             WELCOME TO <button 
-                                                onClick={() => setView('privacy')}
+                                                onClick={() => handleSetView('privacy')}
                                                 className="group/text relative inline-block text-cyber-accent transition-all duration-500 focus:outline-none"
                                             >
                                                 <span className="relative z-10 transition-opacity duration-500 group-hover/text:opacity-0">
@@ -224,7 +241,11 @@ export default function Survey({ questions, user: propUser }) {
                                                 </p>
                                             </div>
                                             <button 
-                                                onClick={() => alert('Guided Tour feature is currently under development.')}
+                                                onClick={() => {
+                                                    localStorage.setItem('evaluation_mode', 'true');
+                                                    localStorage.setItem('evaluation_step', '0');
+                                                    window.location.href = route('myDocuments');
+                                                }}
                                                 className="w-full py-3 sm:py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-2xl font-black text-xs sm:text-sm uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors focus:outline-none"
                                             >
                                                 Start Tour
@@ -244,10 +265,10 @@ export default function Survey({ questions, user: propUser }) {
                                                 </p>
                                             </div>
                                             <button 
-                                                onClick={() => setView('privacy')}
+                                                onClick={() => handleSetView(lastActiveView || 'privacy')}
                                                 className="w-full py-3 sm:py-4 bg-white text-indigo-600 rounded-2xl font-black text-xs sm:text-sm uppercase tracking-widest hover:shadow-lg transition-all active:scale-95 focus:outline-none"
                                             >
-                                                Start Survey
+                                                {lastActiveView ? 'Continue Evaluation' : 'Start Survey'}
                                             </button>
                                         </div>
                                         <div className="absolute -right-10 -bottom-10 w-32 sm:w-40 h-32 sm:h-40 bg-white/10 rounded-full blur-3xl"></div>
@@ -310,7 +331,7 @@ export default function Survey({ questions, user: propUser }) {
 
                                         <div className="flex flex-col gap-4 pt-4">
                                             <button 
-                                                onClick={() => setView('options')} 
+                                                onClick={() => handleSetView('options')} 
                                                 className="w-full px-8 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-2xl font-black uppercase tracking-widest hover:bg-slate-200 transition-all active:scale-95 focus:outline-none"
                                             >
                                                 Back
@@ -408,16 +429,37 @@ export default function Survey({ questions, user: propUser }) {
                                         )}
                                     </div>
 
+                                    <div className="space-y-4">
+                                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Internet Access <span className="text-rose-500">*</span></label>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            {['Mobile Data', 'WiFi'].map((access) => (
+                                                <button
+                                                    key={access}
+                                                    type="button"
+                                                    onClick={() => setData('internet_access', access)}
+                                                    className={`
+                                                        px-6 py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2
+                                                        ${data.internet_access === access 
+                                                            ? 'bg-gradient-to-r from-cyber-accent to-blue-600 text-white shadow-lg shadow-cyan-500/20' 
+                                                            : 'bg-slate-50 dark:bg-slate-900/50 border-2 border-slate-100 dark:border-cyber-border/50 text-slate-400 dark:text-slate-500 hover:border-cyber-accent/30'}
+                                                    `}
+                                                >
+                                                    {access}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
                                     <div className="flex flex-col sm:flex-row gap-4 pt-6">
                                         <button 
-                                            onClick={() => setView('privacy')} 
+                                            onClick={() => handleSetView('privacy')} 
                                             className="flex-1 px-8 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-2xl font-black uppercase tracking-widest hover:bg-slate-200 transition-all active:scale-95 focus:outline-none"
                                         >
                                             Back
                                         </button>
                                         <button 
                                             onClick={handleStartSurvey}
-                                            disabled={!data.respondent_role || (data.respondent_role === 'Others' && !data.other_role)}
+                                            disabled={!data.respondent_role || (data.respondent_role === 'Others' && !data.other_role) || !data.internet_access}
                                             className="flex-[2] px-12 py-4 bg-gradient-to-r from-cyber-accent to-blue-600 text-white rounded-2xl font-black uppercase tracking-widest hover:opacity-90 transition-all shadow-xl shadow-cyan-500/30 active:scale-95 focus:outline-none disabled:opacity-30 disabled:grayscale"
                                         >
                                             START QUESTIONNAIRE
@@ -474,13 +516,13 @@ export default function Survey({ questions, user: propUser }) {
 
                                 <div className="flex flex-col sm:flex-row gap-4 pt-8">
                                     <button 
-                                        onClick={() => setView('profile')} 
+                                        onClick={() => handleSetView('profile')} 
                                         className="flex-1 px-8 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-2xl font-black uppercase tracking-widest hover:bg-slate-200 transition-all active:scale-95 focus:outline-none"
                                     >
                                         Back
                                     </button>
                                     <button 
-                                        onClick={() => setView('survey')} 
+                                        onClick={() => handleSetView('survey')} 
                                         className="flex-[2] px-12 py-4 bg-gradient-to-r from-cyber-accent to-blue-600 text-white rounded-2xl font-black uppercase tracking-widest hover:opacity-90 transition-all shadow-xl shadow-cyan-500/30 active:scale-95 focus:outline-none"
                                     >
                                         Next
@@ -564,8 +606,7 @@ export default function Survey({ questions, user: propUser }) {
                                                 setCurrentStep(currentStep - 1);
                                                 window.scrollTo({ top: 0, behavior: 'smooth' });
                                             } else {
-                                                setView('instructions');
-                                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                handleSetView('instructions');
                                             }
                                         }}
                                         className="flex-1 px-8 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-2xl font-black uppercase tracking-widest hover:bg-slate-200 transition-all active:scale-95 focus:outline-none"
@@ -589,8 +630,7 @@ export default function Survey({ questions, user: propUser }) {
                                         <button
                                             type="button"
                                             onClick={() => {
-                                                setView('comments');
-                                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                handleSetView('comments');
                                             }}
                                             disabled={!currentQuestions.every(q => data[q.code.toLowerCase()] !== '')}
                                             className="flex-[2] px-12 py-4 bg-gradient-to-r from-cyber-accent to-blue-600 text-white rounded-2xl font-black uppercase tracking-widest hover:opacity-90 transition-all shadow-xl shadow-cyan-500/30 active:scale-95 focus:outline-none disabled:opacity-30"
@@ -637,9 +677,8 @@ export default function Survey({ questions, user: propUser }) {
                                     <button
                                         type="button"
                                         onClick={() => {
-                                            setView('survey');
+                                            handleSetView('survey');
                                             setCurrentStep(categories.length - 1);
-                                            window.scrollTo({ top: 0, behavior: 'smooth' });
                                         }}
                                         className="flex-1 px-8 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-2xl font-black uppercase tracking-widest hover:bg-slate-200 transition-all active:scale-95 focus:outline-none"
                                     >

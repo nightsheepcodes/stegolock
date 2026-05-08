@@ -20,7 +20,7 @@ import {
     ImagePlus,
     X
 } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { formatBytes } from '@/Utils/fileUtils';
 import { Link, usePage, router } from '@inertiajs/react';
 
@@ -83,6 +83,19 @@ export default function Sidebar({
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
     const [showNewMenu, setShowNewMenu] = useState(false);
+    const newMenuRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (newMenuRef.current && !newMenuRef.current.contains(e.target)) {
+                setShowNewMenu(false);
+            }
+        };
+        if (showNewMenu) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [showNewMenu]);
 
     const [isUploading, setIsUploading] = useState(false);
 
@@ -136,7 +149,7 @@ export default function Sidebar({
 
             {/* NEW BUTTON */}
             <div className="w-full px-6">
-                <div className="flex my-4 relative">
+                <div className="flex my-4 relative" ref={newMenuRef}>
                     <button
                         onClick={() => { setShowNewMenu(!showNewMenu); }}
                         className="w-full flex items-center justify-center gap-2 px-4 py-3.5 bg-gradient-to-r from-cyber-accent to-indigo-500 text-white rounded-xl hover:opacity-90 transition-all font-bold shadow-lg shadow-cyan-500/30 dark:shadow-[0_0_15px_rgba(34,211,238,0.4)]"
@@ -147,14 +160,9 @@ export default function Sidebar({
                     </button>
 
                     {showNewMenu && (
-                        <>
-                        <div
-                            className="fixed inset-0 z-40"
-                            onClick={() => setShowNewMenu(false)}
-                        />
                         <div className="absolute w-full mt-16 p-2 glass-panel shadow-2xl z-50 rounded-2xl border border-slate-200 dark:border-cyber-border/50 dark:bg-cyber-surface/90 backdrop-blur-xl">
                             <MenuButton icon={Upload}
-                                        label={isProcessOngoing ? "Currently locking a file..." : "Upload and Lock"}
+                                        label={isProcessOngoing ? "Currently locking a file..." : "Upload and Lock a File"}
                                         onClick={() => {
                                             if (isProcessOngoing) return;
                                             setShowNewMenu(false);
@@ -174,7 +182,6 @@ export default function Sidebar({
                                         }}
                             />
                         </div>
-                        </>
                     )}
                 </div>
             </div>

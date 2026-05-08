@@ -36,6 +36,7 @@ class SurveyController extends Controller
             'respondent_name' => 'nullable|string|max:255',
             'respondent_email' => 'nullable|email|max:255',
             'respondent_role' => 'required|string|max:255',
+            'internet_access' => 'required|string|max:255',
             'additional_comments' => 'nullable|string',
         ];
         
@@ -51,6 +52,7 @@ class SurveyController extends Controller
                 'respondent_name' => $validated['respondent_name'] ?? null,
                 'respondent_email' => $validated['respondent_email'] ?? null,
                 'respondent_role' => $validated['respondent_role'],
+                'internet_access' => $validated['internet_access'],
                 'additional_comments' => $validated['additional_comments'] ?? null,
             ]);
 
