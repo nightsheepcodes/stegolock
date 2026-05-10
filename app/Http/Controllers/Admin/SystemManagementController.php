@@ -4,12 +4,90 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Document;
+use App\Models\StegoFile;
+use App\Models\Fragment;
+use App\Models\StegoMap;
+use App\Providers\B2Service;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class SystemManagementController extends Controller
 {
+
+    public function auditIntegrity()
+    {
+        $b2Service = new B2Service();
+        $cloudFiles = $b2Service->listAllFiles();
+        
+        // 1. Identify Ghost Files (B2 locked/ files with no StegoFile record)
+        $lockedFiles = array_filter($cloudFiles, fn($f) => str_starts_with($f['fileName'], 'locked/'));
+        $dbFilenames = StegoFile::pluck('filename')->toArray();
+        
+        $ghosts = [];
+        foreach ($lockedFiles as $file) {
+            $pureFilename = basename($file['fileName']);
+            if (!in_array($pureFilename, $dbFilenames)) {
+                $ghosts[] = [
+                    'fileId' => $file['fileId'],
+                    'fileName' => $file['fileName'],
+                    'size' => $file['contentLength'],
+                    'uploadTimestamp' => $file['uploadTimestamp']
+                ];
+            }
+        }
+
+        // 2. Identify Mismatched Documents
+        // Logic: Document.fragment_count must match count(fragments) and count(stego_files)
+        $documents = Document::withCount(['fragments', 'stegoFiles'])
+            ->whereIn('status', ['fragmented', 'mapped', 'embedded', 'stored'])
+            ->get();
+
+        $mismatched = $documents->filter(function($doc) {
+            return $doc->fragment_count != $doc->fragments_count || 
+                   ($doc->status === 'stored' && $doc->fragment_count != $doc->stego_files_count);
+        })->map(function($doc) {
+            return [
+                'id' => $doc->document_id,
+                'name' => $doc->name,
+                'status' => $doc->status,
+                'expected' => $doc->fragment_count,
+                'actual_fragments' => $doc->fragments_count,
+                'actual_stego' => $doc->stego_files_count,
+                'user' => $doc->user->name ?? 'Unknown'
+            ];
+        })->values();
+
+        return response()->json([
+            'ghosts' => $ghosts,
+            'mismatched' => $mismatched,
+            'stats' => [
+                'ghost_count' => count($ghosts),
+                'ghost_size' => array_sum(array_column($ghosts, 'size')),
+                'mismatched_count' => count($mismatched)
+            ]
+        ]);
+    }
+
+    public function purgeGhosts(Request $request)
+    {
+        $request->validate([
+            'files' => 'required|array',
+            'files.*.fileId' => 'required|string',
+            'files.*.fileName' => 'required|string',
+        ]);
+
+        $b2Service = new B2Service();
+        $results = $b2Service->deleteFilesBatch($request->files);
+
+        return response()->json([
+            'success' => true,
+            'deleted_count' => count($results),
+            'results' => $results
+        ]);
+    }
+
     public function cloudIndex()
     {
         $totalStorageLimit = User::sum('storage_limit');

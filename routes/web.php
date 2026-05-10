@@ -144,6 +144,8 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     // Database Management
     Route::middleware('role:db_storage_admin,superadmin')->group(function () {
         Route::get('/database', [\App\Http\Controllers\Admin\SystemManagementController::class, 'databaseIndex'])->name('database.index');
+        Route::get('/database/audit', [\App\Http\Controllers\Admin\SystemManagementController::class, 'auditIntegrity'])->name('database.audit');
+        Route::post('/database/purge-ghosts', [\App\Http\Controllers\Admin\SystemManagementController::class, 'purgeGhosts'])->name('database.purge-ghosts');
     });
 
     // Administrative Group (Superadmin Only Actions)

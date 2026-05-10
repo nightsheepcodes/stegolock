@@ -402,4 +402,51 @@ class B2Service
 
         return $results;
     }
+
+    /**
+     * Deletes multiple files in parallel using Guzzle Pool.
+     * 
+     * @param array $fileData Array of ['fileId' => ..., 'fileName' => ...]
+     * @param int $concurrency Number of simultaneous deletes
+     */
+    public function deleteFilesBatch(array $fileData, int $concurrency = 5)
+    {
+        $auth = $this->getAuth();
+        $client = new \GuzzleHttp\Client([
+            'base_uri' => $auth['apiUrl'],
+            'timeout'  => 60,
+        ]);
+
+        $results = [];
+
+        $requests = function () use ($client, $fileData, $auth) {
+            foreach ($fileData as $item) {
+                yield $item['fileId'] => function () use ($client, $item, $auth) {
+                    return $client->requestAsync('POST', '/b2api/v2/b2_delete_file_version', [
+                        'headers' => [
+                            'Authorization' => $auth['token'],
+                        ],
+                        'json' => [
+                            'fileId' => $item['fileId'],
+                            'fileName' => $item['fileName'],
+                        ]
+                    ]);
+                };
+            }
+        };
+
+        $pool = new \GuzzleHttp\Pool($client, $requests(), [
+            'concurrency' => $concurrency,
+            'fulfilled' => function ($response, $fileId) use (&$results) {
+                $results[$fileId] = json_decode($response->getBody()->getContents(), true);
+            },
+            'rejected' => function ($reason, $fileId) {
+                \Illuminate\Support\Facades\Log::error("Batch delete failed for fileId {$fileId}: " . $reason->getMessage());
+            },
+        ]);
+
+        $pool->promise()->wait();
+
+        return $results;
+    }
 }

@@ -85,7 +85,7 @@ class ProcessSteganoJob implements ShouldQueue
         ]);
 
         try {
-            // 0. Idempotency Cleanup (Clear previous failed attempt's database state)
+            // 0. Idempotency Cleanup (Clear previous failed attempt's database state AND cloud files)
             DB::transaction(function() use ($document) {
                 // Delete existing fragments and maps for this document
                 Fragment::where('document_id', $this->documentId)->delete();
@@ -93,6 +93,18 @@ class ProcessSteganoJob implements ShouldQueue
                 
                 $stegoMap = StegoMap::where('document_id', $this->documentId)->first();
                 if ($stegoMap) {
+                    $filesToDelete = StegoFile::where('stego_map_id', $stegoMap->stego_map_id)
+                        ->select('cloud_file_id', 'filename')
+                        ->get()
+                        ->map(fn($f) => ['fileId' => $f->cloud_file_id, 'fileName' => 'locked/' . $f->filename])
+                        ->toArray();
+
+                    if (!empty($filesToDelete)) {
+                        $b2 = new B2Service();
+                        $b2->deleteFilesBatch($filesToDelete);
+                        Log::info("[SteganoJob] Idempotency: Cleaned up " . count($filesToDelete) . " files from B2.");
+                    }
+
                     StegoFile::where('stego_map_id', $stegoMap->stego_map_id)->delete();
                     $stegoMap->delete();
                 }
