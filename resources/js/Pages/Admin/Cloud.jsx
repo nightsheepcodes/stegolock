@@ -233,6 +233,10 @@ export default function CloudPage({ stats, users, cloudAccounts, transferStatus 
                             
                             <div className="space-y-4">
                                 <div>
+                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">B2 Account</p>
+                                    <p className="text-sm font-bold truncate text-cyan-50/80">{stats.b2_account || 'Not Configured'}</p>
+                                </div>
+                                <div>
                                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Bucket Name</p>
                                     <p className="text-lg font-black tracking-tight font-mono">{stats.b2_bucket || 'stegolock-production'}</p>
                                 </div>
@@ -250,7 +254,7 @@ export default function CloudPage({ stats, users, cloudAccounts, transferStatus 
                             </div>
 
                             <button 
-                                onClick={() => window.open('https://secure.backblaze.com/b2_bucket_mgmt.htm?bucketId=' + stats.b2_bucket, '_blank')}
+                                onClick={() => window.open('https://secure.backblaze.com/b2_bucket_mgmt.htm?bucketId=' + stats.b2_bucket_id, '_blank')}
                                 className="w-full py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
                             >
                                 Open B2 Console <ArrowUpRight className="size-3" />

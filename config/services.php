@@ -40,6 +40,7 @@ return [
         'application_key' => env('B2_APPLICATION_KEY'),
         'bucket_name' => env('B2_BUCKET'), 
         'bucket_id' => env('B2_BUCKET_ID'),
+        'account_email' => env('B2_ACCOUNT'),
     ],
 
 ];

@@ -136,7 +136,9 @@ class SystemManagementController extends Controller
                     'fragments_bytes' => $realStats['locked_bytes'],
                     'other_bytes' => $realStats['other_bytes']
                 ],
-                'b2_bucket' => env('B2_BUCKET_ID'),
+                'b2_bucket' => config('services.b2.bucket_name'),
+                'b2_bucket_id' => config('services.b2.bucket_id'),
+                'b2_account' => config('services.b2.account_email'),
                 'file_count' => $realStats['file_count']
             ],
             'users' => $users,
