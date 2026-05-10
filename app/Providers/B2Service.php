@@ -198,38 +198,53 @@ class B2Service
 
     public function listAllFiles() //list all files
     {
-        $auth = $this->getAuth();
+        $attempt = 0;
+        $maxAttempts = 2;
 
-        $files = [];
-        $nextFileName = null;
+        while ($attempt < $maxAttempts) {
+            $auth = $this->getAuth();
+            $files = [];
+            $nextFileName = null;
+            $failed = false;
 
-        do {
-            /** @var \Illuminate\Http\Client\Response $response */
-            $response = Http::withHeaders([
-                'Authorization' => $auth['token'],
-            ])->post($auth['apiUrl'] . '/b2api/v2/b2_list_file_names', [
-                'bucketId' => config('services.b2.bucket_id'),
-                'maxFileCount' => 200,
-                'startFileName' => $nextFileName, // key part
-            ]);
+            do {
+                /** @var \Illuminate\Http\Client\Response $response */
+                $response = Http::withHeaders([
+                    'Authorization' => $auth['token'],
+                ])->post($auth['apiUrl'] . '/b2api/v2/b2_list_file_names', [
+                    'bucketId' => config('services.b2.bucket_id'),
+                    'maxFileCount' => 200,
+                    'startFileName' => $nextFileName,
+                ]);
 
-            if (!$response->successful()) {
-                \Illuminate\Support\Facades\Log::error("B2 list_file_names failed: " . $response->body());
-                break;
+                if (!$response->successful()) {
+                    if ($response->status() === 401 && $attempt === 0) {
+                        // Token might be expired, clear cache and retry the whole list process
+                        cache()->forget('b2_auth');
+                        $failed = true;
+                        break;
+                    }
+                    
+                    \Illuminate\Support\Facades\Log::error("B2 list_file_names failed: " . $response->body());
+                    return []; // Return empty on hard failure
+                }
+
+                $data = $response->json();
+                if (!isset($data['files'])) break;
+
+                $files = array_merge($files, $data['files']);
+                $nextFileName = $data['nextFileName'] ?? null;
+
+            } while ($nextFileName);
+
+            if (!$failed) {
+                return $files;
             }
 
-            $data = $response->json();
+            $attempt++;
+        }
 
-            if (!isset($data['files'])) {
-                break;
-            }
-
-            $files = array_merge($files, $data['files']);
-            $nextFileName = $data['nextFileName'] ?? null;
-
-        } while ($nextFileName);
-
-        return $files;
+        return [];
     }
 
     public function listAllVersions()

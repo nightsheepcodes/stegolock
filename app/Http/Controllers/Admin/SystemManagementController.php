@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
 
 class SystemManagementController extends Controller
@@ -168,31 +169,77 @@ class SystemManagementController extends Controller
             'cache_locks' => ['category' => 'System & Auth', 'desc' => 'Atomic cache locks'],
         ];
 
-        // 1. Basic Schema Stats using SHOW TABLE STATUS (more reliable in production)
-        $tablesRaw = DB::select("SHOW TABLE STATUS");
+        // 1. Brute-Force Discovery (Ensures we find tables regardless of driver/schema quirks)
+        $dbName = DB::connection()->getDatabaseName();
+        $tableNames = DB::connection()->getSchemaBuilder()->getTableListing();
         
+        // Fallback discovery or explicit fetch from the current database only
+        if (empty($tableNames) || DB::getDriverName() === 'mysql') {
+            try {
+                // Using 'FROM `$dbName`' strictly limits results to this app's database
+                $raw = DB::select("SHOW TABLES FROM `$dbName` ");
+                $tableNames = []; // Reset and use the more accurate SHOW TABLES
+                foreach ($raw as $r) {
+                    $tableNames[] = current((array)$r);
+                }
+            } catch (\Exception $e) {}
+        }
+
         $tables = [];
         $dbSize = 0;
+        $driver = DB::getDriverName();
 
-        foreach ($tablesRaw as $t) {
-            $sizeBytes = ($t->Data_length ?? 0) + ($t->Index_length ?? 0);
+        // Normalize dictionary for case-insensitive matching
+        $normalizedDict = collect($tableDict)->mapWithKeys(fn($v, $k) => [strtolower($k) => $v]);
+
+        if ($driver === 'mysql' || $driver === 'mariadb') {
+            // Pre-fetch status for all tables (case-insensitive keys for safety)
+            try {
+                $mysqlStatus = collect(DB::select("SHOW TABLE STATUS"))->keyBy(fn($item) => strtolower($item->Name ?? $item->name));
+            } catch (\Exception $e) { $mysqlStatus = collect(); }
+        }
+
+        foreach (array_unique($tableNames) as $name) {
+            if (empty($name)) continue;
+            
+            $info = $normalizedDict->get(strtolower($name)) ?? ['category' => 'Other', 'desc' => 'System table'];
+            
+            $rows = 0;
+            $sizeBytes = 0;
+            $lastUpdated = null;
+
+            // Always use a real count for accuracy in the admin dashboard
+            try {
+                $rows = DB::table($name)->count();
+            } catch (\Exception $e) { $rows = 0; }
+
+            if (isset($mysqlStatus)) {
+                $status = $mysqlStatus->get(strtolower($name));
+                if ($status) {
+                    $lastUpdated = $status->Update_time ?? $status->update_time ?? null;
+                    $sizeBytes = ($status->Data_length ?? 0) + ($status->Index_length ?? 0);
+                }
+            }
+
             $dbSize += $sizeBytes;
-            
-            $info = $tableDict[$t->Name] ?? ['category' => 'Other', 'desc' => 'System table'];
-            
             $tables[] = [
-                'name' => $t->Name,
-                'rows' => (int)($t->Rows ?? 0),
-                'last_updated' => $t->Update_time,
+                'name' => $name,
+                'rows' => $rows,
+                'last_updated' => $lastUpdated,
                 'category' => $info['category'],
-                'description' => $info['desc']
+                'description' => $info['desc'] ?? 'System table'
             ];
         }
 
         // 2. Data Integrity Audit (Cloud vs DB Referential Integrity)
-        $b2Service = new \App\Providers\B2Service();
-        $cloudFiles = $b2Service->listAllFiles();
-        $lockedFileNames = array_map(fn($f) => $f['fileName'], array_filter($cloudFiles, fn($f) => str_starts_with($f['fileName'], 'locked/')));
+        try {
+            $b2Service = new \App\Providers\B2Service();
+            $cloudFiles = $b2Service->listAllFiles();
+            $lockedFileNames = array_map(fn($f) => $f['fileName'], array_filter($cloudFiles, fn($f) => str_starts_with($f['fileName'], 'locked/')));
+        } catch (\Exception $e) {
+            $lockedFileNames = [];
+            \Illuminate\Support\Facades\Log::error("B2 integrity check failed: " . $e->getMessage());
+        }
 
         // A "StegoFile" is the physical file in B2 'locked/' prefix.
         // It points to a fragment. If the stego file is missing, the fragment is lost.
@@ -309,19 +356,15 @@ class SystemManagementController extends Controller
 
     public function getTableData(Request $request, $tableName)
     {
-        // 1. Validate table exists in current DB using SHOW TABLES (more portable)
-        $tableExists = DB::select("SHOW TABLES LIKE ?", [$tableName]);
-
-        if (empty($tableExists)) {
+        // 1. Validate table exists (Cross-database compatible)
+        if (!Schema::hasTable($tableName)) {
             return response()->json(['error' => 'Table not found'], 404);
         }
 
         // 2. Fetch data (limit to first 100 rows for performance)
         // Attempt to order by most recent if standard ID columns exist
         $query = DB::table($tableName);
-        
-        $columnInfo = DB::select("SHOW COLUMNS FROM `$tableName` ");
-        $columns = array_column($columnInfo, 'Field');
+        $columns = Schema::getColumnListing($tableName);
 
         if (in_array('id', $columns)) {
             $query->orderBy('id', 'desc');
