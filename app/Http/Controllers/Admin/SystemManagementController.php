@@ -146,7 +146,7 @@ class SystemManagementController extends Controller
 
     public function databaseIndex()
     {
-        $dbName = config('database.connections.mysql.database');
+        $dbName = DB::connection()->getDatabaseName();
         
         // Table Dictionary for Category and Description
         $tableDict = [
@@ -168,28 +168,22 @@ class SystemManagementController extends Controller
             'cache_locks' => ['category' => 'System & Auth', 'desc' => 'Atomic cache locks'],
         ];
 
-        // 1. Basic Schema Stats
-        $tablesRaw = DB::select("
-            SELECT 
-                table_name AS name, 
-                table_rows AS `rows`, 
-                UPDATE_TIME AS last_updated,
-                data_length + index_length AS size_bytes
-            FROM information_schema.TABLES 
-            WHERE table_schema = ?
-        ", [$dbName]);
-
+        // 1. Basic Schema Stats using SHOW TABLE STATUS (more reliable in production)
+        $tablesRaw = DB::select("SHOW TABLE STATUS");
+        
         $tables = [];
         $dbSize = 0;
 
         foreach ($tablesRaw as $t) {
-            $dbSize += $t->size_bytes;
-            $info = $tableDict[$t->name] ?? ['category' => 'Other', 'desc' => 'System table'];
+            $sizeBytes = ($t->Data_length ?? 0) + ($t->Index_length ?? 0);
+            $dbSize += $sizeBytes;
+            
+            $info = $tableDict[$t->Name] ?? ['category' => 'Other', 'desc' => 'System table'];
             
             $tables[] = [
-                'name' => $t->name,
-                'rows' => $t->rows,
-                'last_updated' => $t->last_updated,
+                'name' => $t->Name,
+                'rows' => (int)($t->Rows ?? 0),
+                'last_updated' => $t->Update_time,
                 'category' => $info['category'],
                 'description' => $info['desc']
             ];
@@ -311,5 +305,36 @@ class SystemManagementController extends Controller
         Cache::forget('stego_transfer_status');
 
         return back()->with('success', 'Transfer process stopped and cleaned up.');
+    }
+
+    public function getTableData(Request $request, $tableName)
+    {
+        // 1. Validate table exists in current DB using SHOW TABLES (more portable)
+        $tableExists = DB::select("SHOW TABLES LIKE ?", [$tableName]);
+
+        if (empty($tableExists)) {
+            return response()->json(['error' => 'Table not found'], 404);
+        }
+
+        // 2. Fetch data (limit to first 100 rows for performance)
+        // Attempt to order by most recent if standard ID columns exist
+        $query = DB::table($tableName);
+        
+        $columnInfo = DB::select("SHOW COLUMNS FROM `$tableName` ");
+        $columns = array_column($columnInfo, 'Field');
+
+        if (in_array('id', $columns)) {
+            $query->orderBy('id', 'desc');
+        } elseif (in_array('created_at', $columns)) {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        $data = $query->limit(100)->get();
+
+        return response()->json([
+            'table' => $tableName,
+            'columns' => $columns,
+            'data' => $data
+        ]);
     }
 }

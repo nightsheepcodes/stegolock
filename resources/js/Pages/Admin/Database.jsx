@@ -24,7 +24,8 @@
         Loader2,
         ChevronUp,
         ChevronDown,
-        Filter
+        Filter,
+        X
     } from 'lucide-react';
 
 export default function DatabasePage({ database, tables, integrity }) {
@@ -32,10 +33,28 @@ export default function DatabasePage({ database, tables, integrity }) {
     const [purgeLoading, setPurgeLoading] = useState(false);
     const [auditResults, setAuditResults] = useState(null);
     const [showGuidance, setShowGuidance] = useState(false);
-
+    const [selectedTable, setSelectedTable] = useState(null);
+    const [tableData, setTableData] = useState({ columns: [], data: [], loading: false });
     const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' });
     const [filterCategory, setFilterCategory] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
+
+    const fetchTableData = async (tableName) => {
+        setSelectedTable(tableName);
+        setTableData({ columns: [], data: [], loading: true });
+        try {
+            const response = await axios.get(route('admin.database.table-data', tableName));
+            setTableData({
+                columns: response.data.columns,
+                data: response.data.data,
+                loading: false
+            });
+        } catch (error) {
+            console.error("Failed to fetch table data", error);
+            setTableData({ columns: [], data: [], loading: false });
+            alert("Failed to load table data. Check console for details.");
+        }
+    };
 
     const categories = ['All', ...new Set(tables.map(t => t.category))];
 
@@ -446,7 +465,11 @@ export default function DatabasePage({ database, tables, integrity }) {
                                         </tr>
                                     ) : (
                                         filteredAndSortedTables.map(table => (
-                                            <tr key={table.name} className="hover:bg-slate-50/50 dark:hover:bg-cyber-surface/50 transition-colors group">
+                                            <tr 
+                                                key={table.name} 
+                                                onClick={() => fetchTableData(table.name)}
+                                                className="hover:bg-slate-50/50 dark:hover:bg-cyber-surface/50 transition-colors group cursor-pointer"
+                                            >
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
                                                         <div className="size-8 rounded-lg bg-slate-100 dark:bg-cyber-void border border-slate-200 dark:border-cyber-border/50 flex items-center justify-center text-slate-500 shrink-0">
@@ -513,8 +536,16 @@ export default function DatabasePage({ database, tables, integrity }) {
                         : 'bg-indigo-500 text-white shadow-indigo-500/30'
                     }`}
                 >
+                    <ShieldCheck className="size-6" />
                 </button>
             </div>
+
+            <TableDataModal 
+                isOpen={!!selectedTable} 
+                onClose={() => setSelectedTable(null)} 
+                tableName={selectedTable} 
+                tableData={tableData} 
+            />
         </AdminLayout>
     );
 }
@@ -546,5 +577,94 @@ function SortableHeader({ label, sortKey, sortConfig, requestSort, align }) {
                 </div>
             </div>
         </th>
+    );
+}
+
+function TableDataModal({ isOpen, onClose, tableName, tableData }) {
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
+            
+            <div className="relative w-full max-w-6xl max-h-[90vh] bg-white dark:bg-cyber-surface rounded-2xl shadow-2xl border border-slate-200 dark:border-cyber-border overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+                <div className="p-6 border-b border-slate-100 dark:border-cyber-border/30 flex items-center justify-between bg-slate-50/50 dark:bg-cyber-void/10">
+                    <div className="flex items-center gap-3">
+                        <div className="size-10 rounded-xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
+                            <DbIcon className="size-6 text-indigo-500" />
+                        </div>
+                        <div>
+                            <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                                Table Inspector: <span className="text-indigo-500">{tableName}</span>
+                            </h3>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">
+                                Previewing up to 100 most recent records
+                            </p>
+                        </div>
+                    </div>
+                    <button 
+                        onClick={onClose}
+                        className="p-2 hover:bg-slate-200 dark:hover:bg-cyber-void rounded-lg text-slate-400 transition-colors"
+                    >
+                        <X className="size-6" />
+                    </button>
+                </div>
+
+                <div className="flex-1 overflow-auto p-0 custom-scrollbar">
+                    {tableData.loading ? (
+                        <div className="h-64 flex flex-col items-center justify-center">
+                            <Loader2 className="size-10 text-indigo-500 animate-spin mb-4" />
+                            <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Querying database...</p>
+                        </div>
+                    ) : tableData.data.length === 0 ? (
+                        <div className="h-64 flex flex-col items-center justify-center text-slate-400">
+                            <Server className="size-12 opacity-20 mb-4" />
+                            <p className="text-sm font-bold uppercase tracking-widest">Table is empty</p>
+                        </div>
+                    ) : (
+                        <div className="min-w-full inline-block align-middle">
+                            <table className="w-full text-left border-collapse">
+                                <thead className="sticky top-0 bg-slate-50 dark:bg-cyber-void z-10 border-b border-slate-200 dark:border-cyber-border/50 shadow-sm">
+                                    <tr>
+                                        {tableData.columns.map(col => (
+                                            <th key={col} className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest border-r border-slate-100 dark:border-cyber-border/10 last:border-0">
+                                                {col}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100 dark:divide-cyber-border/10">
+                                    {tableData.data.map((row, idx) => (
+                                        <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+                                            {tableData.columns.map(col => (
+                                                <td key={col} className="px-6 py-4 text-xs font-mono text-slate-600 dark:text-slate-400 border-r border-slate-100 dark:border-cyber-border/10 last:border-0 whitespace-nowrap overflow-hidden text-ellipsis max-w-[250px]" title={String(row[col])}>
+                                                    {row[col] === null ? (
+                                                        <span className="text-rose-400 italic bg-rose-400/5 px-1.5 py-0.5 rounded">null</span>
+                                                    ) : (
+                                                        String(row[col])
+                                                    )}
+                                                </td>
+                                            ))}
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
+                
+                <div className="p-4 border-t border-slate-100 dark:border-cyber-border/30 bg-slate-50/50 dark:bg-cyber-void/10 flex items-center justify-between">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        Total rows in preview: {tableData.data.length}
+                    </p>
+                    <button 
+                        onClick={onClose}
+                        className="px-6 py-2 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg"
+                    >
+                        Close Inspector
+                    </button>
+                </div>
+            </div>
+        </div>
     );
 }
