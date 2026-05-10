@@ -50,7 +50,7 @@ class SystemManagementController extends Controller
         })->map(function($doc) {
             return [
                 'id' => $doc->document_id,
-                'name' => $doc->name,
+                'name' => $doc->filename,
                 'status' => $doc->status,
                 'expected' => $doc->fragment_count,
                 'actual_fragments' => $doc->fragments_count,
@@ -195,7 +195,7 @@ class SystemManagementController extends Controller
         if (!empty($zombieDocIds)) {
             $zombieDocs = \App\Models\Document::whereIn('document_id', array_unique($zombieDocIds))
                 ->with('user:id,name')
-                ->get(['document_id', 'name', 'user_id', 'created_at']);
+                ->get(['document_id', 'filename', 'user_id', 'created_at']);
         }
 
         return Inertia::render('Admin/Database', [

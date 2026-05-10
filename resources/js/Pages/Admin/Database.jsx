@@ -298,8 +298,8 @@ export default function DatabasePage({ database, tables, integrity }) {
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {integrity.zombie_documents.map(doc => (
-                                <div key={doc.id} className="p-4 bg-white dark:bg-cyber-surface/50 border border-rose-200 dark:border-rose-500/20 rounded-xl shadow-sm">
-                                    <p className="text-sm font-black text-slate-900 dark:text-white truncate mb-2">{doc.name}</p>
+                                <div key={doc.document_id || doc.id} className="p-4 bg-white dark:bg-cyber-surface/50 border border-rose-200 dark:border-rose-500/20 rounded-xl shadow-sm">
+                                    <p className="text-sm font-black text-slate-900 dark:text-white truncate mb-2">{doc.filename}</p>
                                     <div className="flex items-center justify-between text-[10px] font-bold text-slate-500">
                                         <span className="flex items-center gap-1"><User className="size-3" /> {doc.user.name}</span>
                                         <span className="flex items-center gap-1"><Calendar className="size-3" /> {new Date(doc.created_at).toLocaleDateString()}</span>
