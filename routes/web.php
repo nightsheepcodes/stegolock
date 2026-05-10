@@ -139,6 +139,10 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     // Cloud Management
     Route::middleware('role:db_storage_admin,superadmin')->group(function () {
         Route::get('/cloud', [\App\Http\Controllers\Admin\SystemManagementController::class, 'cloudIndex'])->name('cloud.index');
+        Route::post('/cloud/accounts', [\App\Http\Controllers\Admin\SystemManagementController::class, 'storeCloudAccount'])->name('cloud.accounts.store');
+        Route::delete('/cloud/accounts/{account}', [\App\Http\Controllers\Admin\SystemManagementController::class, 'destroyCloudAccount'])->name('cloud.accounts.destroy');
+        Route::post('/cloud/transfer', [\App\Http\Controllers\Admin\SystemManagementController::class, 'startTransfer'])->name('cloud.transfer.start');
+        Route::post('/cloud/transfer/stop', [\App\Http\Controllers\Admin\SystemManagementController::class, 'stopTransfer'])->name('cloud.transfer.stop');
     });
 
     // Database Management

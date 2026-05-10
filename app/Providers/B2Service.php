@@ -14,8 +14,8 @@ class B2Service
 
     public function __construct()
     {
-        $this->keyId = env('B2_KEY_ID');
-        $this->appKey = env('B2_APPLICATION_KEY');
+        $this->keyId = config('services.b2.key_id');
+        $this->appKey = config('services.b2.application_key');
     }
 
     public function authorize()
@@ -66,7 +66,7 @@ class B2Service
         $response = Http::timeout(60)->withHeaders([
             'Authorization' => $auth['token'],
         ])->post($auth['apiUrl'] . '/b2api/v2/b2_get_upload_url', [
-            'bucketId' => env('B2_BUCKET_ID'),
+            'bucketId' => config('services.b2.bucket_id'),
         ]);
 
         $this->cachedUploadUrl = $response->json();
@@ -163,7 +163,7 @@ class B2Service
         $response = Http::withHeaders([
             'Authorization' => $auth['token'],
         ])->post($auth['apiUrl'] . '/b2api/v2/b2_list_file_names', [
-            'bucketId' => env('B2_BUCKET_ID'),
+            'bucketId' => config('services.b2.bucket_id'),
             'startFileName' => $fileName,
             'maxFileCount' => 1,
             'prefix' => $fileName,
@@ -185,9 +185,13 @@ class B2Service
         $response = Http::withHeaders([
             'Authorization' => $auth['token'],
         ])->post($auth['apiUrl'] . '/b2api/v2/b2_list_file_names', [
-            'bucketId' => env('B2_BUCKET_ID'),
+            'bucketId' => config('services.b2.bucket_id'),
             'maxFileCount' => 300,
         ]);
+
+        if (!$response->successful()) {
+            return ['files' => []];
+        }
 
         return $response->json();
     }
@@ -204,15 +208,23 @@ class B2Service
             $response = Http::withHeaders([
                 'Authorization' => $auth['token'],
             ])->post($auth['apiUrl'] . '/b2api/v2/b2_list_file_names', [
-                'bucketId' => env('B2_BUCKET_ID'),
+                'bucketId' => config('services.b2.bucket_id'),
                 'maxFileCount' => 200,
                 'startFileName' => $nextFileName, // key part
             ]);
 
+            if (!$response->successful()) {
+                \Illuminate\Support\Facades\Log::error("B2 list_file_names failed: " . $response->body());
+                break;
+            }
+
             $data = $response->json();
 
-            $files = array_merge($files, $data['files']);
+            if (!isset($data['files'])) {
+                break;
+            }
 
+            $files = array_merge($files, $data['files']);
             $nextFileName = $data['nextFileName'] ?? null;
 
         } while ($nextFileName);
@@ -228,7 +240,7 @@ class B2Service
         $response = Http::withHeaders([
             'Authorization' => $auth['token'],
         ])->post($auth['apiUrl'] . '/b2api/v2/b2_list_file_versions', [
-            'bucketId' => env('B2_BUCKET_ID'),
+            'bucketId' => config('services.b2.bucket_id'),
             'maxFileCount' => 100,
         ]);
 

@@ -1,33 +1,77 @@
-import AdminLayout from '@/Layouts/Admin/AdminLayout';
-import { Head } from '@inertiajs/react';
-import { useState } from 'react';
-import axios from 'axios';
-import { 
-    Server, 
-    Database as DbIcon, 
-    Table, 
-    Activity, 
-    Cpu, 
-    HardDrive,
-    Info,
-    RefreshCw,
-    ShieldAlert,
-    ShieldCheck,
-    Skull,
-    FileWarning,
-    User,
-    Calendar,
-    Search,
-    Trash2,
-    CheckCircle2,
-    AlertTriangle,
-    Loader2
-} from 'lucide-react';
+    import AdminLayout from '@/Layouts/Admin/AdminLayout';
+    import { Head } from '@inertiajs/react';
+    import { useState, useMemo } from 'react';
+    import axios from 'axios';
+    import { 
+        Server, 
+        Database as DbIcon, 
+        Table, 
+        Activity, 
+        Cpu, 
+        HardDrive,
+        Info,
+        RefreshCw,
+        ShieldAlert,
+        ShieldCheck,
+        Skull,
+        FileWarning,
+        User,
+        Calendar,
+        Search,
+        Trash2,
+        CheckCircle2,
+        AlertTriangle,
+        Loader2,
+        ChevronUp,
+        ChevronDown,
+        Filter
+    } from 'lucide-react';
 
 export default function DatabasePage({ database, tables, integrity }) {
     const [auditLoading, setAuditLoading] = useState(false);
     const [purgeLoading, setPurgeLoading] = useState(false);
     const [auditResults, setAuditResults] = useState(null);
+    const [showGuidance, setShowGuidance] = useState(false);
+
+    const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' });
+    const [filterCategory, setFilterCategory] = useState('All');
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const categories = ['All', ...new Set(tables.map(t => t.category))];
+
+    const filteredAndSortedTables = useMemo(() => {
+        let result = tables;
+
+        if (filterCategory !== 'All') {
+            result = result.filter(t => t.category === filterCategory);
+        }
+
+        if (searchQuery) {
+            const query = searchQuery.toLowerCase();
+            result = result.filter(t => t.name.toLowerCase().includes(query) || t.description.toLowerCase().includes(query));
+        }
+
+        return [...result].sort((a, b) => {
+            let aVal = a[sortConfig.key];
+            let bVal = b[sortConfig.key];
+            
+            // Handle nulls for last_updated
+            if (aVal === null) aVal = '';
+            if (bVal === null) bVal = '';
+
+            if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+            if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+    }, [tables, sortConfig, filterCategory, searchQuery]);
+
+    const requestSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
 
     const formatBytes = (bytes, decimals = 2) => {
         if (!+bytes) return '0 Bytes';
@@ -311,66 +355,8 @@ export default function DatabasePage({ database, tables, integrity }) {
                 )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Table Breakdown */}
-                    <div className="lg:col-span-2 bg-white dark:bg-cyber-surface/30 rounded-2xl border border-slate-200 dark:border-cyber-border/50 backdrop-blur-sm shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden">
-                        <div className="p-6 border-b border-slate-100 dark:border-cyber-border/30 flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <Table className="size-5 text-orange-500" />
-                                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Relational Architecture</h3>
-                            </div>
-                            <button 
-                                onClick={() => window.location.reload()}
-                                className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-cyber-void transition-colors text-slate-500"
-                            >
-                                <RefreshCw className="size-4" />
-                            </button>
-                        </div>
-
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="bg-slate-50/50 dark:bg-cyber-void/10 border-b border-slate-100 dark:border-cyber-border/30">
-                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Table</th>
-                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Engine</th>
-                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Rows</th>
-                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Total Size</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-50 dark:divide-cyber-border/10">
-                                    {tables.map(table => (
-                                        <tr key={table.name} className="hover:bg-slate-50/50 dark:hover:bg-cyber-surface/50 transition-colors group">
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="size-8 rounded-lg bg-slate-100 dark:bg-cyber-void border border-slate-200 dark:border-cyber-border/50 flex items-center justify-center text-slate-500">
-                                                        <DbIcon className="size-4" />
-                                                    </div>
-                                                    <span className="text-sm font-bold text-slate-900 dark:text-white">{table.name}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 text-center">
-                                                <span className="px-2 py-1 rounded-md bg-slate-100 dark:bg-cyber-void text-[10px] font-black text-slate-500 uppercase tracking-wider">
-                                                    {table.engine}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-center">
-                                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                                                    {table.rows.toLocaleString()}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <span className="text-xs font-black text-orange-500">
-                                                    {formatBytes(table.size_bytes)}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    {/* DB Info Card */}
-                    <div className="space-y-6">
+                    {/* DB Info Card (Now on Left, takes 1 column) */}
+                    <div className="space-y-6 lg:col-span-1">
                         <div className="p-6 bg-slate-900 rounded-2xl text-white shadow-2xl shadow-slate-900/40 relative overflow-hidden group">
                             <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-150 transition-transform duration-700">
                                 <Cpu className="size-32" />
@@ -398,17 +384,136 @@ export default function DatabasePage({ database, tables, integrity }) {
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div className="p-6 bg-white dark:bg-cyber-surface/30 rounded-2xl border border-slate-200 dark:border-cyber-border/50 backdrop-blur-sm">
-                            <h4 className="text-sm font-black text-slate-900 dark:text-white mb-4">Integrity Guidance</h4>
+                    {/* Table Breakdown (Now on Right, takes 2 columns) */}
+                    <div className="lg:col-span-2 bg-white dark:bg-cyber-surface/30 rounded-2xl border border-slate-200 dark:border-cyber-border/50 backdrop-blur-sm shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden">
+                        <div className="p-6 border-b border-slate-100 dark:border-cyber-border/30 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <Table className="size-5 text-orange-500" />
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Relational Architecture</h3>
+                            </div>
+                            <button 
+                                onClick={() => window.location.reload()}
+                                className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-cyber-void transition-colors text-slate-500"
+                            >
+                                <RefreshCw className="size-4" />
+                            </button>
+                        </div>
+
+                        {/* Filters & Search */}
+                        <div className="p-4 border-b border-slate-100 dark:border-cyber-border/30 bg-slate-50/50 dark:bg-cyber-void/5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div className="relative w-full sm:w-64">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Search tables..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full pl-9 pr-4 py-2 bg-white dark:bg-cyber-surface/50 border border-slate-200 dark:border-cyber-border/50 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-slate-900 dark:text-white"
+                                />
+                            </div>
+                            <div className="flex items-center gap-2 w-full sm:w-auto">
+                                <Filter className="size-4 text-slate-400" />
+                                <select
+                                    value={filterCategory}
+                                    onChange={(e) => setFilterCategory(e.target.value)}
+                                    className="w-full sm:w-auto px-3 py-2 bg-white dark:bg-cyber-surface/50 border border-slate-200 dark:border-cyber-border/50 rounded-lg text-sm text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-indigo-500"
+                                >
+                                    {categories.map(cat => (
+                                        <option key={cat} value={cat}>{cat}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="bg-slate-50/50 dark:bg-cyber-void/10 border-b border-slate-100 dark:border-cyber-border/30">
+                                        <SortableHeader label="Table" sortKey="name" sortConfig={sortConfig} requestSort={requestSort} align="left" />
+                                        <SortableHeader label="Category" sortKey="category" sortConfig={sortConfig} requestSort={requestSort} align="center" />
+                                        <SortableHeader label="Rows" sortKey="rows" sortConfig={sortConfig} requestSort={requestSort} align="center" />
+                                        <SortableHeader label="Last Updated" sortKey="last_updated" sortConfig={sortConfig} requestSort={requestSort} align="right" />
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-50 dark:divide-cyber-border/10">
+                                    {filteredAndSortedTables.length === 0 ? (
+                                        <tr>
+                                            <td colSpan="4" className="px-6 py-8 text-center text-slate-500 text-sm font-bold">
+                                                No tables match your search or filter.
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        filteredAndSortedTables.map(table => (
+                                            <tr key={table.name} className="hover:bg-slate-50/50 dark:hover:bg-cyber-surface/50 transition-colors group">
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="size-8 rounded-lg bg-slate-100 dark:bg-cyber-void border border-slate-200 dark:border-cyber-border/50 flex items-center justify-center text-slate-500 shrink-0">
+                                                            <DbIcon className="size-4" />
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-sm font-bold text-slate-900 dark:text-white block">{table.name}</span>
+                                                            <span className="text-[10px] font-bold text-slate-400 block mt-0.5">{table.description}</span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 text-center">
+                                                    <span className="px-2 py-1 rounded-md bg-slate-100 dark:bg-cyber-void text-[9px] font-black text-slate-500 uppercase tracking-wider">
+                                                        {table.category}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 text-center">
+                                                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                                                        {table.rows.toLocaleString()}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 text-right">
+                                                    <span className="text-[10px] font-bold text-slate-500">
+                                                        {table.last_updated ? new Date(table.last_updated).toLocaleString() : 'N/A'}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Floating Integrity Guidance Button */}
+            <div className="fixed bottom-6 right-6 z-50">
+                {showGuidance && (
+                    <>
+                        <div 
+                            className="fixed inset-0 z-40"
+                            onClick={() => setShowGuidance(false)}
+                        />
+                        <div className="absolute bottom-16 right-0 w-80 p-6 bg-white dark:bg-cyber-surface/90 rounded-2xl border border-slate-200 dark:border-cyber-border/50 backdrop-blur-md shadow-2xl shadow-slate-900/20 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                            <h4 className="text-sm font-black text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                                <ShieldCheck className="size-4 text-indigo-500" />
+                                Integrity Guidance
+                            </h4>
                             <div className="space-y-4">
                                 <GuidelineItem text="Fragment redundancy: Each fragment must exist in B2 locked/ prefix." />
                                 <GuidelineItem text="Decryption Safety: Zombie documents cannot be decrypted." />
                                 <GuidelineItem text="Referential Audit: Automated check for dead cloud links." />
                             </div>
                         </div>
-                    </div>
-                </div>
+                    </>
+                )}
+                
+                <button 
+                    onClick={() => setShowGuidance(!showGuidance)}
+                    className={`p-4 rounded-full shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 ${
+                        showGuidance 
+                        ? 'bg-slate-800 text-white shadow-slate-900/30 dark:bg-white dark:text-slate-900' 
+                        : 'bg-indigo-500 text-white shadow-indigo-500/30'
+                    }`}
+                >
+                </button>
             </div>
         </AdminLayout>
     );
@@ -420,5 +525,26 @@ function GuidelineItem({ text }) {
             <ShieldCheck className="size-4 text-emerald-500 shrink-0" />
             <span>{text}</span>
         </div>
+    );
+}
+
+function SortableHeader({ label, sortKey, sortConfig, requestSort, align }) {
+    const isActive = sortConfig.key === sortKey;
+    
+    return (
+        <th 
+            className={`px-6 py-4 text-[10px] font-black uppercase tracking-widest cursor-pointer hover:bg-slate-100 dark:hover:bg-cyber-surface/50 transition-colors ${
+                isActive ? 'text-indigo-500' : 'text-slate-400'
+            }`}
+            onClick={() => requestSort(sortKey)}
+        >
+            <div className={`flex items-center gap-1 ${align === 'right' ? 'justify-end' : align === 'center' ? 'justify-center' : 'justify-start'}`}>
+                {label}
+                <div className="flex flex-col">
+                    <ChevronUp className={`size-2.5 -mb-0.5 ${isActive && sortConfig.direction === 'asc' ? 'text-indigo-500' : 'text-slate-300 dark:text-slate-600'}`} />
+                    <ChevronDown className={`size-2.5 ${isActive && sortConfig.direction === 'desc' ? 'text-indigo-500' : 'text-slate-300 dark:text-slate-600'}`} />
+                </div>
+            </div>
+        </th>
     );
 }

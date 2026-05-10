@@ -64,4 +64,16 @@ class Document extends Model
     {
         return $this->hasMany(DocumentActivity::class, 'document_id', 'document_id');
     }
+
+    public function stegoFiles()
+    {
+        return $this->hasManyThrough(
+            StegoFile::class,
+            StegoMap::class,
+            'document_id',
+            'stego_map_id',
+            'document_id',
+            'stego_map_id'
+        );
+    }
 }

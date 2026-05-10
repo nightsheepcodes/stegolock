@@ -9,8 +9,12 @@ use App\Models\StegoFile;
 use App\Models\Fragment;
 use App\Models\StegoMap;
 use App\Providers\B2Service;
+use App\Models\CloudAccount;
+use App\Jobs\TransferStegoFilesJob;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Process;
 use Inertia\Inertia;
 
 class SystemManagementController extends Controller
@@ -79,7 +83,7 @@ class SystemManagementController extends Controller
         ]);
 
         $b2Service = new B2Service();
-        $results = $b2Service->deleteFilesBatch($request->files);
+        $results = $b2Service->deleteFilesBatch($request->input('files'));
 
         return response()->json([
             'success' => true,
@@ -91,9 +95,8 @@ class SystemManagementController extends Controller
     public function cloudIndex()
     {
         $totalStorageLimit = User::sum('storage_limit');
-        $users = User::where('role', User::ROLE_USER)
-            ->orderBy('storage_used', 'desc')
-            ->get(['id', 'name', 'email', 'storage_used', 'storage_limit', 'is_active']);
+        $users = User::orderBy('storage_used', 'desc')
+            ->get(['id', 'name', 'email', 'role', 'storage_used', 'storage_limit', 'is_active']);
 
         // Fetch Real-time Cloud Stats via B2 API
         $b2Service = new \App\Providers\B2Service();
@@ -135,7 +138,9 @@ class SystemManagementController extends Controller
                 'b2_bucket' => env('B2_BUCKET_ID'),
                 'file_count' => $realStats['file_count']
             ],
-            'users' => $users
+            'users' => $users,
+            'cloudAccounts' => CloudAccount::all(),
+            'transferStatus' => Cache::get('stego_transfer_status', ['running' => false])
         ]);
     }
 
@@ -143,22 +148,52 @@ class SystemManagementController extends Controller
     {
         $dbName = config('database.connections.mysql.database');
         
+        // Table Dictionary for Category and Description
+        $tableDict = [
+            'users' => ['category' => 'Core Data', 'desc' => 'System users and quotas'],
+            'documents' => ['category' => 'Core Data', 'desc' => 'Uploaded files metadata'],
+            'folders' => ['category' => 'Core Data', 'desc' => 'Virtual directory structure'],
+            'document_shares' => ['category' => 'Core Data', 'desc' => 'File access permissions'],
+            'fragments' => ['category' => 'Storage & Crypto', 'desc' => 'Encrypted file pieces'],
+            'stego_maps' => ['category' => 'Storage & Crypto', 'desc' => 'Fragment to cloud mapping'],
+            'stego_files' => ['category' => 'Storage & Crypto', 'desc' => 'Cloud file pointers'],
+            'document_activities' => ['category' => 'Logs & Audit', 'desc' => 'File action history'],
+            'jobs' => ['category' => 'Background Tasks', 'desc' => 'Active queue workers'],
+            'failed_jobs' => ['category' => 'Background Tasks', 'desc' => 'Crashed background tasks'],
+            'job_batches' => ['category' => 'Background Tasks', 'desc' => 'Grouped queue tasks'],
+            'sessions' => ['category' => 'System & Auth', 'desc' => 'Active user sessions'],
+            'migrations' => ['category' => 'System & Auth', 'desc' => 'Schema versions'],
+            'password_reset_tokens' => ['category' => 'System & Auth', 'desc' => 'Auth recovery tokens'],
+            'cache' => ['category' => 'System & Auth', 'desc' => 'Framework cache state'],
+            'cache_locks' => ['category' => 'System & Auth', 'desc' => 'Atomic cache locks'],
+        ];
+
         // 1. Basic Schema Stats
-        $tables = DB::select("
+        $tablesRaw = DB::select("
             SELECT 
                 table_name AS name, 
-                engine, 
                 table_rows AS `rows`, 
-                data_length + index_length AS size_bytes,
-                data_length AS data_bytes,
-                index_length AS index_bytes
+                UPDATE_TIME AS last_updated,
+                data_length + index_length AS size_bytes
             FROM information_schema.TABLES 
             WHERE table_schema = ?
         ", [$dbName]);
 
-        $dbSize = array_reduce($tables, function($carry, $item) {
-            return $carry + $item->size_bytes;
-        }, 0);
+        $tables = [];
+        $dbSize = 0;
+
+        foreach ($tablesRaw as $t) {
+            $dbSize += $t->size_bytes;
+            $info = $tableDict[$t->name] ?? ['category' => 'Other', 'desc' => 'System table'];
+            
+            $tables[] = [
+                'name' => $t->name,
+                'rows' => $t->rows,
+                'last_updated' => $t->last_updated,
+                'category' => $info['category'],
+                'description' => $info['desc']
+            ];
+        }
 
         // 2. Data Integrity Audit (Cloud vs DB Referential Integrity)
         $b2Service = new \App\Providers\B2Service();
@@ -225,5 +260,56 @@ class SystemManagementController extends Controller
         $user->update(['storage_limit' => $request->storage_limit]);
 
         return back()->with('success', "Storage limit for {$user->name} updated successfully.");
+    }
+
+    public function storeCloudAccount(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'key_id' => 'required|string',
+            'application_key' => 'required|string',
+            'bucket_name' => 'required|string',
+        ]);
+
+        CloudAccount::create($validated);
+
+        return back()->with('success', 'Cloud account added successfully.');
+    }
+
+    public function destroyCloudAccount(CloudAccount $account)
+    {
+        $account->delete();
+        return back()->with('success', 'Cloud account removed.');
+    }
+
+    public function startTransfer(Request $request)
+    {
+        $request->validate([
+            'target_account_id' => 'required|exists:cloud_accounts,id'
+        ]);
+
+        TransferStegoFilesJob::dispatch($request->target_account_id);
+
+        Cache::put('stego_transfer_status', [
+            'running' => true,
+            'started_at' => now()->toDateTimeString(),
+            'target_id' => $request->target_account_id
+        ], now()->addHours(2));
+
+        return back()->with('success', 'Transfer process started in the background.');
+    }
+
+    public function stopTransfer()
+    {
+        // Kill rclone processes
+        if (PHP_OS_FAMILY === 'Windows') {
+            Process::run('taskkill /F /IM rclone.exe');
+        } else {
+            Process::run('pkill rclone');
+        }
+
+        Cache::forget('stego_transfer_status');
+
+        return back()->with('success', 'Transfer process stopped and cleaned up.');
     }
 }
