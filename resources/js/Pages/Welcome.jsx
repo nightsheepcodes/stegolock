@@ -454,6 +454,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion, hasCompleted
                             <ul className="space-y-4 text-slate-500 dark:text-slate-400">
                                 <li><Link href={route('login')} className="hover:text-cyber-accent transition">Login</Link></li>
                                 <li><Link href={route('register')} className="hover:text-cyber-accent transition">Register</Link></li>
+                                <li><Link href={route('presentation')} className="hover:text-cyber-accent transition font-bold text-cyber-accent">Presentation</Link></li>
                                 <li><a href="#how-it-works" className="hover:text-cyber-accent transition">How it Works</a></li>
                             </ul>
                         </div>

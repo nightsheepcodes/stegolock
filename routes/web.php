@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 use App\Models\SurveyResponse;
+use App\Http\Controllers\PresentationController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -19,6 +20,8 @@ Route::get('/', function () {
             : false,
     ]);
 });
+
+Route::get('/presentation', [PresentationController::class, 'index'])->name('presentation');
 
 Route::middleware('auth')->group(function () {
     Route::get('/survey', [SurveyController::class, 'index'])->name('survey');
