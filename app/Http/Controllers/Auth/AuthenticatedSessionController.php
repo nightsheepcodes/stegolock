@@ -59,7 +59,13 @@ class AuthenticatedSessionController extends Controller
         }
 
         // Decrypt master key
-        $encryption_key = hash_pbkdf2('sha256', $password_derivedKey, $ek_salt, 100000, 32, true);
+        $encryption_key = hash_pbkdf2(
+            'sha256',
+            $password_derivedKey,
+            $ek_salt,
+            100000,
+            32,
+            true);
 
         $master_key = openssl_decrypt(
             base64_decode($user->master_key_enc),

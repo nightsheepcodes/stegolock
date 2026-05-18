@@ -569,7 +569,12 @@ class DocumentController extends Controller
 
             // 4. Generate wrapping metadata
             $dk_salt = random_bytes(Constant::DK_SALT_LEN);
-            $wrapping_key = hash_hkdf('sha256', $masterKey, 32, 'dek-wrapping-key', $dk_salt);
+            $wrapping_key = hash_hkdf(
+                'sha256',
+                $masterKey,
+                32,
+                'dek-wrapping-key',
+                $dk_salt);
             $dek_nonce = random_bytes(Constant::NONCE_LEN);
             $dek_tag = '';
 

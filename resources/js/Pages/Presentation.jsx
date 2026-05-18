@@ -46,25 +46,27 @@ export default function Presentation({ stats = {} }) {
             title: "StegoLock",
             subtitle: "Final Defense: Chapter 4 & 5",
             content: (
-                <div className="flex flex-col items-center justify-center text-center space-y-12 animate-fade-in py-12">
-                    <div className="relative group">
-                        <div className="relative inline-flex items-center justify-center p-12 bg-gradient-to-br from-cyber-accent via-indigo-500 to-purple-600 rounded-[3.5rem] shadow-2xl shadow-cyan-500/50 dark:shadow-[0_0_60px_rgba(34,211,238,0.4)] animate-float group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
-                            <Shield className="size-32 text-white drop-shadow-2xl relative z-10" />
-                            <div className="absolute inset-0 rounded-[3.5rem] bg-gradient-to-tr from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="flex flex-col items-center justify-center text-center animate-fade-in py-12">
+                    <div className="group flex flex-col items-center cursor-default">
+                        <div className="relative mb-12">
+                            <div className="relative inline-flex items-center justify-center p-12 bg-gradient-to-br from-cyber-accent via-indigo-500 to-purple-600 rounded-[3.5rem] shadow-2xl shadow-cyan-500/50 dark:shadow-[0_0_60px_rgba(34,211,238,0.4)] animate-float group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
+                                <Shield className="size-32 text-white drop-shadow-2xl relative z-10" />
+                                <div className="absolute inset-0 rounded-[3.5rem] bg-gradient-to-tr from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            </div>
+                            {/* Glow behind the icon */}
+                            <div className="absolute inset-0 bg-cyber-accent/20 blur-[80px] -z-10 rounded-full animate-pulse"></div>
                         </div>
-                        {/* Glow behind the icon */}
-                        <div className="absolute inset-0 bg-cyber-accent/20 blur-[80px] -z-10 rounded-full animate-pulse"></div>
-                    </div>
 
-                    <div className="space-y-6">
-                        <h1 className="text-8xl lg:text-9xl font-[900] text-slate-900 dark:text-white tracking-tighter leading-none transform origin-top group-hover:scale-105 inline-block transition-all duration-500">
-                            Stego<span className="text-cyber-accent">Lock</span>
-                        </h1>
-                        <div className="h-2 w-32 bg-cyber-accent mx-auto rounded-full shadow-glow-cyan" />
-                        <p className="text-lg text-slate-500 dark:text-slate-400 font-black max-w-4xl mx-auto leading-relaxed uppercase tracking-[0.1em]">
-                            A CLOUD-BASED WEB APPLICATION BUILT ON A RECONSTRUCTION-DEPENDENT SECURITY ARCHITECTURE FOR DIGITAL DOCUMENT STORAGE <br/>
-                            <span className="text-xs font-black uppercase tracking-[0.4em] text-slate-400 mt-12 block">Presented by THE CRIP</span>
-                        </p>
+                        <div className="space-y-6">
+                            <h1 className="text-8xl lg:text-9xl font-[900] text-slate-900 dark:text-white tracking-tighter leading-none transform origin-top group-hover:scale-105 inline-block transition-all duration-300 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-cyber-accent group-hover:to-indigo-500">
+                                Stego<span className="text-cyber-accent group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-cyber-accent group-hover:to-indigo-500 transition-all duration-300">Lock</span>
+                            </h1>
+                            <div className="h-2 w-32 bg-cyber-accent mx-auto rounded-full shadow-glow-cyan" />
+                            <p className="text-lg text-slate-500 dark:text-slate-400 font-black max-w-4xl mx-auto leading-relaxed uppercase tracking-[0.1em]">
+                                A CLOUD-BASED WEB APPLICATION BUILT ON A <span className="text-cyber-accent font-black drop-shadow-[0_0_10px_rgba(34,211,238,0.3)]">RECONSTRUCTION-DEPENDENT SECURITY ARCHITECTURE</span> FOR DIGITAL DOCUMENT STORAGE <br/>
+                                <span className="text-xs font-black uppercase tracking-[0.4em] text-slate-400 mt-12 block">Presented by THE CRIP</span>
+                            </p>
+                        </div>
                     </div>
                 </div>
             )
@@ -136,14 +138,14 @@ export default function Presentation({ stats = {} }) {
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center flex-1 min-h-0 py-8">
                         {/* Left: Figure 1 (Taking 7 columns, but with a more compact container) */}
                         <div className="lg:col-span-7 h-full flex flex-col items-center justify-center min-h-0 relative">
-                            <div className="absolute inset-0 bg-cyber-accent/5 blur-[80px] rounded-full scale-75"></div>
-                            <div className="glass-panel p-5 rounded-[2.5rem] bg-white dark:bg-white border-cyber-accent/20 shadow-xl relative group w-[90%] h-[85%] flex items-center justify-center overflow-hidden ring-1 ring-white/10">
+                            <div className="absolute inset-0 bg-cyber-accent/10 blur-[80px] rounded-full scale-75 opacity-40"></div>
+                            <div className="glass-panel p-8 rounded-[2.5rem] bg-white dark:bg-slate-900/50 border-slate-200 dark:border-cyber-accent/20 shadow-2xl relative group w-[92%] h-[88%] flex items-center justify-center overflow-hidden ring-1 ring-slate-100 dark:ring-white/10">
                                 <img 
                                     src="/assets/images/figure1.png" 
                                     alt="Figure 1: Reconstruction-Dependent Security Architecture" 
                                     className="max-h-full max-w-full object-contain transition-all duration-700 group-hover:scale-[1.02]"
                                 />
-                                <div className="absolute bottom-3 right-5 text-[8px] font-black text-slate-400 uppercase tracking-widest opacity-50">
+                                <div className="absolute bottom-4 right-6 text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest opacity-70">
                                     Figure 1. The Reconstruction-Dependent Security Architecture
                                 </div>
                             </div>
@@ -154,8 +156,8 @@ export default function Presentation({ stats = {} }) {
                             {/* Animation Area */}
                             <div className="relative flex-1 min-h-[350px] flex items-center justify-center">
                                 {/* HUD Orbital Rings */}
-                                <div className="absolute size-[280px] rounded-full border border-cyber-accent/10 animate-[spin_20s_linear_infinite]"></div>
-                                <div className="absolute size-[340px] rounded-full border border-dashed border-cyber-accent/5 animate-[spin_30s_linear_infinite_reverse]"></div>
+                                <div className="absolute size-[280px] rounded-full border border-slate-200 dark:border-cyber-accent/10 animate-[spin_20s_linear_infinite]"></div>
+                                <div className="absolute size-[340px] rounded-full border border-dashed border-slate-100 dark:border-cyber-accent/5 animate-[spin_30s_linear_infinite_reverse]"></div>
                                 
                                 {/* Revolving Container */}
                                 <div className="relative w-full h-full flex items-center justify-center">
@@ -169,7 +171,7 @@ export default function Presentation({ stats = {} }) {
                                             className="absolute animate-orbital"
                                             style={{ animationDelay: pillar.delay }}
                                         >
-                                            <div className="glass-panel size-32 rounded-full border-cyber-accent/30 flex flex-col items-center justify-center text-center p-3 group hover:border-cyber-accent transition-all duration-500 shadow-glow-cyan/5 bg-white/10 backdrop-blur-2xl ring-1 ring-white/10 hover:shadow-glow-cyan/20">
+                                            <div className="glass-panel size-32 rounded-full border-slate-200 dark:border-cyber-accent/30 flex flex-col items-center justify-center text-center p-3 group hover:border-cyber-accent transition-all duration-500 shadow-xl dark:shadow-glow-cyan/5 bg-white/80 dark:bg-white/10 backdrop-blur-2xl ring-1 ring-slate-100 dark:ring-white/10 hover:shadow-glow-cyan/20">
                                                 <div className="size-9 rounded-xl bg-cyber-accent/10 flex items-center justify-center text-cyber-accent mb-1 group-hover:scale-110 transition-transform">
                                                     {pillar.icon}
                                                 </div>
@@ -412,7 +414,7 @@ export default function Presentation({ stats = {} }) {
                         <div className="relative group flex flex-col items-center justify-center">
                             <div className="absolute -inset-10 bg-cyber-accent/10 blur-[120px] rounded-full group-hover:bg-cyber-accent/15 transition-colors"></div>
                             <div className="relative text-center">
-                                <div className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.4em] mb-6">Generalized Weighted Mean</div>
+                                <div className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.4em] mb-6">GENERAL WEIGHTED MEAN</div>
                                 <div className="text-[8rem] sm:text-[10rem] font-black text-slate-900 dark:text-white leading-none tracking-tighter drop-shadow-2xl">
                                     {safeStats.surveyGWM}
                                 </div>
@@ -421,25 +423,37 @@ export default function Presentation({ stats = {} }) {
                                         <Trophy key={i} className={`size-8 sm:size-10 ${i <= Math.floor(safeStats.surveyGWM) ? 'text-cyber-accent drop-shadow-[0_0_15px_rgba(34,211,238,0.5)]' : 'text-slate-200 dark:text-slate-800'}`} />
                                     ))}
                                 </div>
-                                <div className="mt-10 px-8 py-3 bg-cyber-accent/10 border border-cyber-accent/30 text-cyber-accent rounded-full font-black uppercase tracking-[0.2em] text-xs inline-block backdrop-blur-sm">
-                                    Interpretation: Very Great Extent
+                                <div className="mt-10 flex flex-col items-center">
+                                    <div className="px-10 py-4 bg-cyber-accent/10 border border-cyber-accent/30 text-cyber-accent rounded-[2rem] font-black uppercase tracking-[0.2em] text-xs inline-block backdrop-blur-sm text-center leading-tight">
+                                        <span className="text-xl block mb-1 tracking-widest">STRONGLY AGREE</span>
+                                        <span className="text-[9px] opacity-60 tracking-[0.4em] font-bold">Likert Scale Description</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div className="grid grid-cols-1 gap-4">
+                        <div className="grid grid-cols-1 gap-3">
                             {[
-                                { title: "Security Integrity", desc: "100% verification of fragments via GCM tags.", icon: <ShieldCheck className="size-5"/> },
-                                { title: "Performance Efficiency", desc: `Avg Latency: ${safeStats.avgLockTime}s (Lock) / ${safeStats.avgUnlockTime}s (Unlock).`, icon: <Zap className="size-5"/> },
-                                { title: "Accountability", desc: "Complete system-wide audit trail for all sensitive actions.", icon: <BarChart3 className="size-5"/> },
-                                { title: "Usability Aesthetics", desc: "Premium React-based interface with high operability.", icon: <Target className="size-5"/> }
+                                { title: "Performance Efficiency", score: "4.60", desc: "Strongly Agree", icon: <Zap className="size-4"/>, color: "text-blue-500" },
+                                { title: "Functional Suitability", score: "4.55", desc: "Strongly Agree", icon: <CheckCircle2 className="size-4"/>, color: "text-emerald-500" },
+                                { title: "Security", score: "4.55", desc: "Strongly Agree", icon: <ShieldCheck className="size-4"/>, color: "text-cyber-accent" },
+                                { title: "Usability", score: "4.53", desc: "Strongly Agree", icon: <Users className="size-4"/>, color: "text-indigo-500" },
+                                { title: "Reliability", score: "4.42", desc: "Agree", icon: <Shield className="size-4"/>, color: "text-amber-500" }
                             ].map((item, i) => (
-                                <div key={i} className="glass-panel p-4 rounded-2xl flex items-center gap-4 border-slate-200 dark:border-cyber-border/30 hover:border-cyber-accent transition-all">
-                                    <div className="size-10 rounded-xl bg-cyber-accent/10 flex items-center justify-center text-cyber-accent shrink-0">
-                                        {item.icon}
+                                <div key={i} className="glass-panel p-3 px-5 rounded-2xl flex items-center justify-between border-slate-200 dark:border-cyber-border/30 hover:border-cyber-accent transition-all group">
+                                    <div className="flex items-center gap-4">
+                                        <div className={`size-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center ${item.color} group-hover:scale-110 transition-transform`}>
+                                            {item.icon}
+                                        </div>
+                                        <div>
+                                            <div className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-tight leading-none">{item.title}</div>
+                                            <div className="text-[9px] text-slate-400 font-bold mt-1.5 uppercase tracking-[0.2em]">{item.desc}</div>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <div className="text-sm font-black text-slate-900 dark:text-white tracking-tight">{item.title}</div>
-                                        <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">{item.desc}</p>
+                                    <div className="flex flex-col items-end">
+                                        <div className="text-2xl font-black text-cyber-accent tracking-tighter leading-none">{item.score}</div>
+                                        <div className="w-16 h-1 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden mt-2 border border-slate-200 dark:border-white/5">
+                                            <div className="h-full bg-gradient-to-r from-cyber-accent to-indigo-500 rounded-full transition-all duration-1000" style={{ width: `${(parseFloat(item.score) / 5) * 100}%` }}></div>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
@@ -518,7 +532,7 @@ export default function Presentation({ stats = {} }) {
                             { 
                                 title: "Concealment & Mobility", 
                                 subtitle: "Future Research",
-                                items: ["AI-driven Cover Generation", "Dynamic Cloud Shard Relocation"],
+                                items: ["AI-driven Cover Generation", "Dynamic Cloud Files Relocation"],
                                 icon: <Layers className="size-6" />,
                                 color: "purple"
                             },
@@ -560,9 +574,13 @@ export default function Presentation({ stats = {} }) {
             subtitle: "Final Defense | StegoLock Project",
             content: (
                 <div className="flex flex-col items-center justify-center text-center space-y-12 h-full">
-                    <div className="relative">
-                        <div className="absolute inset-0 bg-cyber-accent/20 blur-[80px] rounded-full animate-pulse"></div>
-                        <Shield className="size-32 text-cyber-accent relative z-10" />
+                    <div className="relative group">
+                        <div className="relative inline-flex items-center justify-center p-12 bg-gradient-to-br from-cyber-accent via-indigo-500 to-purple-600 rounded-[3.5rem] shadow-2xl shadow-cyan-500/50 dark:shadow-[0_0_60px_rgba(34,211,238,0.4)] animate-float group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
+                            <Shield className="size-32 text-white drop-shadow-2xl relative z-10" />
+                            <div className="absolute inset-0 rounded-[3.5rem] bg-gradient-to-tr from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        </div>
+                        {/* Glow behind the icon */}
+                        <div className="absolute inset-0 bg-cyber-accent/20 blur-[80px] -z-10 rounded-full animate-pulse"></div>
                     </div>
                     <div className="space-y-4">
                         <h2 className="text-5xl font-black text-white">QUESTIONS & ANSWERS</h2>
