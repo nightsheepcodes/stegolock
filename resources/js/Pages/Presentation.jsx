@@ -6,9 +6,10 @@ import {
     CheckCircle2, AlertTriangle, Zap, Target,
     Trophy, Users, Cpu, Database, Moon, Sun,
     Share2, Compass, Activity, FileText, Volume2, Image,
-    FolderOpen, HelpCircle, ChevronUp, ChevronDown
+    FolderOpen, HelpCircle, ChevronUp, ChevronDown, Cloud, FileDigit
 } from 'lucide-react';
 import { DecorativeBackground } from '@/Components/DecorativeBackground';
+import { usePresentationSlides } from '@/Components/PresentationSlides';
 
 export default function Presentation({ stats = {} }) {
     // Theme Management
@@ -113,525 +114,7 @@ export default function Presentation({ stats = {} }) {
         setDemoActive(true);
     };
 
-    const slides = useMemo(() => [
-        // Slide 1: Keep it. all goods
-        {
-            title: "StegoLock",
-            subtitle: "Final Defense Presentation",
-            content: (
-                <div className="flex flex-col items-center justify-center text-center animate-fade-in py-8 h-full">
-                    <div className="group flex flex-col items-center cursor-default">
-                        <div className="relative mb-8">
-                            <div className="relative inline-flex items-center justify-center p-12 sm:p-14 bg-gradient-to-br from-cyber-accent via-indigo-500 to-purple-600 rounded-[3.5rem] shadow-2xl shadow-cyan-500/50 dark:shadow-[0_0_70px_rgba(34,211,238,0.55)] animate-float group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
-                                <Shield className="size-32 sm:size-36 text-white drop-shadow-2xl relative z-10" />
-                                <div className="absolute inset-0 rounded-[3.5rem] bg-gradient-to-tr from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                            </div>
-                            <div className="absolute inset-0 bg-cyber-accent/20 blur-[100px] -z-10 rounded-full animate-pulse"></div>
-                        </div>
-
-                        <div className="space-y-6">
-                            <h1 className="text-8xl lg:text-9xl font-[900] text-slate-900 dark:text-white tracking-tighter leading-none transform origin-top group-hover:scale-105 inline-block transition-all duration-300 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-cyber-accent group-hover:to-indigo-500">
-                                Stego<span className="text-cyber-accent group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-cyber-accent group-hover:to-indigo-500 transition-all duration-300">Lock</span>
-                            </h1>
-                            <div className="h-2 w-36 bg-cyber-accent mx-auto rounded-full shadow-glow-cyan animate-pulse" />
-                            <p className="text-base sm:text-lg text-slate-500 dark:text-slate-400 font-black max-w-5xl mx-auto leading-relaxed uppercase tracking-[0.12em] px-4">
-                                A CLOUD-BASED WEB APPLICATION BUILT ON A <span className="text-cyber-accent font-black drop-shadow-[0_0_12px_rgba(34,211,238,0.35)]">RECONSTRUCTION-DEPENDENT SECURITY ARCHITECTURE</span> FOR DIGITAL DOCUMENT STORAGE
-                            </p>
-                            
-                            <div className="pt-8 max-w-2xl mx-auto text-center border-t border-slate-200/50 dark:border-white/5 mt-8">
-                                <span className="text-sm sm:text-base font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.25em] block">
-                                    PRESENTED BY <span className="text-cyber-accent font-black drop-shadow-[0_0_8px_rgba(34,211,238,0.25)]">THE CRIP</span>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )
-        },
-        // Slide 2: Revisions in Chapters 1 and 2
-        {
-            title: "Revisions in Chapters 1 and 2",
-            subtitle: "Chapter 1 & 2: Project Scope & Comparative Baseline",
-            content: (
-                <div className="h-full flex flex-col justify-center py-4">
-                    <div className="mb-4 flex items-center justify-center lg:justify-start gap-3 text-center lg:text-left group cursor-default">
-                        <div className="size-10 rounded-xl bg-gradient-to-br from-cyber-accent to-indigo-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-cyan-500/20 dark:shadow-cyan-500/40 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-cyan-500/50 dark:group-hover:shadow-cyan-500/70">
-                            <Shield className="size-5 transition-transform duration-500 group-hover:scale-110" />
-                        </div>
-                        <div>
-                            <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-none">Revisions in Chapters 1 and 2</h2>
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch flex-1 min-h-0">
-                        {/* Left Column: Objectives (5 columns) */}
-                        <div className="lg:col-span-6 flex flex-col justify-between py-6 lg:pr-4">
-                            <div className="flex flex-col items-center justify-center text-center mb-8 w-full">
-                                <div className="glass-panel w-full sm:w-auto inline-flex items-center justify-center gap-4 px-8 py-5 rounded-[1.5rem] border border-slate-200 dark:border-cyber-border/40 bg-gradient-to-r from-cyber-accent/5 via-indigo-500/5 to-purple-500/5 shadow-xl shadow-cyan-500/10 hover:shadow-cyan-500/20 hover:border-cyber-accent/50 transition-all duration-300 group">
-                                    <Target className="text-cyber-accent size-7 sm:size-8 shrink-0 animate-pulse drop-shadow-[0_0_8px_rgba(34,211,238,0.4)] group-hover:scale-110 transition-transform duration-300" />
-                                    <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
-                                        Objectives of the Study
-                                    </h3>
-                                </div>
-                            </div>
-                            <div className="space-y-3.5 flex-1 flex flex-col justify-center">
-                                {[
-                                    "Implement AES-based encryption with a KDF-based key management process to ensure the confidentiality and integrity of a document file.",
-                                    "Design and implement a segmentation process that splits the encrypted document into multiple segments and hides them through a steganographic embedding process into cover files, which are scattered across the application’s cloud storage to enhance security.",
-                                    "Develop a web-based application that implements and integrates the AES-based encryption, segmentation, access control and authentication, and sharing mechanisms to a document storage platform.",
-                                    "Evaluate the application based on ISO/IEC 25010 quality characteristics to assess the effectiveness in terms of functional suitability, security, reliability, and measure usability and performance efficiency."
-                                ].map((desc, i) => (
-                                    <div key={i} className="flex items-center gap-5 text-base leading-relaxed">
-                                        <div className="size-12 rounded-[1.1rem] bg-white/80 dark:bg-black/40 border-2 border-cyber-accent/60 text-cyber-accent flex items-center justify-center font-black shrink-0 text-lg shadow-[0_0_12px_rgba(34,211,238,0.2)]">
-                                            {i + 1}
-                                        </div>
-                                        <div className="p-4 sm:p-5 rounded-[1.25rem] bg-white/60 dark:bg-black/35 border border-slate-200/50 dark:border-white/5 text-[13.5px] text-slate-700 dark:text-slate-300 leading-relaxed font-semibold flex-1">
-                                            {desc}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Right Column: Existing Systems Analysis Card (7 columns) */}
-                        <div className="lg:col-span-6 flex flex-col justify-between py-6 lg:pl-4">
-                            <div className="flex flex-col items-center justify-center text-center mb-8 w-full">
-                                <div className="glass-panel w-full sm:w-auto inline-flex items-center justify-center gap-4 px-8 py-5 rounded-[1.5rem] border border-slate-200 dark:border-cyber-border/40 bg-gradient-to-r from-cyber-accent/5 via-indigo-500/5 to-purple-500/5 shadow-xl shadow-cyan-500/10 hover:shadow-cyan-500/20 hover:border-cyber-accent/50 transition-all duration-300 group">
-                                    <Layers className="text-indigo-400 size-7 sm:size-8 shrink-0 animate-pulse drop-shadow-[0_0_8px_rgba(99,102,241,0.4)] group-hover:scale-110 transition-transform duration-300" />
-                                    <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
-                                        Existing Systems Analysis
-                                    </h3>
-                                </div>
-                            </div>
-                            
-                            <div className="flex-1 flex flex-col gap-6 justify-center">
-                                <div className="p-6 rounded-2xl bg-white/60 dark:bg-slate-900/40 border border-slate-200/50 dark:border-white/5 border-l-4 border-l-cyber-accent shadow-sm">
-                                    <h4 className="text-base sm:text-lg font-black text-slate-900 dark:text-white uppercase tracking-wider mb-2.5">Operational and Deployment Characteristics</h4>
-                                    <p className="text-[13.5px] text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
-                                        Evaluates existing platforms based on their core operational purposes and storage functions, the mechanisms governing user authentication and secure data access, and the availability of browser-based deployment models for seamless end-user accessibility.
-                                    </p>
-                                </div>
-                                
-                                <div className="p-6 rounded-2xl bg-white/60 dark:bg-slate-900/40 border border-slate-200/50 dark:border-white/5 border-l-4 border-l-indigo-500 shadow-sm">
-                                    <h4 className="text-base sm:text-lg font-black text-slate-900 dark:text-white uppercase tracking-wider mb-2.5">Cryptographic and Security Characteristics</h4>
-                                    <p className="text-[13.5px] text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
-                                        Analyzes security efficacy by examining specific encryption algorithms and cryptographic standards, the steganographic embedding techniques used to conceal data within cover media, primary architectural advantages, and identified vulnerabilities or operational risks.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )
-        },
-        // Slide 3: Revisions in Chapters 3
-        {
-            title: "Revisions in Chapters 3",
-            subtitle: "Chapter 3: Conceptual Framework & Layered Architecture",
-            content: (
-                <div className="h-full flex flex-col justify-center py-4">
-                    <div className="mb-4 flex items-center justify-center lg:justify-start gap-3 text-center lg:text-left group cursor-default">
-                        <div className="size-10 rounded-xl bg-gradient-to-br from-cyber-accent to-indigo-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-cyan-500/20 dark:shadow-cyan-500/40 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-cyan-500/50 dark:group-hover:shadow-cyan-500/70">
-                            <Shield className="size-5 transition-transform duration-500 group-hover:scale-110" />
-                        </div>
-                        <div>
-                            <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-none">Revisions in Chapters 3</h2>
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch flex-1 min-h-0">
-                        {/* Left Column: Figure 1 Conceptual Framework (7 columns) */}
-                        <div className="lg:col-span-6 h-full flex flex-col items-center justify-center min-h-0 relative">
-                            <div className="absolute inset-0 bg-cyber-accent/10 blur-[80px] rounded-full scale-75 opacity-40"></div>
-                            <div className="relative group w-full h-[90%] flex flex-col items-center justify-center overflow-hidden pt-12">
-                                <div className="absolute top-0 left-0 right-0 text-center">
-                                    <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Figure 1. StegoLock Conceptual Framework</h3>
-                                </div>
-                                <img 
-                                    src="/assets/images/stegolock_framework.png" 
-                                    alt="Figure 1: StegoLock Conceptual Framework" 
-                                    className="max-h-full max-w-full object-contain transition-all duration-700 group-hover:scale-[1.02]"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Right Column: Layered Architecture Details (5 columns) */}
-                        <div className="lg:col-span-6 h-full flex flex-col items-center justify-center min-h-0 relative">
-                            <div className="relative w-full h-[90%] flex flex-col justify-center pt-12">
-                                <div className="absolute top-0 left-0 right-0 text-center">
-                                    <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">System Architecture based on Figure 2</h3>
-                                </div>
-                                <div className="flex flex-col gap-3 sm:gap-4">
-                                    {[
-                                        { title: "Presentation Layer", desc: "React and Inertia.js web UI. Governs interactive slide controllers, drag-and-drop secure locker portals, and real-time process monitoring logs.", icon: <Compass className="size-4 sm:size-5 text-cyan-400" /> },
-                                        { title: "Application Logic Layer", desc: "Laravel middleware and PHP controllers interfacing with custom background queue workers and Python steganographic engines to perform envelope encryption and LSB hiding.", icon: <Cpu className="size-4 sm:size-5 text-indigo-400" /> },
-                                        { title: "Persistence Layer", desc: "MySQL schema indexing the Stego-Map records, document_shares, user accounts, and background process_metrics while strictly isolating active keys.", icon: <Database className="size-4 sm:size-5 text-purple-400" /> },
-                                        { title: "Storage Layer", desc: "Distributed Cloud scattering across Backblaze B2, storing anonymous media covers under randomized system-generated identifiers.", icon: <Shield className="size-4 sm:size-5 text-emerald-400" /> }
-                                    ].map((layer, idx) => (
-                                        <div key={idx} className="glass-panel p-4 rounded-2xl border-l-4 border-l-cyber-accent/50 bg-white/5 dark:bg-slate-900/20 flex gap-3.5 hover:border-cyber-accent transition-all duration-350 shadow-sm">
-                                            <div className="size-9 sm:size-10 rounded-xl bg-cyber-accent/10 flex items-center justify-center shrink-0">
-                                                {layer.icon}
-                                            </div>
-                                            <div>
-                                                <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">{layer.title}</h4>
-                                                <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed font-medium">{layer.desc}</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )
-        },
-        // Slide 4: Findings of the Study (Objective 1)
-        {
-            title: "Findings of the Study",
-            subtitle: "Objective 1: Cryptographic Pipeline (PBKDF2 & AES-256-GCM)",
-            content: (
-                <div className="h-full flex flex-col justify-center py-4">
-                    <div className="mb-4">
-                        <div className="flex items-center justify-center lg:justify-start gap-3 text-center lg:text-left group cursor-default">
-                            <div className="size-10 rounded-xl bg-gradient-to-br from-cyber-accent to-indigo-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-cyan-500/20 dark:shadow-cyan-500/40 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-cyan-500/50 dark:group-hover:shadow-cyan-500/70">
-                                <Shield className="size-5 transition-transform duration-500 group-hover:scale-110" />
-                            </div>
-                            <div>
-                                <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-none">Findings of the Study</h2>
-                            </div>
-                        </div>
-                        <p className="text-cyber-accent font-bold uppercase tracking-widest text-[10px] mt-2 text-center lg:text-left lg:pl-[3.25rem]">Objective 1: Implement AES-based encryption with a KDF-based key management process to ensure the confidentiality and integrity of a document file.</p>
-                    </div>
-                    
-                    <div className="flex-1 flex flex-col justify-center items-center gap-6 min-h-0 py-6">
-                        {/* Card 1: Key Derivation Functions */}
-                        <div className="w-full max-w-xl glass-panel p-8 rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer">
-                            <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight mb-2 group-hover/card:text-cyber-accent transition-colors duration-300">
-                                Key Derivation Functions
-                            </h3>
-                            <p className="text-cyber-accent text-lg sm:text-xl font-bold tracking-wide italic">
-                                (PBKDF2 & HKDF)
-                            </p>
-                        </div>
-
-                        {/* Card 2: AES-256-GCM */}
-                        <div className="w-full max-w-xl glass-panel p-10 rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer">
-                            <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-normal group-hover/card:text-cyber-accent transition-colors duration-300">
-                                AES-256-GCM
-                            </h3>
-                        </div>
-                    </div>
-                </div>
-            )
-        },
-        // Slide 5: Findings of the Study (Objective 2)
-        {
-            title: "Findings of the Study",
-            subtitle: "Objective 2: Cover Generation, Segmentation & Cloud Scatter",
-            content: (
-                <div className="h-full flex flex-col justify-center py-2">
-                    <div className="mb-4">
-                        <div className="flex items-center justify-center lg:justify-start gap-3 text-center lg:text-left group cursor-default">
-                            <div className="size-10 rounded-xl bg-gradient-to-br from-cyber-accent to-indigo-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-cyan-500/20 dark:shadow-cyan-500/40 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-cyan-500/50 dark:group-hover:shadow-cyan-500/70">
-                                <Shield className="size-5 transition-transform duration-500 group-hover:scale-110" />
-                            </div>
-                            <div>
-                                <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-none">Findings of the Study</h2>
-                            </div>
-                        </div>
-                        <p className="text-cyber-accent font-bold uppercase tracking-widest text-[10px] mt-2 text-center lg:text-left lg:pl-[3.25rem]">Objective 2: Develop a web-based application that implements and integrates the AES-based encryption, segmentation, access control and authentication, and sharing mechanisms to a document storage platform.</p>
-                    </div>
-                    
-                    <div className="flex-1 flex flex-col lg:flex-row justify-center items-center gap-6 min-h-0 py-6">
-                        {/* Card 1: Cover Generation & Pre-Segmentation */}
-                        <div className="w-full lg:w-[17.5rem] h-40 glass-panel p-6 rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-col justify-center items-center text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer">
-                            <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
-                                Cover Generation & <br />Pre-Segmentation
-                            </h3>
-                        </div>
-
-                        {/* Card 2: Segmentation & LSB Embedding */}
-                        <div className="w-full lg:w-[17.5rem] h-40 glass-panel p-6 rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-col justify-center items-center text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer">
-                            <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
-                                Segmentation & <br />LSB Embedding
-                            </h3>
-                        </div>
-
-                        {/* Card 3: Cloud Storage */}
-                        <div className="w-full lg:w-[17.5rem] h-40 glass-panel p-6 rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-col justify-center items-center text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer">
-                            <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
-                                Cloud Storage
-                            </h3>
-                        </div>
-                    </div>
-                </div>
-            )
-        },
-        // Slide 6: Findings of the Study (Objective 3)
-        {
-            title: "Findings of the Study",
-            subtitle: "Objective 3: Platform Architecture & Core Features",
-            content: (
-                <div className="h-full flex flex-col justify-center py-2">
-                    <div className="mb-4">
-                        <div className="flex items-center justify-center lg:justify-start gap-3 text-center lg:text-left group cursor-default">
-                            <div className="size-10 rounded-xl bg-gradient-to-br from-cyber-accent to-indigo-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-cyan-500/20 dark:shadow-cyan-500/40 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-cyan-500/50 dark:group-hover:shadow-cyan-500/70">
-                                <Shield className="size-5 transition-transform duration-500 group-hover:scale-110" />
-                            </div>
-                            <div>
-                                <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-none">Findings of the Study</h2>
-                            </div>
-                        </div>
-                        <p className="text-cyber-accent font-bold uppercase tracking-widest text-[10px] mt-2 text-center lg:text-left lg:pl-[3.25rem]">Objective 3: Design and implement a segmentation process that splits the encrypted document into multiple segments and hides them through a steganographic embedding process into cover files, which are scattered across the application’s cloud storage to enhance security.</p>
-                    </div>
-                    
-                    <div className="flex-1 flex flex-col justify-center items-center gap-5 min-h-0 py-4">
-                        {/* Row 1: 2 Cards */}
-                        <div className="flex flex-col lg:flex-row justify-center items-center gap-6 w-full">
-                            {/* Card 1: Authentication & Access Control */}
-                            <div className="w-full lg:w-[22rem] h-32 glass-panel p-6 rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-col justify-center items-center text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer">
-                                <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
-                                    Authentication & <br />Access Control
-                                </h3>
-                            </div>
-
-                            {/* Card 2: Sharing Functionality */}
-                            <div className="w-full lg:w-[22rem] h-32 glass-panel p-6 rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-col justify-center items-center text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer">
-                                <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
-                                    Sharing <br />Functionality
-                                </h3>
-                            </div>
-                        </div>
-
-                        {/* Row 2: 3 Cards */}
-                        <div className="flex flex-col lg:flex-row justify-center items-center gap-6 w-full">
-                            {/* Card 3: File Deletion */}
-                            <div className="w-full lg:w-[15rem] h-32 glass-panel p-5 rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-col justify-center items-center text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer">
-                                <h3 className="text-md font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
-                                    File <br />Deletion
-                                </h3>
-                            </div>
-
-                            {/* Card 4: Web Development */}
-                            <div className="w-full lg:w-[15rem] h-32 glass-panel p-5 rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-col justify-center items-center text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer">
-                                <h3 className="text-md font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
-                                    Web <br />Development
-                                </h3>
-                            </div>
-
-                            {/* Card 5: Local Device vs Hosted Environment */}
-                            <div className="w-full lg:w-[15rem] h-32 glass-panel p-5 rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-col justify-center items-center text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer">
-                                <h3 className="text-md font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
-                                    Local Device vs <br />Hosted Environment
-                                </h3>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )
-        },
-        // Slide 7: Findings of the Study (Objective 4)
-        {
-            title: "Findings of the Study",
-            subtitle: "Objective 4: ISO/IEC 25010 Evaluation & GWM Summary",
-            content: (
-                <div className="h-full flex flex-col justify-center py-2">
-                    <div className="mb-4">
-                        <div className="flex items-center justify-center lg:justify-start gap-3 text-center lg:text-left group cursor-default">
-                            <div className="size-10 rounded-xl bg-gradient-to-br from-cyber-accent to-indigo-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-cyan-500/20 dark:shadow-cyan-500/40 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-cyan-500/50 dark:group-hover:shadow-cyan-500/70">
-                                <Shield className="size-5 transition-transform duration-500 group-hover:scale-110" />
-                            </div>
-                            <div>
-                                <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-none">Findings of the Study</h2>
-                            </div>
-                        </div>
-                        <p className="text-cyber-accent font-bold uppercase tracking-widest text-[10px] mt-2 text-center lg:text-left lg:pl-[3.25rem]">Objective 4: Evaluate the application based on ISO/IEC 25010 quality characteristics to assess the effectiveness in terms of functional suitability, security, reliability, and measure usability and performance efficiency.</p>
-                    </div>
-                    
-                    <div className="flex-1 flex flex-col justify-center items-center gap-5 min-h-0 py-4">
-                        {/* Row 1: 2 Cards */}
-                        <div className="flex flex-col lg:flex-row justify-center items-center gap-6 w-full">
-                            {/* Card 1: User Profile */}
-                            <div className="w-full lg:w-[22rem] h-32 glass-panel p-6 rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-col justify-center items-center text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer">
-                                <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
-                                    User Profile
-                                </h3>
-                            </div>
-
-                            {/* Card 2: Data Processing & Analysis */}
-                            <div className="w-full lg:w-[22rem] h-32 glass-panel p-6 rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-col justify-center items-center text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer">
-                                <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
-                                    Data Processing & <br />Analysis
-                                </h3>
-                            </div>
-                        </div>
-
-                        {/* Row 2: 2 Cards */}
-                        <div className="flex flex-col lg:flex-row justify-center items-center gap-6 w-full">
-                            {/* Card 3: Overall Evaluation Summary */}
-                            <div className="w-full lg:w-[22rem] h-32 glass-panel p-6 rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-col justify-center items-center text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer">
-                                <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
-                                    Overall Evaluation <br />Summary
-                                </h3>
-                            </div>
-
-                            {/* Card 4: Evaluation on ISO 25010 Characteristics */}
-                            <div className="w-full lg:w-[22rem] h-32 glass-panel p-6 rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-col justify-center items-center text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer">
-                                <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
-                                    Evaluation on ISO 25010 <br />Characteristics
-                                </h3>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )
-        },
-        // Slide 8: Summary
-        {
-            title: "Summary",
-            subtitle: "",
-            content: (
-                <div className="flex flex-col items-center justify-center text-center space-y-8 h-full py-4">
-                    <div className="relative group">
-                        <div className="relative inline-flex items-center justify-center p-8 bg-gradient-to-br from-cyber-accent via-indigo-500 to-purple-600 rounded-[2.5rem] shadow-2xl shadow-cyan-500/50 dark:shadow-[0_0_60px_rgba(34,211,238,0.4)] animate-float group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
-                            <Shield className="size-20 text-white drop-shadow-2xl relative z-10" />
-                            <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-tr from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        </div>
-                        <div className="absolute inset-0 bg-cyber-accent/20 blur-[80px] -z-10 rounded-full animate-pulse"></div>
-                    </div>
-                    <h2 className="text-8xl font-black text-slate-900 dark:text-white tracking-tight leading-none uppercase">SUMMARY & <br/> CONCLUSIONS</h2>
-                </div>
-            )
-        },
-        // Slide 9: Recommendations
-        {
-            title: "Recommendations",
-            subtitle: "Chapter 5: Actionable Future Scope & Upgrades",
-            content: (
-                <div className="h-full flex flex-col justify-center py-4">
-                    <div className="mb-4">
-                        <div className="flex items-center justify-center lg:justify-start gap-3 text-center lg:text-left group cursor-default">
-                            <div className="size-10 rounded-xl bg-gradient-to-br from-cyber-accent to-indigo-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-cyan-500/20 dark:shadow-cyan-500/40 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-cyan-500/50 dark:group-hover:shadow-cyan-500/70">
-                                <Shield className="size-5 transition-transform duration-500 group-hover:scale-110" />
-                            </div>
-                            <div>
-                                <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-none">Recommendations</h2>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-10 flex-1 content-center px-2 mt-4">
-                        {[
-                            { 
-                                title: "Argon2 Key Derivation Standard", 
-                                desc: "Hardens system security against long-term data analysis by introducing a cryptographically advanced key derivation standard.",
-                                icon: <Shield className="size-6" />
-                            },
-                            { 
-                                title: "AI-Driven Cover Generation", 
-                                desc: "Produces high-entropy, natural-looking concealment media virtually indistinguishable from ordinary user data to ensure fragments remain hidden from evolving detection methodologies and sophisticated forensic analysis tools.",
-                                icon: <Cpu className="size-6" />
-                            },
-                            { 
-                                title: "Dynamic Cloud Relocation", 
-                                desc: "Implement a periodic migration of file fragments between diverse cloud storage locations and providers to prevent attackers from accumulating a complete dataset over time.",
-                                icon: <Database className="size-6" />
-                            },
-                            { 
-                                title: "Native Mobile Applications", 
-                                desc: "Mobile applications equipped with biometric authentication features to maintain high usability standards and protect sensitive digital assets across diverse device types.",
-                                icon: <Users className="size-6" />
-                            },
-                            { 
-                                title: "Secure API", 
-                                desc: "Exposes the core architecture to allow organizations to integrate StegoLock’s protection layers directly into their existing document management systems.",
-                                icon: <Compass className="size-6" />
-                            }
-                        ].map((rec, i) => (
-                            <div key={i} className="flex gap-5 group items-start">
-                                <div className="size-12 sm:size-14 rounded-[1.25rem] bg-cyber-accent/10 border border-cyber-accent/20 text-cyber-accent flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:bg-cyber-accent group-hover:text-slate-950 transition-all duration-300 shadow-md">
-                                    {rec.icon}
-                                </div>
-                                <div className="flex-1 pt-1">
-                                    <h4 className="font-black text-slate-900 dark:text-white tracking-tight text-base sm:text-lg mb-1.5 group-hover:text-cyber-accent transition-colors duration-300">{rec.title}</h4>
-                                    <p className="text-[13px] sm:text-[14px] text-slate-600 dark:text-slate-400 leading-relaxed font-medium">{rec.desc}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )
-        },
-        // Slide 10: LIVE DEMO (Operations Simulator Integrated here)
-        {
-            title: "LIVE DEMO",
-            subtitle: "Interactive Operations HUD Simulator",
-            content: (
-                <div className="flex flex-col items-center justify-center text-center space-y-8 h-full py-4">
-                    <div className="relative group">
-                        <div className="relative inline-flex items-center justify-center p-8 bg-gradient-to-br from-cyber-accent via-indigo-500 to-purple-600 rounded-[2.5rem] shadow-2xl shadow-cyan-500/50 dark:shadow-[0_0_60px_rgba(34,211,238,0.4)] animate-float group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
-                            <Shield className="size-20 text-white drop-shadow-2xl relative z-10" />
-                            <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-tr from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        </div>
-                        <div className="absolute inset-0 bg-cyber-accent/20 blur-[80px] -z-10 rounded-full animate-pulse"></div>
-                    </div>
-                    <h2 className="text-8xl font-black text-slate-900 dark:text-white tracking-tight leading-none uppercase">LIVE DEMO</h2>
-                </div>
-            )
-        },
-        // Slide 11: Q&A (Quick links removed per request)
-        {
-            title: "Thank You",
-            subtitle: "Q&A Session",
-            content: (
-                <div className="flex flex-col items-center justify-center text-center space-y-8 h-full py-4">
-                    <div className="relative group">
-                        <div className="relative inline-flex items-center justify-center p-8 bg-gradient-to-br from-cyber-accent via-indigo-500 to-purple-600 rounded-[2.5rem] shadow-2xl shadow-cyan-500/50 dark:shadow-[0_0_60px_rgba(34,211,238,0.4)] animate-float group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
-                            <Shield className="size-20 text-white drop-shadow-2xl relative z-10" />
-                            <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-tr from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        </div>
-                        <div className="absolute inset-0 bg-cyber-accent/20 blur-[80px] -z-10 rounded-full animate-pulse"></div>
-                    </div>
-                    <h2 className="text-8xl font-black text-slate-900 dark:text-white tracking-tight leading-none uppercase">Questions & <br/> Answers</h2>
-                </div>
-            )
-        },
-        // Slide 12: CAPSTONE FINALLY DEFENDED!!!😭
-        {
-            title: "CAPSTONE FINALLY DEFENDED!!!😭",
-            subtitle: "StegoLock Capstone Complete",
-            content: (
-                <div className="flex flex-col items-center justify-center text-center space-y-10 h-full py-8 animate-fade-in relative">
-                    <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/10 via-indigo-500/10 to-purple-500/10 blur-[140px] rounded-full scale-75 animate-pulse -z-10"></div>
-                    
-                    <div className="relative group">
-                        <div className="relative inline-flex items-center justify-center p-14 bg-gradient-to-br from-cyber-accent via-indigo-500 to-purple-600 rounded-[4rem] shadow-2xl shadow-cyan-500/50 dark:shadow-[0_0_80px_rgba(34,211,238,0.6)] animate-float">
-                            <Trophy className="size-28 sm:size-32 text-white drop-shadow-2xl relative z-10" />
-                        </div>
-                    </div>
-
-                    <div className="space-y-4">
-                        <h1 className="text-6xl sm:text-7xl lg:text-8xl font-[950] text-slate-900 dark:text-white tracking-tighter leading-none uppercase">
-                            CAPSTONE FINALLY<br/>
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyber-accent via-indigo-400 to-purple-500 drop-shadow-[0_0_20px_rgba(34,211,238,0.25)] animate-pulse">
-                                DEFENDED!!!😭
-                            </span>
-                        </h1>
-                        <p className="text-base sm:text-lg text-slate-500 dark:text-slate-400 font-black max-w-2xl mx-auto uppercase tracking-widest pt-4">
-                            StegoLock: A Reconstruction-Dependent Security Architecture
-                        </p>
-                    </div>
-
-                    <div className="flex gap-4 pt-6">
-                        <Link 
-                            href="/" 
-                            className="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-cyber-accent to-indigo-500 text-slate-950 hover:shadow-cyan-500/35 shadow-lg font-black text-xs uppercase tracking-widest transition active:scale-95"
-                        >
-                            Return to Application Dashboard
-                        </Link>
-                    </div>
-                </div>
-            )
-        }
-    ], [safeStats, demoStep, demoMode, demoActive, activeSteps]);
+    const slides = usePresentationSlides({ safeStats, demoStep, demoMode, demoActive, activeSteps, currentSlide });
 
     const nextSlide = () => {
         if (currentSlide < slides.length - 1 && !isAnimating) {
@@ -865,6 +348,87 @@ export default function Presentation({ stats = {} }) {
                 .animate-shooting-star {
                     animation: shooting-star 15s linear infinite;
                 }
+                @keyframes data-flow {
+                    0% { transform: translateX(-100%); opacity: 0; }
+                    50% { opacity: 1; }
+                    100% { transform: translateX(400%); opacity: 0; }
+                }
+                .animate-data-flow {
+                    animation: data-flow 3s linear infinite;
+                }
+                @keyframes slice-top {
+                    0%, 15% { transform: translate(0, 0); }
+                    35%, 65% { transform: translate(-8px, -12px) rotate(-8deg); }
+                    85%, 100% { transform: translate(0, 0); }
+                }
+                @keyframes slice-mid {
+                    0%, 15% { transform: translate(0, 0); }
+                    35%, 65% { transform: translate(12px, 0); }
+                    85%, 100% { transform: translate(0, 0); }
+                }
+                @keyframes slice-bot {
+                    0%, 15% { transform: translate(0, 0); }
+                    35%, 65% { transform: translate(-4px, 12px) rotate(8deg); }
+                    85%, 100% { transform: translate(0, 0); }
+                }
+                .animate-slice-top { animation: slice-top 3s cubic-bezier(0.34,1.56,0.64,1) infinite; }
+                .animate-slice-mid { animation: slice-mid 3s cubic-bezier(0.34,1.56,0.64,1) infinite; }
+                .animate-slice-bot { animation: slice-bot 3s cubic-bezier(0.34,1.56,0.64,1) infinite; }
+                @keyframes pulse-slow-anim {
+                    0%, 100% { transform: scale(1); }
+                    50% { transform: scale(1.05); }
+                }
+                .animate-pulse-slow {
+                    animation: pulse-slow-anim 4s ease-in-out infinite;
+                }
+                @keyframes reverse-spin-anim {
+                    from { transform: rotate(360deg); }
+                    to { transform: rotate(0deg); }
+                }
+                .animate-reverse-spin {
+                    animation: reverse-spin-anim 4s linear infinite;
+                }
+                @keyframes spin-slow-anim {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+                .animate-spin-slow-6s {
+                    animation: spin-slow-anim 6s linear infinite;
+                }
+                @keyframes particle-anim {
+                    0% { transform: translate(-80px, 0) scale(0); opacity: 0; }
+                    20% { transform: translate(-40px, -20px) scale(1); opacity: 1; }
+                    80% { transform: translate(40px, 20px) scale(1); opacity: 1; }
+                    100% { transform: translate(80px, 0) scale(0); opacity: 0; }
+                }
+                .animate-particle-1 { animation: particle-anim 2s ease-in-out infinite; }
+                .animate-particle-2 { animation: particle-anim 2.5s ease-in-out infinite 0.5s; }
+                .animate-particle-3 { animation: particle-anim 2.2s ease-in-out infinite 1s; }
+                
+                @keyframes stego-fly-anim {
+                    0% { transform: translate(-60px, 20px) scale(0); opacity: 0; }
+                    30% { transform: translate(-30px, -10px) scale(1); opacity: 1; }
+                    70% { transform: translate(10px, 0) scale(1); opacity: 1; }
+                    100% { transform: translate(40px, -20px) scale(0); opacity: 0; }
+                }
+                .animate-stego-fly-1 { animation: stego-fly-anim 3s ease-in-out infinite; }
+                .animate-stego-fly-2 { animation: stego-fly-anim 3s ease-in-out infinite 1.5s; }
+                
+                @keyframes cloud-fill-anim {
+                    0% { height: 0%; opacity: 0.2; }
+                    50% { height: 100%; opacity: 0.6; }
+                    100% { height: 0%; opacity: 0.2; }
+                }
+                .animate-cloud-fill { animation: cloud-fill-anim 4s ease-in-out infinite; }
+                
+                @keyframes orbit-cover {
+                    0% { transform: rotate(0deg) translateX(72px) rotate(0deg); }
+                    100% { transform: rotate(360deg) translateX(72px) rotate(-360deg); }
+                }
+                .animate-orbit-1 { animation: orbit-cover 9s linear infinite; }
+                .animate-orbit-2 { animation: orbit-cover 9s linear infinite -3s; }
+                .animate-orbit-3 { animation: orbit-cover 9s linear infinite -6s; }
+                
                 .scrollbar-hide::-webkit-scrollbar {
                     display: none;
                 }
