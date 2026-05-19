@@ -173,8 +173,7 @@ class DocumentTest extends TestCase
 
         // The controller should reject this
         // Note: The actual storage check happens in the controller
-        // This test may need adjustment based on actual controller logic
-        $response->assertStatus(200); // Or 422 if validation exists
+        $response->assertStatus(422);
     }
 
     /**

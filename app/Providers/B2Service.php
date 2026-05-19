@@ -157,6 +157,23 @@ class B2Service
 
     public function findFileByName(string $fileName)
     {
+        if (app()->environment('testing')) {
+            $filename = basename($fileName);
+            $mockPath = 'temp/mock_b2/' . $filename;
+            if (!\Illuminate\Support\Facades\Storage::disk('local')->exists($mockPath)) {
+                $mockPath = 'covers/' . $filename;
+            }
+            
+            if (\Illuminate\Support\Facades\Storage::disk('local')->exists($mockPath)) {
+                return [
+                    'fileId' => 'mock-id-' . $filename,
+                    'fileName' => $fileName,
+                    'contentLength' => strlen(\Illuminate\Support\Facades\Storage::disk('local')->get($mockPath))
+                ];
+            }
+            return null;
+        }
+
         $auth = $this->getAuth();
 
         /** @var \Illuminate\Http\Client\Response $response */
@@ -264,6 +281,13 @@ class B2Service
 
     public function deleteFile($fileId, $fileName)
     {
+        if (app()->environment('testing')) {
+            $filename = basename($fileName);
+            $mockPath = 'temp/mock_b2/' . $filename;
+            \Illuminate\Support\Facades\Storage::disk('local')->delete($mockPath);
+            return ['deleted' => true];
+        }
+
         $auth = $this->getAuth();
 
         /** @var \Illuminate\Http\Client\Response $response */
@@ -279,6 +303,14 @@ class B2Service
 
     public function getFileInfo($fileId)
     {
+        if (app()->environment('testing')) {
+            $filename = str_replace('mock-id-', '', $fileId);
+            return [
+                'fileId' => $fileId,
+                'fileName' => 'locked/' . $filename,
+            ];
+        }
+
         $auth = $this->getAuth();
 
         /** @var \Illuminate\Http\Client\Response $response */
@@ -293,6 +325,15 @@ class B2Service
 
     public function readfile($fileId)
     {
+        if (app()->environment('testing')) {
+            $filename = str_replace('mock-id-', '', $fileId);
+            $mockPath = 'temp/mock_b2/' . $filename;
+            if (!\Illuminate\Support\Facades\Storage::disk('local')->exists($mockPath)) {
+                $mockPath = 'covers/' . $filename;
+            }
+            return \Illuminate\Support\Facades\Storage::disk('local')->get($mockPath);
+        }
+
         $response = $this->download($fileId);
 
         $plaintext = '';
@@ -318,6 +359,26 @@ class B2Service
 
     public function storeFilesBatch(array $filePaths, int $concurrency = 5, ?callable $onProgress = null)
     {
+        if (app()->environment('testing')) {
+            $results = [];
+            foreach ($filePaths as $path) {
+                $filename = basename($path);
+                $mockPath = 'temp/mock_b2/' . $filename;
+                \Illuminate\Support\Facades\Storage::disk('local')->put($mockPath, file_get_contents($path));
+                
+                $data = [
+                    'fileId' => 'mock-id-' . $filename,
+                    'fileName' => 'locked/' . $filename,
+                    'contentLength' => filesize($path)
+                ];
+                $results[$path] = $data;
+                if ($onProgress) {
+                    $onProgress($path, $data);
+                }
+            }
+            return $results;
+        }
+
         $results = [];
         $client = new \GuzzleHttp\Client(['timeout' => 0]);
 
@@ -394,6 +455,21 @@ class B2Service
      */
     public function fetchFilesBatch(array $fileData, int $concurrency = 5)
     {
+        if (app()->environment('testing')) {
+            $results = [];
+            foreach ($fileData as $item) {
+                $filename = basename($item['savePath']);
+                $mockPath = 'temp/mock_b2/' . $filename;
+                $content = \Illuminate\Support\Facades\Storage::disk('local')->get($mockPath);
+                if (!file_exists(dirname($item['savePath']))) {
+                    mkdir(dirname($item['savePath']), 0755, true);
+                }
+                file_put_contents($item['savePath'], $content);
+                $results[$item['savePath']] = true;
+            }
+            return $results;
+        }
+
         $auth = $this->getAuth();
         $client = new \GuzzleHttp\Client([
             'base_uri' => $auth['downloadUrl'],
@@ -438,6 +514,17 @@ class B2Service
      */
     public function deleteFilesBatch(array $fileData, int $concurrency = 5)
     {
+        if (app()->environment('testing')) {
+            $results = [];
+            foreach ($fileData as $item) {
+                $filename = basename($item['fileName']);
+                $mockPath = 'temp/mock_b2/' . $filename;
+                \Illuminate\Support\Facades\Storage::disk('local')->delete($mockPath);
+                $results[$item['fileId']] = ['deleted' => true];
+            }
+            return $results;
+        }
+
         $auth = $this->getAuth();
         $client = new \GuzzleHttp\Client([
             'base_uri' => $auth['apiUrl'],

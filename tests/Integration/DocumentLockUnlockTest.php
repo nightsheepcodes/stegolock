@@ -8,10 +8,12 @@ use App\Models\User;
 use App\Services\TemporaryKeyStorage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
 
 class DocumentLockUnlockTest extends TestCase
 {
+    use DatabaseMigrations;
     protected TemporaryKeyStorage $storage;
     protected User $userA;
     protected User $userB;
@@ -19,6 +21,7 @@ class DocumentLockUnlockTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        config(['queue.default' => 'database']);
         $this->storage = new TemporaryKeyStorage();
         $this->userA = User::factory()->create();
         $this->userB = User::factory()->create();
@@ -58,14 +61,14 @@ class DocumentLockUnlockTest extends TestCase
             // Store in storage
             Storage::put("covers/{$fileName}", $content);
 
-            // Create database record - mark as system-generated so job uses local file
+            // Create database record - mark as seed so it behaves like B2 cloud file and doesn't get deleted
             \App\Models\Cover::create([
                 'cover_id' => (string) \Illuminate\Support\Str::uuid(),
                 'type' => $type,
                 'filename' => $fileName,
                 'path' => "covers/{$fileName}",
                 'size_bytes' => strlen($content),
-                'metadata' => json_encode(['valid' => true, 'capacity' => 50000, 'info' => 'System-generated']),
+                'metadata' => ['valid' => true, 'capacity' => 50000, 'info' => 'Seed'],
                 'hash' => hash('sha256', $content),
                 'in_use' => false,
             ]);
@@ -140,6 +143,8 @@ class DocumentLockUnlockTest extends TestCase
     public function test_lock_with_token_expiration_during_job(): void
     {
         // Store master key with short TTL
+        putenv('TEMPORARY_KEY_STORAGE_TTL=1');
+        config(['temporary-key-storage.ttl' => 1]);
         $masterKey = random_bytes(32);
         $token = $this->storage->store($masterKey, $this->userA->id);
         $this->storage->setTtl(1); // 1 second TTL
@@ -165,6 +170,10 @@ class DocumentLockUnlockTest extends TestCase
 
         // Check document status
         $document = Document::find($documentId);
+        
+        // Reset putenv TTL
+        putenv('TEMPORARY_KEY_STORAGE_TTL=');
+        
         $this->assertEquals('failed', $document->status);
         $this->assertStringContainsString('master key expired', strtolower($document->error_message));
     }
@@ -180,6 +189,8 @@ class DocumentLockUnlockTest extends TestCase
     public function test_unlock_with_expired_token(): void
     {
         // Store master key with short TTL
+        putenv('TEMPORARY_KEY_STORAGE_TTL=1');
+        config(['temporary-key-storage.ttl' => 1]);
         $masterKey = random_bytes(32);
         $token = $this->storage->store($masterKey, $this->userA->id);
         $this->storage->setTtl(1);
@@ -204,8 +215,11 @@ class DocumentLockUnlockTest extends TestCase
         $response = $this->actingAs($this->userA)->postJson('/documents/unlock', [
             'document_id' => $documentId,
         ]);
+        // Reset putenv TTL
+        putenv('TEMPORARY_KEY_STORAGE_TTL=');
+
         $response->assertStatus(400);
-        $response->assertJson(['error' => 'Master key not found or expired']);
+        $response->assertJson(['error' => 'Master key not found or expired.']);
     }
 
     /**
@@ -242,6 +256,9 @@ class DocumentLockUnlockTest extends TestCase
         // Verify all documents are locked
         foreach ($documentIds as $documentId) {
             $document = Document::find($documentId);
+            if (!in_array($document->status, ['locked', 'stored'])) {
+                echo "Document {$documentId} failed! Status: {$document->status}, Error: {$document->error_message}\n";
+            }
             $this->assertContains($document->status, ['locked', 'stored']);
         }
     }
@@ -283,15 +300,14 @@ class DocumentLockUnlockTest extends TestCase
 
         // User B accepts share
         $share = DocumentShare::where('document_id', $documentId)->first();
-        $response = $this->actingAs($this->userB)->postJson('/shares/accept', [
-            'share_id' => $share->id,
-        ]);
-        $response->assertStatus(200);
-
-        // User B unlocks (needs own master key token)
+        
         $masterKeyB = random_bytes(32);
         $tokenB = $this->storage->store($masterKeyB, $this->userB->id);
-        $this->withSession(['master_key_token' => $tokenB]);
+        
+        $response = $this->actingAs($this->userB)->withSession(['master_key_token' => $tokenB])->postJson('/documents/share/accept', [
+            'document_id' => $documentId,
+        ]);
+        $response->assertStatus(200);
 
         $response = $this->actingAs($this->userB)->postJson('/documents/unlock', [
             'document_id' => $documentId,

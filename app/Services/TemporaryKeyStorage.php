@@ -68,7 +68,8 @@ class TemporaryKeyStorage
             $this->store = $desiredStore;
         }
 
-        $this->ttl = config('temporary-key-storage.ttl', 3600);
+        $ttl = config('temporary-key-storage.ttl', 3600);
+        $this->ttl = is_numeric($ttl) ? (int) $ttl : 3600;
     }
 
     /**
@@ -138,6 +139,15 @@ class TemporaryKeyStorage
             return null;
         }
 
+        // Enforce TTL manually in case driver doesn't support active expiration (e.g. array store in tests)
+        if (isset($data['created_at']) && (now()->timestamp - $data['created_at']) > $this->ttl) {
+            $this->delete($token);
+            Log::warning('Temporary key retrieved but was expired via manual TTL check', [
+                'token_prefix' => substr($token, 0, 8) . '...',
+            ]);
+            return null;
+        }
+
         // Ensure the token belongs to the requesting user
         if ((int) $data['user_id'] !== $userId) {
             Log::warning('Unauthorized temporary key access attempt', [
@@ -181,7 +191,18 @@ class TemporaryKeyStorage
     public function exists(string $token): bool
     {
         $redisKey = $this->prefix . $token;
-        return $this->repository()->has($redisKey);
+        $payload = $this->repository()->get($redisKey);
+        if (!$payload) {
+            return false;
+        }
+
+        $data = json_decode($payload, true);
+        if (isset($data['created_at']) && (now()->timestamp - $data['created_at']) > $this->ttl) {
+            $this->delete($token);
+            return false;
+        }
+
+        return true;
     }
 
     /**

@@ -380,7 +380,8 @@ class DocumentController extends Controller
             $this->finishMetric('encryption', $document->document_id, Auth::id(), $processUuid, 'lock');
 
             // 4. Dispatch the rest to the background
-            ProcessSteganoJob::dispatch($document->document_id, $encryptedPath, $processUuid);
+            $token = session('master_key_token');
+            ProcessSteganoJob::dispatch($document->document_id, $encryptedPath, $processUuid, $token);
 
             DocumentActivity::create([
                 'document_id' => $document->document_id,
@@ -402,8 +403,8 @@ class DocumentController extends Controller
             ]);
 
             // Cleanup the temp upload file if it exists and encryption failed
-            if ($tempPath && Storage::exists($tempPath)) {
-                Storage::delete($tempPath);
+            if ($tempPath && Storage::disk('local')->exists($tempPath)) {
+                Storage::disk('local')->delete($tempPath);
             }
 
             return [
@@ -498,7 +499,7 @@ class DocumentController extends Controller
             $fileHash = hash_hmac('sha256', file_get_contents($file->getRealPath()), config('app.key'));
 
             // 2.3: Store uploaded file in local temporarily
-            $path = $file->store('temp/uploads');
+            $path = $file->store('temp/uploads', 'local');
 
             // 2.4: Save document record in DB
             $document = Document::create([
@@ -552,11 +553,11 @@ class DocumentController extends Controller
         }
         try {
             // 1. Read and Compress (ZLIB format)
-            $sourcePath = Storage::path($temp_filePath);
+            $sourcePath = Storage::disk('local')->path($temp_filePath);
             $raw_plaintext = file_get_contents($sourcePath);
             
             // Delete raw upload immediately to free space
-            Storage::delete($temp_filePath);
+            Storage::disk('local')->delete($temp_filePath);
 
             $compressed = gzcompress($raw_plaintext, 9); 
             unset($raw_plaintext); // Free memory
@@ -603,7 +604,7 @@ class DocumentController extends Controller
 
             // 7. Save encrypted file (store file_nonce + file_tag + ciphertext)
             $encPath = 'temp/encrypted/' . Str::uuid() . '.stegolock';
-            Storage::put($encPath, $file_nonce . $file_tag . $ciphertext);
+            Storage::disk('local')->put($encPath, $file_nonce . $file_tag . $ciphertext);
 
             // 8. Update the database with encryption and wrapping info
             $document->update([
@@ -617,7 +618,7 @@ class DocumentController extends Controller
             ]);
 
             // Safe to delete uploaded file
-            Storage::delete($temp_filePath);
+            Storage::disk('local')->delete($temp_filePath);
 
             //return data for Segmentation
             return $encPath;
@@ -630,8 +631,8 @@ class DocumentController extends Controller
             ]);
 
             // Ensure the temp upload file is deleted on failure
-            if (Storage::exists($temp_filePath)) {
-                Storage::delete($temp_filePath);
+            if (Storage::disk('local')->exists($temp_filePath)) {
+                Storage::disk('local')->delete($temp_filePath);
             }
 
             throw $e; // Rethrow to let the caller handle it
@@ -695,7 +696,7 @@ class DocumentController extends Controller
             $processUuid = (string) Str::uuid();
             $this->finishMetric('unlock_prepare', $document->document_id, Auth::id(), $processUuid, 'unlock');
         } catch (\RuntimeException $e) {
-            abort(403, $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 400);
         }
 
         // Dispatch the unlocking process to the background
@@ -730,7 +731,7 @@ class DocumentController extends Controller
 
         $path = 'temp/decrypted/' . $userId . '/' . $document->document_id . '/' . $document->filename;
 
-        if (!Storage::exists($path)) {
+        if (!Storage::disk('local')->exists($path)) {
             abort(404, 'File missing');
         }
 
@@ -741,7 +742,7 @@ class DocumentController extends Controller
             $document->update(['status' => 'retrieved']);
         }
 
-        return Storage::download($path, $document->filename);
+        return Storage::disk('local')->download($path, $document->filename);
     }
 
     /**
@@ -800,8 +801,8 @@ class DocumentController extends Controller
 
             // 4. Cleanup local decrypted file if it exists
             $localPath = 'temp/decrypted/' . $document->filename;
-            if (Storage::exists($localPath)) {
-                Storage::delete($localPath);
+            if (Storage::disk('local')->exists($localPath)) {
+                Storage::disk('local')->delete($localPath);
             }
 
             // 5. Delete DB record (Cascade delete handles fragments, stego_maps, stego_files)
@@ -984,8 +985,8 @@ class DocumentController extends Controller
 
         // Cleanup local decrypted file for THIS user
         $localPath = 'temp/decrypted/' . $userId . '/' . $document->document_id . '/' . $document->filename;
-        if (Storage::exists($localPath)) {
-            Storage::deleteDirectory('temp/decrypted/' . $userId . '/' . $document->document_id);
+        if (Storage::disk('local')->exists($localPath)) {
+            Storage::disk('local')->deleteDirectory('temp/decrypted/' . $userId . '/' . $document->document_id);
         }
 
         return [
