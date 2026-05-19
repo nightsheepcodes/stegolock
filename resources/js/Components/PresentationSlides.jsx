@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react';
 import { Link } from '@inertiajs/react';
 import { 
-    Shield, Trophy, Users, Cpu, Database, Compass 
+    Shield, Trophy, Users, Cpu, Database, Compass,
+    BarChart3, CheckCircle2, ArrowRight, Activity, Layers
 } from 'lucide-react';
 
 import { getChapter1Slides } from './presentation/Chapter1Slides';
@@ -11,21 +12,25 @@ import { getChapter4Slides6_7 } from './presentation/Chapter4Slides6_7';
 import { getChapter4Slide8 } from './presentation/Chapter4Slide8';
 import { getChapter4Slide9 } from './presentation/Chapter4Slide9';
 import { getChapter4Slide10 } from './presentation/Chapter4Slide10';
+import { getChapter5Slide12 } from './presentation/Chapter5Slide12';
 
 export function usePresentationSlides({ safeStats, demoStep, demoMode, demoActive, activeSteps, currentSlide }) {
     const [activeModal, setActiveModal] = React.useState(null);
     const [expandedSection, setExpandedSection] = React.useState(null);
     const [fullscreenImage, setFullscreenImage] = React.useState(null);
+    const [summaryPage, setSummaryPage] = React.useState(1);
 
     React.useEffect(() => {
         setActiveModal(null);
         setExpandedSection(null);
         setFullscreenImage(null);
+        setSummaryPage(1);
     }, [currentSlide]);
 
     React.useEffect(() => {
         setExpandedSection(null);
         setFullscreenImage(null);
+        setSummaryPage(1);
     }, [activeModal]);
 
     return useMemo(() => [
@@ -91,10 +96,10 @@ export function usePresentationSlides({ safeStats, demoStep, demoMode, demoActiv
         ...getChapter3Slides({ activeModal, setActiveModal, expandedSection, setExpandedSection, fullscreenImage, setFullscreenImage }),
 
         // Chapter 4 Slides (Findings on Obj 1, Obj 2, Obj 3, Obj 4)
-        ...getChapter4Slides6_7(),
-        ...getChapter4Slide8(),
-        ...getChapter4Slide9(),
-        ...getChapter4Slide10(),
+        ...getChapter4Slides6_7({ activeModal, setActiveModal }),
+        ...getChapter4Slide8({ activeModal, setActiveModal }),
+        ...getChapter4Slide9({ activeModal, setActiveModal }),
+        ...getChapter4Slide10({ activeModal, setActiveModal }),
 
         // Slide 11: Summary Section Opener
         {
@@ -109,71 +114,14 @@ export function usePresentationSlides({ safeStats, demoStep, demoMode, demoActiv
                         </div>
                         <div className="absolute inset-0 bg-cyber-accent/20 blur-[80px] -z-10 rounded-full animate-pulse"></div>
                     </div>
-                    <h2 className="text-8xl font-black text-slate-900 dark:text-white tracking-tight leading-none uppercase">SUMMARY & <br/> CONCLUSIONS</h2>
+                    <h2 className="text-8xl font-black text-slate-900 dark:text-white tracking-tight leading-none uppercase">SUMMARY, CONCLUSIONS & <br/>RECOMMENDATION</h2>
                 </div>
             )
         },
-        // Slide 12: Chapter 5 Recommendations
-        {
-            title: "Chapter 5",
-            subtitle: "Recommendations",
-            content: (
-                <div className="h-full flex flex-col justify-center py-2">
-                    <div className="mb-4">
-                        <div className="flex items-center justify-center lg:justify-start gap-4 text-center lg:text-left group cursor-default">
-                            <div className="size-14 rounded-xl bg-gradient-to-br from-cyber-accent to-indigo-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-cyan-500/20 dark:shadow-cyan-500/40 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-cyan-500/50 dark:group-hover:shadow-cyan-500/70">
-                                <Shield className="size-7 transition-transform duration-500 group-hover:scale-110" />
-                            </div>
-                            <div>
-                                <h2 className="text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-none">Chapter 5</h2>
-                            </div>
-                        </div>
-                        <p className="text-cyber-accent font-bold uppercase tracking-widest text-sm mt-3 text-center lg:text-left lg:pl-[4.5rem]">Recommendations</p>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-10 flex-1 content-center px-2 mt-4">
-                        {[
-                            { 
-                                title: "Argon2 Key Derivation Standard", 
-                                desc: "Hardens system security against long-term data analysis by introducing a cryptographically advanced key derivation standard.",
-                                icon: <Shield className="size-6" />
-                            },
-                            { 
-                                title: "AI-Driven Cover Generation", 
-                                desc: "Produces high-entropy, natural-looking concealment media virtually indistinguishable from ordinary user data to ensure fragments remain hidden from evolving detection methodologies and sophisticated forensic analysis tools.",
-                                icon: <Cpu className="size-6" />
-                            },
-                            { 
-                                title: "Dynamic Cloud Relocation", 
-                                desc: "Implement a periodic migration of file fragments between diverse cloud storage locations and providers to prevent attackers from accumulating a complete dataset over time.",
-                                icon: <Database className="size-6" />
-                            },
-                            { 
-                                title: "Native Mobile Applications", 
-                                desc: "Mobile applications equipped with biometric authentication features to maintain high usability standards and protect sensitive digital assets across diverse device types.",
-                                icon: <Users className="size-6" />
-                            },
-                            { 
-                                title: "Secure API", 
-                                desc: "Exposes the core architecture to allow organizations to integrate StegoLock’s protection layers directly into their existing document management systems.",
-                                icon: <Compass className="size-6" />
-                            }
-                        ].map((rec, i) => (
-                            <div key={i} className="flex gap-5 group items-start">
-                                <div className="size-12 sm:size-14 rounded-[1.25rem] bg-cyber-accent/10 border border-cyber-accent/20 text-cyber-accent flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:bg-cyber-accent group-hover:text-slate-950 transition-all duration-300 shadow-md">
-                                    {rec.icon}
-                                </div>
-                                <div className="flex-1 pt-1">
-                                    <h4 className="font-black text-slate-900 dark:text-white tracking-tight text-base sm:text-lg mb-1.5 group-hover:text-cyber-accent transition-colors duration-300">{rec.title}</h4>
-                                    <p className="text-[13px] sm:text-[14px] text-slate-600 dark:text-slate-400 leading-relaxed font-medium">{rec.desc}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )
-        },
-        // Slide 13: Live Demo
+        // Slide 12: Chapter 5 Dashboard (Summary, Conclusions, Recommendations)
+        ...getChapter5Slide12({ activeModal, setActiveModal, summaryPage, setSummaryPage }),
+
+        // Slide 14: Live Demo
         {
             title: "LIVE DEMO",
             subtitle: "Interactive Operations HUD Simulator",
@@ -190,7 +138,7 @@ export function usePresentationSlides({ safeStats, demoStep, demoMode, demoActiv
                 </div>
             )
         },
-        // Slide 14: Q&A
+        // Slide 15: Q&A
         {
             title: "Thank You",
             subtitle: "Q&A Session",
@@ -207,7 +155,7 @@ export function usePresentationSlides({ safeStats, demoStep, demoMode, demoActiv
                 </div>
             )
         },
-        // Slide 15: Defended Screen
+        // Slide 16: Defended Screen
         {
             title: "CAPSTONE FINALLY DEFENDED!!!😭",
             subtitle: "StegoLock Capstone Complete",
@@ -216,9 +164,11 @@ export function usePresentationSlides({ safeStats, demoStep, demoMode, demoActiv
                     <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/10 via-indigo-500/10 to-purple-500/10 blur-[140px] rounded-full scale-75 animate-pulse -z-10"></div>
                     
                     <div className="relative group">
-                        <div className="relative inline-flex items-center justify-center p-14 bg-gradient-to-br from-cyber-accent via-indigo-500 to-purple-600 rounded-[4rem] shadow-2xl shadow-cyan-500/50 dark:shadow-[0_0_80px_rgba(34,211,238,0.6)] animate-float">
-                            <Trophy className="size-28 sm:size-32 text-white drop-shadow-2xl relative z-10" />
+                        <div className="relative inline-flex items-center justify-center p-14 bg-gradient-to-br from-cyber-accent via-indigo-500 to-purple-600 rounded-[4rem] shadow-2xl shadow-cyan-500/50 dark:shadow-[0_0_80px_rgba(34,211,238,0.6)] animate-float group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
+                            <Trophy className="size-28 sm:size-32 text-white drop-shadow-2xl relative z-10 transition-transform duration-500 group-hover:scale-110" />
+                            <div className="absolute inset-0 rounded-[4rem] bg-gradient-to-tr from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                         </div>
+                        <div className="absolute inset-0 bg-cyber-accent/20 blur-[80px] -z-10 rounded-full animate-pulse"></div>
                     </div>
 
                     <div className="space-y-4">
@@ -228,15 +178,15 @@ export function usePresentationSlides({ safeStats, demoStep, demoMode, demoActiv
                                 DEFENDED!!!😭
                             </span>
                         </h1>
-                        <p className="text-base sm:text-lg text-slate-500 dark:text-slate-400 font-black max-w-2xl mx-auto uppercase tracking-widest pt-4">
-                            StegoLock: A Reconstruction-Dependent Security Architecture
+                        <p className="text-base sm:text-lg text-slate-500 dark:text-slate-400 font-black max-w-3xl mx-auto uppercase tracking-widest pt-4">
+                            STEGOLOCK: A CLOUD-BASED WEB APPLICATION BUILT ON A RECONSTRUCTION-DEPENDENT SECURITY ARCHITECTURE FOR DIGITAL DOCUMENT STORAGE
                         </p>
                     </div>
 
-                    <div className="flex gap-4 pt-6">
+                    <div className="flex gap-4 pt-2">
                         <Link 
                             href="/" 
-                            className="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-cyber-accent to-indigo-500 text-slate-950 hover:shadow-cyan-500/35 shadow-lg font-black text-xs uppercase tracking-widest transition active:scale-95"
+                            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyber-accent to-indigo-500 text-slate-950 hover:shadow-cyan-500/25 shadow-md font-black text-[10px] uppercase tracking-widest transition active:scale-95 animate-fade-in"
                         >
                             Return to Application Dashboard
                         </Link>
