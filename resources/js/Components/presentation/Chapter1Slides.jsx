@@ -51,7 +51,7 @@ export function getChapter1Slides({ activeModal, setActiveModal }) {
                                 onClick={() => setActiveModal('significance')}
                                 className="w-full lg:w-[15rem] h-14 sm:h-32 glass-panel p-3 sm:p-5 rounded-xl sm:rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-col justify-center items-center text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer"
                             >
-                                <h3 className="text-xs sm:text-md font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
+                                <h3 className="text-xs sm:text-xl font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
                                     Significance of the <br className="hidden sm:inline" />Study
                                 </h3>
                             </div>
@@ -61,7 +61,7 @@ export function getChapter1Slides({ activeModal, setActiveModal }) {
                                 onClick={() => setActiveModal('scope')}
                                 className="w-full lg:w-[15rem] h-14 sm:h-32 glass-panel p-3 sm:p-5 rounded-xl sm:rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-col justify-center items-center text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer"
                             >
-                                <h3 className="text-xs sm:text-md font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
+                                <h3 className="text-xs sm:text-xl font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
                                     Scope and <br className="hidden sm:inline" />Limitations
                                 </h3>
                             </div>
@@ -71,7 +71,7 @@ export function getChapter1Slides({ activeModal, setActiveModal }) {
                                 onClick={() => setActiveModal('terms')}
                                 className="w-full lg:w-[15rem] h-14 sm:h-32 glass-panel p-3 sm:p-5 rounded-xl sm:rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-col justify-center items-center text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer"
                             >
-                                <h3 className="text-xs sm:text-md font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
+                                <h3 className="text-xs sm:text-xl font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
                                     Definition of <br className="hidden sm:inline" />Terms
                                 </h3>
                             </div>

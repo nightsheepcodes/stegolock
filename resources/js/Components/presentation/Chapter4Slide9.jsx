@@ -35,10 +35,10 @@ function Chapter4Slide9Content({ activeModal, setActiveModal }) {
                     >
                         <Lock className="size-6 text-slate-400 dark:text-slate-500 group-hover/card:text-cyber-accent transition-colors duration-300 mb-0 lg:mb-2 shrink-0 animate-pulse-slow" />
                         <div className="flex-1 lg:flex-initial">
-                            <h3 className="text-sm font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
+                            <h3 className="text-sm sm:text-xl font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
                                 Authentication &amp; <br className="hidden lg:inline" />Access Control
                             </h3>
-                            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-normal opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 mt-0.5 block">
+                            <span className="text-[9px] sm:text-[10px] text-slate-400 dark:text-slate-500 font-bold tracking-normal opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 mt-0.5 block">
                                 Click to Inspect
                             </span>
                         </div>
@@ -54,10 +54,10 @@ function Chapter4Slide9Content({ activeModal, setActiveModal }) {
                             <Unlock className="size-5 text-slate-400 dark:text-slate-500 group-hover/card:text-cyber-accent transition-colors duration-300 animate-pulse-slow" />
                         </div>
                         <div className="flex-1 lg:flex-initial">
-                            <h3 className="text-sm font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
+                            <h3 className="text-sm sm:text-xl font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
                                 Document Locking <br className="hidden lg:inline" />&amp; Unlocking
                             </h3>
-                            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-normal opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 mt-0.5 block">
+                            <span className="text-[9px] sm:text-[10px] text-slate-400 dark:text-slate-500 font-bold tracking-normal opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 mt-0.5 block">
                                 Click to Inspect
                             </span>
                         </div>
@@ -70,10 +70,10 @@ function Chapter4Slide9Content({ activeModal, setActiveModal }) {
                     >
                         <Share2 className="size-6 text-slate-400 dark:text-slate-500 group-hover/card:text-cyber-accent transition-colors duration-300 mb-0 lg:mb-2 shrink-0 animate-pulse-slow" />
                         <div className="flex-1 lg:flex-initial">
-                            <h3 className="text-sm font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
+                            <h3 className="text-sm sm:text-xl font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
                                 Sharing <br className="hidden lg:inline" />Functionality
                             </h3>
-                            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-normal opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 mt-0.5 block">
+                            <span className="text-[9px] sm:text-[10px] text-slate-400 dark:text-slate-500 font-bold tracking-normal opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 mt-0.5 block">
                                 Click to Inspect
                             </span>
                         </div>
@@ -89,10 +89,10 @@ function Chapter4Slide9Content({ activeModal, setActiveModal }) {
                     >
                         <Trash2 className="size-6 text-slate-400 dark:text-slate-500 group-hover/card:text-cyber-accent transition-colors duration-300 mb-0 lg:mb-2 shrink-0 animate-pulse-slow" />
                         <div className="flex-1 lg:flex-initial">
-                            <h3 className="text-sm font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
+                            <h3 className="text-sm sm:text-xl font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
                                 File <br className="hidden lg:inline" />Deletion
                             </h3>
-                            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-normal opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 mt-0.5 block">
+                            <span className="text-[9px] sm:text-[10px] text-slate-400 dark:text-slate-500 font-bold tracking-normal opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 mt-0.5 block">
                                 Click to Inspect
                             </span>
                         </div>
@@ -105,10 +105,10 @@ function Chapter4Slide9Content({ activeModal, setActiveModal }) {
                     >
                         <Code className="size-6 text-slate-400 dark:text-slate-500 group-hover/card:text-cyber-accent transition-colors duration-300 mb-0 lg:mb-2 shrink-0 animate-pulse-slow" />
                         <div className="flex-1 lg:flex-initial">
-                            <h3 className="text-sm font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
+                            <h3 className="text-sm sm:text-xl font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
                                 Web <br className="hidden lg:inline" />Development
                             </h3>
-                            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-normal opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 mt-0.5 block">
+                            <span className="text-[9px] sm:text-[10px] text-slate-400 dark:text-slate-500 font-bold tracking-normal opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 mt-0.5 block">
                                 Click to Inspect
                             </span>
                         </div>
@@ -121,10 +121,10 @@ function Chapter4Slide9Content({ activeModal, setActiveModal }) {
                     >
                         <MonitorCheck className="size-6 text-slate-400 dark:text-slate-500 group-hover/card:text-cyber-accent transition-colors duration-300 mb-0 lg:mb-2 shrink-0 animate-pulse-slow" />
                         <div className="flex-1 lg:flex-initial">
-                            <h3 className="text-sm font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
+                            <h3 className="text-sm sm:text-xl font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
                                 Local Device vs <br className="hidden lg:inline" />Hosted Environment
                             </h3>
-                            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-normal opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 mt-0.5 block">
+                            <span className="text-[9px] sm:text-[10px] text-slate-400 dark:text-slate-500 font-bold tracking-normal opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 mt-0.5 block">
                                 Click to Inspect
                             </span>
                         </div>

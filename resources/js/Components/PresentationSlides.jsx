@@ -185,12 +185,12 @@ export function usePresentationSlides({ safeStats, demoStep, demoMode, demoActiv
                         </p>
                     </div>
  
-                    <div className="flex gap-4 pt-2">
+                    <div className="flex pt-2">
                         <Link 
                             href="/" 
                             className="px-4 py-2 sm:px-6 sm:py-2.5 rounded-xl bg-gradient-to-r from-cyber-accent to-indigo-500 text-slate-950 hover:shadow-cyan-500/25 shadow-md font-black text-[9px] sm:text-[10px] uppercase tracking-widest transition active:scale-95 animate-fade-in"
                         >
-                            Return to Application Dashboard
+                            Return to Home Page
                         </Link>
                     </div>
                 </div>
