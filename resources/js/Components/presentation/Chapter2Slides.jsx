@@ -7,26 +7,26 @@ export function getChapter2Slides({ activeModal, setActiveModal, expandedSection
             title: "Chapter 2",
             subtitle: "Review of Literature",
             content: (
-                <div className="h-full flex flex-col justify-center py-2">
-                    <div className="mb-4">
-                        <div className="flex items-center justify-center lg:justify-start gap-4 text-center lg:text-left group cursor-default">
-                            <div className="size-14 rounded-xl bg-gradient-to-br from-cyber-accent to-indigo-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-cyan-500/20 dark:shadow-cyan-500/40 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-cyan-500/50 dark:group-hover:shadow-cyan-500/70">
-                                <Shield className="size-7 transition-transform duration-500 group-hover:scale-110" />
+                <div className="h-full flex flex-col justify-center py-2 px-2 sm:px-4">
+                    <div className="mb-2 sm:mb-4">
+                        <div className="flex items-center justify-center lg:justify-start gap-3 sm:gap-4 text-center lg:text-left group cursor-default">
+                            <div className="size-10 sm:size-14 rounded-xl bg-gradient-to-br from-cyber-accent to-indigo-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-cyan-500/20 dark:shadow-cyan-500/40 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-cyan-500/50 dark:group-hover:shadow-cyan-500/70">
+                                <Shield className="size-5 sm:size-7 transition-transform duration-500 group-hover:scale-110" />
                             </div>
                             <div>
-                                <h2 className="text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-none">Chapter 2</h2>
+                                <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-none">Chapter 2</h2>
                             </div>
                         </div>
-                        <p className="text-cyber-accent font-bold uppercase tracking-widest text-sm mt-3 text-center lg:text-left lg:pl-[4.5rem]">Review of Literature</p>
+                        <p className="text-cyber-accent font-bold uppercase tracking-widest text-xs sm:text-sm mt-2 text-center lg:text-left lg:pl-[4.5rem]">Review of Literature</p>
                     </div>
                     
-                    <div className="flex-1 flex flex-col justify-center items-center gap-8 min-h-0 py-4">
+                    <div className="flex-1 flex flex-col justify-center items-center gap-3 sm:gap-8 min-h-0 py-2 sm:py-4">
                         {/* Card 1: Related Literature */}
                         <div 
                             onClick={() => setActiveModal('literature')}
-                            className="w-full lg:w-[40rem] h-32 glass-panel p-6 rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-col justify-center items-center text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer"
+                            className="w-full lg:w-[40rem] h-16 sm:h-32 glass-panel p-3 sm:p-6 rounded-xl sm:rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-col justify-center items-center text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer"
                         >
-                            <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300 uppercase">
+                            <h3 className="text-sm sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300 uppercase">
                                 Related Literature
                             </h3>
                         </div>
@@ -34,9 +34,9 @@ export function getChapter2Slides({ activeModal, setActiveModal, expandedSection
                         {/* Card 2: Related Systems */}
                         <div 
                             onClick={() => setActiveModal('systems')}
-                            className="w-full lg:w-[40rem] h-32 glass-panel p-6 rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-col justify-center items-center text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer"
+                            className="w-full lg:w-[40rem] h-16 sm:h-32 glass-panel p-3 sm:p-6 rounded-xl sm:rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-col justify-center items-center text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer"
                         >
-                            <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300 uppercase">
+                            <h3 className="text-sm sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300 uppercase">
                                 Related Systems
                             </h3>
                         </div>
@@ -46,20 +46,20 @@ export function getChapter2Slides({ activeModal, setActiveModal, expandedSection
                     {activeModal && (
                         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-transparent" onClick={() => setActiveModal(null)}>
                             <div 
-                                className="bg-slate-900 border border-cyber-accent/50 w-full max-w-4xl p-8 sm:p-12 rounded-[2rem] relative shadow-2xl shadow-cyan-500/20 animate-fade-in flex flex-col max-h-[85vh]"
+                                className="bg-slate-900 border border-cyber-accent/50 w-full max-w-4xl p-5 sm:p-10 rounded-2xl sm:rounded-[2rem] relative shadow-2xl shadow-cyan-500/20 animate-fade-in flex flex-col max-h-[85vh]"
                                 onClick={e => e.stopPropagation()}
                             >
                                 <button 
                                     onClick={() => setActiveModal(null)}
-                                    className="absolute top-6 right-6 size-10 flex items-center justify-center rounded-full bg-slate-800/50 hover:bg-cyber-accent hover:text-slate-900 text-white transition-colors text-xl z-10"
+                                    className="absolute top-4 right-4 size-8 sm:top-6 sm:right-6 sm:size-10 flex items-center justify-center rounded-full bg-slate-800/50 hover:bg-cyber-accent hover:text-slate-900 text-white transition-colors text-base sm:text-xl z-10"
                                 >
                                     ✕
                                 </button>
-                                <h2 className="text-4xl font-black text-white mb-6 shrink-0">
+                                <h2 className="text-xl sm:text-2xl md:text-4xl font-black text-white mb-4 sm:mb-6 shrink-0">
                                     {activeModal === 'literature' && 'Related Literature'}
                                     {activeModal === 'systems' && 'Related Systems'}
                                 </h2>
-                                <div className="text-slate-300 space-y-4 text-lg leading-relaxed overflow-y-auto min-h-0 pr-4">
+                                <div className="text-slate-300 space-y-4 text-sm sm:text-base md:text-lg leading-relaxed overflow-y-auto min-h-0 pr-4">
                                     {activeModal === 'literature' && (
                                         <div className="space-y-4">
                                             {[
@@ -119,10 +119,10 @@ export function getChapter2Slides({ activeModal, setActiveModal, expandedSection
                                                             onClick={() => setExpandedSection(isExpanded ? null : section.id)}
                                                             className="w-full flex items-center justify-between text-left group py-2 focus:outline-none"
                                                         >
-                                                            <span className="text-lg font-bold text-slate-300 group-hover:text-cyber-accent transition-colors flex items-center gap-3">
+                                                            <span className="text-sm sm:text-lg font-bold text-slate-300 group-hover:text-cyber-accent transition-colors flex items-center gap-2 sm:gap-3">
                                                                 {section.title}
                                                             </span>
-                                                            <span className={`text-cyber-accent text-xl font-bold transition-transform duration-300 ${isExpanded ? 'rotate-180 text-cyber-accent' : 'text-slate-500 group-hover:text-cyber-accent'}`}>
+                                                            <span className={`text-cyber-accent text-xs sm:text-xl font-bold transition-transform duration-300 ${isExpanded ? 'rotate-180 text-cyber-accent' : 'text-slate-500 group-hover:text-cyber-accent'}`}>
                                                                 {isExpanded ? '−' : '＋'}
                                                             </span>
                                                         </button>
@@ -133,7 +133,7 @@ export function getChapter2Slides({ activeModal, setActiveModal, expandedSection
                                                             }`}
                                                         >
                                                             <div className="overflow-hidden">
-                                                                <div className="text-slate-300 text-justify text-base leading-relaxed pl-14 pr-4">
+                                                                <div className="text-slate-300 text-justify text-xs sm:text-base leading-relaxed pl-4 sm:pl-14 pr-4">
                                                                     {section.content}
                                                                 </div>
                                                             </div>
@@ -321,10 +321,10 @@ export function getChapter2Slides({ activeModal, setActiveModal, expandedSection
                                                             onClick={() => setExpandedSection(isExpanded ? null : section.id)}
                                                             className="w-full flex items-center justify-between text-left group py-2 focus:outline-none"
                                                         >
-                                                            <span className="text-lg font-bold text-slate-300 group-hover:text-cyber-accent transition-colors flex items-center gap-3">
+                                                            <span className="text-sm sm:text-lg font-bold text-slate-300 group-hover:text-cyber-accent transition-colors flex items-center gap-2 sm:gap-3">
                                                                 {section.title}
                                                             </span>
-                                                            <span className={`text-cyber-accent text-xl font-bold transition-transform duration-300 ${isExpanded ? 'rotate-180 text-cyber-accent' : 'text-slate-500 group-hover:text-cyber-accent'}`}>
+                                                            <span className={`text-cyber-accent text-xs sm:text-xl font-bold transition-transform duration-300 ${isExpanded ? 'rotate-180 text-cyber-accent' : 'text-slate-500 group-hover:text-cyber-accent'}`}>
                                                                 {isExpanded ? '−' : '＋'}
                                                             </span>
                                                         </button>
@@ -335,7 +335,7 @@ export function getChapter2Slides({ activeModal, setActiveModal, expandedSection
                                                             }`}
                                                         >
                                                             <div className="overflow-hidden">
-                                                                <div className="text-slate-300 text-justify text-base leading-relaxed pl-6 pr-4">
+                                                                <div className="text-slate-300 text-justify text-xs sm:text-base leading-relaxed pl-4 sm:pl-6 pr-4">
                                                                     {section.content}
                                                                 </div>
                                                             </div>

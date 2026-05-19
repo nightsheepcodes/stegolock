@@ -16,36 +16,42 @@ function Chapter4Slide8Content({ activeModal, setActiveModal }) {
     }, [activeModal]);
 
     return (
-        <div className="h-full flex flex-col justify-center py-2 relative">
-            <div className="mb-4">
-                <div className="flex items-center justify-center lg:justify-start gap-4 text-center lg:text-left group cursor-default">
-                    <div className="size-14 rounded-xl bg-gradient-to-br from-cyber-accent to-indigo-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-cyan-500/20 dark:shadow-cyan-500/40 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-cyan-500/50 dark:group-hover:shadow-cyan-500/70">
-                        <Shield className="size-7 transition-transform duration-500 group-hover:scale-110" />
+        <div className="h-full flex flex-col justify-start lg:justify-center py-2 relative overflow-y-auto lg:overflow-y-visible min-h-0 pr-1 scrollbar-thin">
+            <div className="mb-2 sm:mb-4">
+                <div className="flex items-center justify-center lg:justify-start gap-3 sm:gap-4 text-center lg:text-left group cursor-default">
+                    <div className="size-10 sm:size-14 rounded-xl bg-gradient-to-br from-cyber-accent to-indigo-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-cyan-500/20 dark:shadow-cyan-500/40 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-cyan-500/50 dark:group-hover:shadow-cyan-500/70">
+                        <Shield className="size-5 sm:size-7 transition-transform duration-500 group-hover:scale-110" />
                     </div>
                     <div>
-                        <h2 className="text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-none">Chapter 4</h2>
+                        <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-none">Chapter 4</h2>
                     </div>
                 </div>
-                <div className="mt-3 text-center lg:text-left lg:pl-[4.5rem]">
-                    <p className="text-cyber-accent font-black uppercase tracking-widest text-sm mb-1">Results and Discussion</p>
-                    <p className="text-slate-500 dark:text-slate-400 font-semibold text-sm md:text-base tracking-wide leading-relaxed">Objective 2: Design and implement a segmentation process that splits the encrypted document into multiple segments and hides them through a steganographic embedding process into cover files, which are scattered across the application’s cloud storage to enhance security.</p>
+                <div className="mt-2 text-center lg:text-left lg:pl-[4.5rem]">
+                    <p className="text-cyber-accent font-black uppercase tracking-widest text-[10px] sm:text-xs mb-1">Results and Discussion</p>
+                    <p className="text-slate-500 dark:text-slate-400 font-semibold text-[10px] sm:text-xs md:text-base tracking-wide leading-relaxed">Objective 2: Design and implement a segmentation process that splits the encrypted document into multiple segments and hides them through a steganographic embedding process into cover files, which are scattered across the application’s cloud storage to enhance security.</p>
                 </div>
             </div>
             
-            <div className="flex-1 w-full flex justify-center items-center py-6 min-h-0 relative">
+            <div className="flex-1 shrink-0 w-full flex justify-center items-center py-6 relative">
                 {/* Animated Pipeline Canvas */}
-                <div className="w-full max-w-5xl h-[280px] sm:h-[340px] glass-panel rounded-[2.5rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 shadow-xl shadow-cyan-500/5 relative overflow-hidden flex flex-col sm:flex-row items-center justify-between px-8 sm:px-24">
+                <div className="w-full max-w-5xl h-auto py-12 sm:py-0 sm:h-[340px] glass-panel rounded-[2.5rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 shadow-xl shadow-cyan-500/5 relative overflow-hidden flex flex-col sm:flex-row items-center justify-between px-8 sm:px-24 gap-16 sm:gap-0">
                     
-                    {/* Central Connection Line */}
+                    {/* Central Connection Line (Desktop) */}
                     <div className="hidden sm:block absolute top-1/2 left-16 right-16 h-1 bg-slate-200/50 dark:bg-slate-700/50 -translate-y-1/2 z-0">
                         {/* Flowing Energy */}
                         <div className="h-full bg-gradient-to-r from-transparent via-cyber-accent to-transparent w-[30%] animate-data-flow" />
                     </div>
 
+                    {/* Vertical Connection Line (Mobile) */}
+                    <div className="absolute left-1/2 top-12 bottom-12 w-1 bg-slate-200/30 dark:bg-slate-700/30 -translate-x-1/2 z-0 sm:hidden">
+                        {/* Flowing Energy */}
+                        <div className="w-full bg-gradient-to-b from-transparent via-cyber-accent to-transparent h-[30%] animate-data-flow-vertical" />
+                    </div>
+
                     {/* Node 1: Cover Selection (Left) */}
                     <div 
                         onClick={() => setActiveModal('chapter4-cover-selection')}
-                        className="relative z-10 flex flex-col items-center cursor-pointer group/node"
+                        className="relative z-10 flex flex-col items-center cursor-pointer group/node mb-4 sm:mb-0"
                     >
                         {/* The Central Payload Container */}
                         <div className="relative group-hover/node:scale-105 transition-transform duration-300">
@@ -68,7 +74,7 @@ function Chapter4Slide8Content({ activeModal, setActiveModal }) {
                                 </div>
                             </div>
                         </div>
-                        <span className="absolute -bottom-12 font-black text-[10px] sm:text-xs uppercase tracking-widest text-slate-700 dark:text-slate-300 text-center whitespace-nowrap group-hover/node:text-cyber-accent transition-colors duration-300">
+                        <span className="absolute -bottom-10 sm:-bottom-12 font-black text-[10px] sm:text-xs uppercase tracking-widest text-slate-700 dark:text-slate-300 text-center whitespace-nowrap group-hover/node:text-cyber-accent transition-colors duration-300">
                             Cover Selection
                             <span className="block text-[8px] text-slate-400 dark:text-slate-500 font-bold tracking-normal opacity-0 group-hover/node:opacity-100 transition-opacity duration-300">
                                 Click to Inspect
@@ -79,7 +85,7 @@ function Chapter4Slide8Content({ activeModal, setActiveModal }) {
                     {/* Node 2: Segmentation Engine (Center) */}
                     <div 
                         onClick={() => setActiveModal('chapter4-segmentation-lsb')}
-                        className="relative z-10 flex flex-col items-center h-full justify-center cursor-pointer group/node"
+                        className="relative z-10 flex flex-col items-center sm:h-full justify-center cursor-pointer group/node py-2 sm:py-0 mb-4 sm:mb-0"
                     >
                         {/* The Central Engine Node */}
                         <div className="size-28 sm:size-36 flex items-center justify-center relative z-20 group-hover/node:scale-105 transition-transform duration-300">
@@ -128,7 +134,7 @@ function Chapter4Slide8Content({ activeModal, setActiveModal }) {
                             <div className="absolute top-[50%] left-0 size-2.5 sm:size-3 bg-purple-400 shadow-[0_0_10px_#c084fc] rounded-sm animate-particle-3" />
                         </div>
 
-                        <span className="absolute bottom-4 sm:bottom-8 font-black text-[10px] sm:text-xs uppercase tracking-widest text-slate-700 dark:text-slate-300 text-center leading-tight whitespace-nowrap group-hover/node:text-cyber-accent transition-colors duration-300">
+                        <span className="absolute -bottom-10 sm:bottom-8 font-black text-[10px] sm:text-xs uppercase tracking-widest text-slate-700 dark:text-slate-300 text-center leading-tight whitespace-nowrap group-hover/node:text-cyber-accent transition-colors duration-300">
                             Segmentation<br/>& LSB Embedding
                             <span className="block text-[8px] text-slate-400 dark:text-slate-500 font-bold tracking-normal opacity-0 group-hover/node:opacity-100 transition-opacity duration-300 mt-1">
                                 Click to Inspect
@@ -146,7 +152,7 @@ function Chapter4Slide8Content({ activeModal, setActiveModal }) {
                             {/* Upload Pulses inside cloud */}
                             <div className="absolute inset-x-0 bottom-0 bg-cyber-accent/20 animate-cloud-fill" />
                         </div>
-                        <span className="absolute -bottom-12 font-black text-[10px] sm:text-xs uppercase tracking-widest text-slate-700 dark:text-slate-300 text-center whitespace-nowrap group-hover/node:text-cyber-accent transition-colors duration-300">
+                        <span className="absolute -bottom-10 sm:-bottom-12 font-black text-[10px] sm:text-xs uppercase tracking-widest text-slate-700 dark:text-slate-300 text-center whitespace-nowrap group-hover/node:text-cyber-accent transition-colors duration-300">
                             Cloud Scatter
                             <span className="block text-[8px] text-slate-400 dark:text-slate-500 font-bold tracking-normal opacity-0 group-hover/node:opacity-100 transition-opacity duration-300">
                                 Click to Inspect
@@ -638,9 +644,19 @@ function Chapter4Slide8Content({ activeModal, setActiveModal }) {
                     </div>
                 </div>
             )}
-
             {/* Custom Keyframe Animations */}
             <style dangerouslySetInnerHTML={{ __html: `
+                @keyframes data-flow-vertical {
+                    0% {
+                        transform: translateY(-100%);
+                    }
+                    100% {
+                        transform: translateY(300%);
+                    }
+                }
+                .animate-data-flow-vertical {
+                    animation: data-flow-vertical 3s linear infinite;
+                }
                 @keyframes scale-up-modal {
                     from {
                         opacity: 0;

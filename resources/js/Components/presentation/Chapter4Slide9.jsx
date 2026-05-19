@@ -9,68 +9,74 @@ function Chapter4Slide9Content({ activeModal, setActiveModal }) {
     const [subTab, setSubTab] = React.useState('locking');
 
     return (
-        <div className="h-full flex flex-col justify-center py-2 relative">
-            <div className="mb-4">
-                <div className="flex items-center justify-center lg:justify-start gap-4 text-center lg:text-left group cursor-default">
-                    <div className="size-14 rounded-xl bg-gradient-to-br from-cyber-accent to-indigo-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-cyan-500/20 dark:shadow-cyan-500/40 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-cyan-500/50 dark:group-hover:shadow-cyan-500/70">
-                        <Shield className="size-7 transition-transform duration-500 group-hover:scale-110" />
+        <div className="h-full flex flex-col justify-start lg:justify-center py-2 relative overflow-y-auto lg:overflow-y-visible min-h-0 pr-1 scrollbar-thin">
+            <div className="mb-2 sm:mb-4">
+                <div className="flex items-center justify-center lg:justify-start gap-3 sm:gap-4 text-center lg:text-left group cursor-default">
+                    <div className="size-10 sm:size-14 rounded-xl bg-gradient-to-br from-cyber-accent to-indigo-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-cyan-500/20 dark:shadow-cyan-500/40 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-cyan-500/50 dark:group-hover:shadow-cyan-500/70">
+                        <Shield className="size-5 sm:size-7 transition-transform duration-500 group-hover:scale-110" />
                     </div>
                     <div>
-                        <h2 className="text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-none">Chapter 4</h2>
+                        <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-none">Chapter 4</h2>
                     </div>
                 </div>
-                <div className="mt-3 text-center lg:text-left lg:pl-[4.5rem]">
-                    <p className="text-cyber-accent font-black uppercase tracking-widest text-sm mb-1">Results and Discussion</p>
-                    <p className="text-slate-500 dark:text-slate-400 font-semibold text-sm md:text-base tracking-wide leading-relaxed">Objective 3: Develop a web-based application that implements and integrates the AES-based encryption, segmentation, access control and authentication, and sharing mechanisms to a document storage platform.</p>
+                <div className="mt-2 text-center lg:text-left lg:pl-[4.5rem]">
+                    <p className="text-cyber-accent font-black uppercase tracking-widest text-[10px] sm:text-xs mb-1">Results and Discussion</p>
+                    <p className="text-slate-500 dark:text-slate-400 font-semibold text-[10px] sm:text-xs md:text-base tracking-wide leading-relaxed">Objective 3: Develop a web-based application that implements and integrates the AES-based encryption, segmentation, access control and authentication, and sharing mechanisms to a document storage platform.</p>
                 </div>
             </div>
             
-            <div className="flex-1 flex flex-col justify-center items-center gap-5 min-h-0 py-4">
+            <div className="flex-1 shrink-0 flex flex-col justify-center items-center gap-6 py-6 w-full">
                 {/* Row 1: 3 Cards */}
                 <div className="flex flex-col lg:flex-row justify-center items-center gap-6 w-full">
                     {/* Card 1: Authentication & Access Control */}
                     <div 
                         onClick={() => setActiveModal('chapter4-obj3-auth')}
-                        className="w-full lg:w-[17rem] h-36 glass-panel p-5 rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-col justify-center items-center text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer"
+                        className="w-full lg:w-[17rem] h-20 sm:h-36 glass-panel p-4 sm:p-5 rounded-2xl sm:rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-row lg:flex-col justify-start lg:justify-center items-center gap-4 lg:gap-2 text-left lg:text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer"
                     >
-                        <Lock className="size-6 text-slate-400 dark:text-slate-500 group-hover/card:text-cyber-accent transition-colors duration-300 mb-2" />
-                        <h3 className="text-sm font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
-                            Authentication &amp; <br />Access Control
-                        </h3>
-                        <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-normal opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 mt-1">
-                            Click to Inspect
-                        </span>
+                        <Lock className="size-6 text-slate-400 dark:text-slate-500 group-hover/card:text-cyber-accent transition-colors duration-300 mb-0 lg:mb-2 shrink-0 animate-pulse-slow" />
+                        <div className="flex-1 lg:flex-initial">
+                            <h3 className="text-sm font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
+                                Authentication &amp; <br className="hidden lg:inline" />Access Control
+                            </h3>
+                            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-normal opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 mt-0.5 block">
+                                Click to Inspect
+                            </span>
+                        </div>
                     </div>
 
                     {/* Card 1.5: Document Locking & Unlocking */}
                     <div 
                         onClick={() => setActiveModal('chapter4-obj3-lock-unlock')}
-                        className="w-full lg:w-[17rem] h-36 glass-panel p-5 rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-col justify-center items-center text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer"
+                        className="w-full lg:w-[17rem] h-20 sm:h-36 glass-panel p-4 sm:p-5 rounded-2xl sm:rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-row lg:flex-col justify-start lg:justify-center items-center gap-4 lg:gap-2 text-left lg:text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer"
                     >
-                        <div className="flex gap-1.5 mb-2">
-                            <Lock className="size-5 text-slate-400 dark:text-slate-500 group-hover/card:text-cyber-accent transition-colors duration-300" />
-                            <Unlock className="size-5 text-slate-400 dark:text-slate-500 group-hover/card:text-cyber-accent transition-colors duration-300" />
+                        <div className="flex gap-1.5 mb-0 lg:mb-2 shrink-0">
+                            <Lock className="size-5 text-slate-400 dark:text-slate-500 group-hover/card:text-cyber-accent transition-colors duration-300 animate-pulse-slow" />
+                            <Unlock className="size-5 text-slate-400 dark:text-slate-500 group-hover/card:text-cyber-accent transition-colors duration-300 animate-pulse-slow" />
                         </div>
-                        <h3 className="text-sm font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
-                            Document Locking <br />&amp; Unlocking
-                        </h3>
-                        <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-normal opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 mt-1">
-                            Click to Inspect
-                        </span>
+                        <div className="flex-1 lg:flex-initial">
+                            <h3 className="text-sm font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
+                                Document Locking <br className="hidden lg:inline" />&amp; Unlocking
+                            </h3>
+                            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-normal opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 mt-0.5 block">
+                                Click to Inspect
+                            </span>
+                        </div>
                     </div>
 
                     {/* Card 2: Sharing Functionality */}
                     <div 
                         onClick={() => setActiveModal('chapter4-obj3-sharing')}
-                        className="w-full lg:w-[17rem] h-36 glass-panel p-5 rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-col justify-center items-center text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer"
+                        className="w-full lg:w-[17rem] h-20 sm:h-36 glass-panel p-4 sm:p-5 rounded-2xl sm:rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-row lg:flex-col justify-start lg:justify-center items-center gap-4 lg:gap-2 text-left lg:text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer"
                     >
-                        <Share2 className="size-6 text-slate-400 dark:text-slate-500 group-hover/card:text-cyber-accent transition-colors duration-300 mb-2" />
-                        <h3 className="text-sm font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
-                            Sharing <br />Functionality
-                        </h3>
-                        <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-normal opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 mt-1">
-                            Click to Inspect
-                        </span>
+                        <Share2 className="size-6 text-slate-400 dark:text-slate-500 group-hover/card:text-cyber-accent transition-colors duration-300 mb-0 lg:mb-2 shrink-0 animate-pulse-slow" />
+                        <div className="flex-1 lg:flex-initial">
+                            <h3 className="text-sm font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
+                                Sharing <br className="hidden lg:inline" />Functionality
+                            </h3>
+                            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-normal opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 mt-0.5 block">
+                                Click to Inspect
+                            </span>
+                        </div>
                     </div>
                 </div>
 
@@ -79,43 +85,49 @@ function Chapter4Slide9Content({ activeModal, setActiveModal }) {
                     {/* Card 3: File Deletion */}
                     <div 
                         onClick={() => setActiveModal('chapter4-obj3-deletion')}
-                        className="w-full lg:w-[17rem] h-36 glass-panel p-5 rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-col justify-center items-center text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer"
+                        className="w-full lg:w-[17rem] h-20 sm:h-36 glass-panel p-4 sm:p-5 rounded-2xl sm:rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-row lg:flex-col justify-start lg:justify-center items-center gap-4 lg:gap-2 text-left lg:text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer"
                     >
-                        <Trash2 className="size-6 text-slate-400 dark:text-slate-500 group-hover/card:text-cyber-accent transition-colors duration-300 mb-2" />
-                        <h3 className="text-sm font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
-                            File <br />Deletion
-                        </h3>
-                        <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-normal opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 mt-1">
-                            Click to Inspect
-                        </span>
+                        <Trash2 className="size-6 text-slate-400 dark:text-slate-500 group-hover/card:text-cyber-accent transition-colors duration-300 mb-0 lg:mb-2 shrink-0 animate-pulse-slow" />
+                        <div className="flex-1 lg:flex-initial">
+                            <h3 className="text-sm font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
+                                File <br className="hidden lg:inline" />Deletion
+                            </h3>
+                            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-normal opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 mt-0.5 block">
+                                Click to Inspect
+                            </span>
+                        </div>
                     </div>
 
                     {/* Card 4: Web Development */}
                     <div 
                         onClick={() => setActiveModal('chapter4-obj3-webdev')}
-                        className="w-full lg:w-[17rem] h-36 glass-panel p-5 rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-col justify-center items-center text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer"
+                        className="w-full lg:w-[17rem] h-20 sm:h-36 glass-panel p-4 sm:p-5 rounded-2xl sm:rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-row lg:flex-col justify-start lg:justify-center items-center gap-4 lg:gap-2 text-left lg:text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer"
                     >
-                        <Code className="size-6 text-slate-400 dark:text-slate-500 group-hover/card:text-cyber-accent transition-colors duration-300 mb-2" />
-                        <h3 className="text-sm font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
-                            Web <br />Development
-                        </h3>
-                        <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-normal opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 mt-1">
-                            Click to Inspect
-                        </span>
+                        <Code className="size-6 text-slate-400 dark:text-slate-500 group-hover/card:text-cyber-accent transition-colors duration-300 mb-0 lg:mb-2 shrink-0 animate-pulse-slow" />
+                        <div className="flex-1 lg:flex-initial">
+                            <h3 className="text-sm font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
+                                Web <br className="hidden lg:inline" />Development
+                            </h3>
+                            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-normal opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 mt-0.5 block">
+                                Click to Inspect
+                            </span>
+                        </div>
                     </div>
 
                     {/* Card 5: Local Device vs Hosted Environment */}
                     <div 
                         onClick={() => setActiveModal('chapter4-obj3-env')}
-                        className="w-full lg:w-[17rem] h-36 glass-panel p-5 rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-col justify-center items-center text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer"
+                        className="w-full lg:w-[17rem] h-20 sm:h-36 glass-panel p-4 sm:p-5 rounded-2xl sm:rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-row lg:flex-col justify-start lg:justify-center items-center gap-4 lg:gap-2 text-left lg:text-center shadow-lg shadow-cyan-500/5 group/card cursor-pointer"
                     >
-                        <MonitorCheck className="size-6 text-slate-400 dark:text-slate-500 group-hover/card:text-cyber-accent transition-colors duration-300 mb-2" />
-                        <h3 className="text-sm font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
-                            Local Device vs <br />Hosted Environment
-                        </h3>
-                        <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-normal opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 mt-1">
-                            Click to Inspect
-                        </span>
+                        <MonitorCheck className="size-6 text-slate-400 dark:text-slate-500 group-hover/card:text-cyber-accent transition-colors duration-300 mb-0 lg:mb-2 shrink-0 animate-pulse-slow" />
+                        <div className="flex-1 lg:flex-initial">
+                            <h3 className="text-sm font-black text-slate-900 dark:text-white tracking-tight leading-snug group-hover/card:text-cyber-accent transition-colors duration-300">
+                                Local Device vs <br className="hidden lg:inline" />Hosted Environment
+                            </h3>
+                            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-normal opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 mt-0.5 block">
+                                Click to Inspect
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>

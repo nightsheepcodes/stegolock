@@ -6,80 +6,86 @@ import {
 
 function Chapter5Slide12Content({ activeModal, setActiveModal, summaryPage, setSummaryPage }) {
     return (
-        <div className="h-full flex flex-col justify-center py-2 relative">
-            <div className="mb-4">
-                <div className="flex items-center justify-center lg:justify-start gap-4 text-center lg:text-left group cursor-default">
-                    <div className="size-14 rounded-xl bg-gradient-to-br from-cyber-accent to-indigo-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-cyan-500/20 dark:shadow-cyan-500/40 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-cyan-500/50 dark:group-hover:shadow-cyan-500/70">
-                        <Shield className="size-7 transition-transform duration-500 group-hover:scale-110" />
+        <div className="h-full flex flex-col justify-start lg:justify-center py-2 relative overflow-y-auto lg:overflow-y-visible min-h-0 pr-1 scrollbar-thin">
+            <div className="mb-2 sm:mb-4">
+                <div className="flex items-center justify-center lg:justify-start gap-3 sm:gap-4 text-center lg:text-left group cursor-default">
+                    <div className="size-10 sm:size-14 rounded-xl bg-gradient-to-br from-cyber-accent to-indigo-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-cyan-500/20 dark:shadow-cyan-500/40 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-cyan-500/50 dark:group-hover:shadow-cyan-500/70">
+                        <Shield className="size-5 sm:size-7 transition-transform duration-500 group-hover:scale-110" />
                     </div>
                     <div>
-                        <h2 className="text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-none">Chapter 5</h2>
+                        <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-none">Chapter 5</h2>
                     </div>
                 </div>
-                <p className="text-cyber-accent font-bold uppercase tracking-widest text-sm mt-3 text-center lg:text-left lg:pl-[4.5rem]">Summary, Conclusions, and Recommendations</p>
+                <p className="text-cyber-accent font-bold uppercase tracking-widest text-[10px] sm:text-xs mt-2 sm:mt-3 text-center lg:text-left lg:pl-[4.5rem]">Summary, Conclusions, and Recommendations</p>
             </div>
 
-            <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch max-w-6xl mx-auto w-full mt-4">
+            <div className="flex-1 shrink-0 flex flex-col lg:flex-row justify-center items-center gap-6 py-6 w-full max-w-6xl mx-auto">
                 {/* Summary Card */}
                 <div 
                     onClick={() => setActiveModal('c5_summary')}
-                    className="glass-panel p-6 rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-col justify-between group/card cursor-pointer shadow-lg shadow-cyan-500/5 relative"
+                    className="w-full lg:flex-1 h-24 sm:h-auto min-h-[6rem] sm:min-h-[16rem] glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-row lg:flex-col justify-between items-center lg:items-stretch gap-4 shadow-lg shadow-cyan-500/5 group/card cursor-pointer relative"
                 >
-                    <div className="space-y-4">
-                        <div className="size-12 rounded-xl bg-cyber-accent/10 border border-cyber-accent/20 text-cyber-accent flex items-center justify-center group-hover/card:scale-110 group-hover/card:bg-cyber-accent group-hover/card:text-slate-950 transition-all duration-300">
-                            <BarChart3 className="size-6" />
+                    <div className="flex flex-row lg:flex-col items-center lg:items-start gap-4">
+                        <div className="size-10 sm:size-12 rounded-xl bg-cyber-accent/10 border border-cyber-accent/20 text-cyber-accent flex items-center justify-center shrink-0 group-hover/card:scale-110 group-hover/card:bg-cyber-accent group-hover/card:text-slate-950 transition-all duration-300">
+                            <BarChart3 className="size-5 sm:size-6" />
                         </div>
-                        <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight group-hover/card:text-cyber-accent transition-colors duration-300">
-                            Summary of Findings
-                        </h3>
-                        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-                            Triangulated analysis of system metrics and user evaluations from 30 participants, validating performance efficiency and integrity.
-                        </p>
+                        <div className="flex-1 lg:flex-initial text-left">
+                            <h3 className="text-sm sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white tracking-tight group-hover/card:text-cyber-accent transition-colors duration-300 leading-snug">
+                                Summary of Findings
+                            </h3>
+                            <p className="text-[10px] sm:text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed mt-0.5 sm:mt-2 hidden sm:block">
+                                Triangulated analysis of system metrics and user evaluations from 30 participants, validating performance efficiency and integrity.
+                            </p>
+                        </div>
                     </div>
-                    <div className="mt-6 flex items-center text-xs font-black text-cyber-accent uppercase tracking-widest group-hover/card:translate-x-2 transition-transform duration-300">
-                        View Summary <ArrowRight className="size-4 ml-1" />
+                    <div className="flex items-center text-[10px] sm:text-xs font-black text-cyber-accent uppercase tracking-widest group-hover/card:translate-x-2 transition-transform duration-300 shrink-0">
+                        <span className="hidden sm:inline">View Summary </span><ArrowRight className="size-4 ml-1" />
                     </div>
                 </div>
 
                 {/* Conclusions Card */}
                 <div 
                     onClick={() => setActiveModal('c5_conclusions')}
-                    className="glass-panel p-6 rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-col justify-between group/card cursor-pointer shadow-lg shadow-cyan-500/5 relative"
+                    className="w-full lg:flex-1 h-24 sm:h-auto min-h-[6rem] sm:min-h-[16rem] glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-row lg:flex-col justify-between items-center lg:items-stretch gap-4 shadow-lg shadow-cyan-500/5 group/card cursor-pointer relative"
                 >
-                    <div className="space-y-4">
-                        <div className="size-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center group-hover/card:scale-110 group-hover/card:bg-indigo-500 group-hover/card:text-slate-950 transition-all duration-300">
-                            <CheckCircle2 className="size-6" />
+                    <div className="flex flex-row lg:flex-col items-center lg:items-start gap-4">
+                        <div className="size-10 sm:size-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0 group-hover/card:scale-110 group-hover/card:bg-indigo-500 group-hover/card:text-slate-950 transition-all duration-300">
+                            <CheckCircle2 className="size-5 sm:size-6" />
                         </div>
-                        <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight group-hover/card:text-indigo-400 transition-colors duration-300">
-                            Conclusions
-                        </h3>
-                        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-                            Key conclusions drawn across StegoLock's four objectives, confirming cryptographic, steganographic, and architectural efficacy.
-                        </p>
+                        <div className="flex-1 lg:flex-initial text-left">
+                            <h3 className="text-sm sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white tracking-tight group-hover/card:text-indigo-400 transition-colors duration-300 leading-snug">
+                                Conclusions
+                            </h3>
+                            <p className="text-[10px] sm:text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed mt-0.5 sm:mt-2 hidden sm:block">
+                                Key conclusions drawn across StegoLock's four objectives, confirming cryptographic, steganographic, and architectural efficacy.
+                            </p>
+                        </div>
                     </div>
-                    <div className="mt-6 flex items-center text-xs font-black text-indigo-400 uppercase tracking-widest group-hover/card:translate-x-2 transition-transform duration-300">
-                        View Conclusions <ArrowRight className="size-4 ml-1" />
+                    <div className="flex items-center text-[10px] sm:text-xs font-black text-indigo-400 uppercase tracking-widest group-hover/card:translate-x-2 transition-transform duration-300 shrink-0">
+                        <span className="hidden sm:inline">View Conclusions </span><ArrowRight className="size-4 ml-1" />
                     </div>
                 </div>
 
                 {/* Recommendations Link Card */}
                 <div 
                     onClick={() => setActiveModal('c5_recommendations_summary')}
-                    className="glass-panel p-6 rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-col justify-between group/card cursor-pointer shadow-lg shadow-cyan-500/5 relative"
+                    className="w-full lg:flex-1 h-24 sm:h-auto min-h-[6rem] sm:min-h-[16rem] glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] border-slate-200 dark:border-cyber-border/30 bg-cyber-surface/10 hover:border-cyber-accent/50 hover:shadow-cyan-500/10 transition-all duration-500 flex flex-row lg:flex-col justify-between items-center lg:items-stretch gap-4 shadow-lg shadow-cyan-500/5 group/card cursor-pointer relative"
                 >
-                    <div className="space-y-4">
-                        <div className="size-12 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center group-hover/card:scale-110 group-hover/card:bg-purple-500 group-hover/card:text-slate-950 transition-all duration-300">
-                            <Compass className="size-6" />
+                    <div className="flex flex-row lg:flex-col items-center lg:items-start gap-4">
+                        <div className="size-10 sm:size-12 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center shrink-0 group-hover/card:scale-110 group-hover/card:bg-purple-500 group-hover/card:text-slate-950 transition-all duration-300">
+                            <Compass className="size-5 sm:size-6" />
                         </div>
-                        <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight group-hover/card:text-purple-400 transition-colors duration-300">
-                            Future Pathways
-                        </h3>
-                        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-                            Actionable recommendations addressing payload distribution, automated moving targets, and enterprise integrations.
-                        </p>
+                        <div className="flex-1 lg:flex-initial text-left">
+                            <h3 className="text-sm sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white tracking-tight group-hover/card:text-purple-400 transition-colors duration-300 leading-snug">
+                                Future Pathways
+                            </h3>
+                            <p className="text-[10px] sm:text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed mt-0.5 sm:mt-2 hidden sm:block">
+                                Actionable recommendations addressing payload distribution, automated moving targets, and enterprise integrations.
+                            </p>
+                        </div>
                     </div>
-                    <div className="mt-6 flex items-center text-xs font-black text-purple-400 uppercase tracking-widest group-hover/card:translate-x-2 transition-transform duration-300">
-                        View Overview <ArrowRight className="size-4 ml-1" />
+                    <div className="flex items-center text-[10px] sm:text-xs font-black text-purple-400 uppercase tracking-widest group-hover/card:translate-x-2 transition-transform duration-300 shrink-0">
+                        <span className="hidden sm:inline">View Overview </span><ArrowRight className="size-4 ml-1" />
                     </div>
                 </div>
             </div>

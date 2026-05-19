@@ -139,6 +139,9 @@ export default function Presentation({ stats = {} }) {
     // Keyboard navigation
     useEffect(() => {
         const handleKeyDown = (e) => {
+            if (['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+                setShowHeader(false);
+            }
             if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') nextSlide();
             if (e.key === 'ArrowLeft' || e.key === 'PageUp') prevSlide();
             if (e.key === 'Home') setCurrentSlide(0);
@@ -152,6 +155,19 @@ export default function Presentation({ stats = {} }) {
 
     // Header Visibility Logic (Manually triggered via slide toggle button)
     const [showHeader, setShowHeader] = useState(true);
+    const headerRef = useRef(null);
+
+    // Close header when clicking outside of it
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (!document.body.contains(e.target)) return;
+            if (headerRef.current && !headerRef.current.contains(e.target)) {
+                setShowHeader(false);
+            }
+        };
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, []);
 
     return (
         <div className="relative h-screen bg-mesh selection:bg-cyber-accent selection:text-white transition-colors duration-500 overflow-hidden font-sans flex flex-col">
@@ -184,8 +200,18 @@ export default function Presentation({ stats = {} }) {
                 </div>
             </div>
 
+            {/* Top Glowing Gradient Accent Bar */}
+            <div className="fixed top-0 inset-x-0 h-1 z-40 bg-gradient-to-r from-cyber-accent via-indigo-500 to-purple-600 shadow-[0_0_20px_rgba(34,211,238,0.6)] dark:shadow-[0_0_20px_rgba(34,211,238,0.6)] pointer-events-none" />
+
             {/* Navigation Header with Slide Toggle Tab */}
-            <nav className={`fixed top-0 inset-x-0 z-50 glass-header border-b border-slate-200 dark:border-cyber-border/30 transition-all duration-500 ${showHeader ? 'translate-y-0' : '-translate-y-full'}`}>
+            <nav 
+                ref={headerRef}
+                className={`fixed top-0 inset-x-0 z-50 border-b transition-all duration-500 ${
+                    showHeader 
+                        ? 'glass-header border-slate-200 dark:border-cyber-border/30 translate-y-0' 
+                        : 'bg-transparent border-transparent -translate-y-full'
+                }`}
+            >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
                     <div className="flex justify-between items-center h-20 sm:h-24">
                         <Link href="/" className="group shrink-0">
@@ -234,7 +260,10 @@ export default function Presentation({ stats = {} }) {
 
                     {/* Manual Collapse / Expand Slider Tab */}
                     <button 
-                        onClick={() => setShowHeader(!showHeader)}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setShowHeader(!showHeader);
+                        }}
                         className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full px-4 py-1.5 bg-white/75 dark:bg-cyber-surface/75 backdrop-blur-xl border-x border-b border-slate-200 dark:border-cyber-border/50 rounded-b-xl hover:text-cyber-accent hover:border-cyber-accent/50 hover:bg-cyber-accent/5 transition-all flex items-center gap-1 shadow-md cursor-pointer z-50 ring-1 ring-slate-200/20"
                         title={showHeader ? "Hide Presentation Menu" : "Show Presentation Menu"}
                     >
