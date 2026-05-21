@@ -17,8 +17,8 @@ class CapacityController extends Controller
      */
     public function check(): JsonResponse
     {
-        $totalCapacity = config('app.global_storage_capacity', 10737418240); // 10 GB fallback in bytes
-        $userLimit = config('app.user_storage_limit', 235929600); // fallback 225 MB
+        $totalCapacity = 10737418240; // 10 GB in bytes
+        $userLimit = config('app.user_storage_limit', 262144000); // fallback 250 MB
         // Sum storage limits of all users (including superadmins, they also reserve space)
         $reserved = DB::table('users')->sum('storage_limit');
         $remaining = max(0, $totalCapacity - $reserved);

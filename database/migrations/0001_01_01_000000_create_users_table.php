@@ -23,7 +23,7 @@ return new class extends Migration
             $table->text('nonce');
             $table->text('tag');
             $table->unsignedBigInteger('storage_used')->default(0);
-            $table->unsignedBigInteger('storage_limit')->default(235929600); // 225MB
+            $table->unsignedBigInteger('storage_limit')->default(262144000); // 250MB
             $table->rememberToken();
             $table->timestamps();
         });

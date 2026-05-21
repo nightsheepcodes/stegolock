@@ -127,12 +127,4 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Global Storage Capacity & Limits
-    |--------------------------------------------------------------------------
-    */
-    'global_storage_capacity' => env('GLOBAL_STORAGE_CAPACITY', 10737418240), // 10 GB default
-    'user_storage_limit' => env('USER_STORAGE_LIMIT', 235929600), // 225 MB default
-
 ];

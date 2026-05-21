@@ -30,8 +30,7 @@ import useInactivityTimeout from '@/hooks/useInactivityTimeout';
     // Enable auto-logout after 10 minutes of inactivity
     useInactivityTimeout(10);
 
-    const { auth, flash } = usePage().props;
-    const user = auth.user;
+    const user = usePage().props.auth.user;
     const [showFolderCreateModal, setShowFolderCreateModal] = useState(false);
     const [folderName, setFolderName] = useState('');
     const [folderErrors, setFolderErrors] = useState({});
@@ -41,16 +40,6 @@ import useInactivityTimeout from '@/hooks/useInactivityTimeout';
     const [currentFolderId, setCurrentFolderId] = useState(null);
     const [showTourModal, setShowTourModal] = useState(false);
     const [showGuideContentModal, setShowGuideContentModal] = useState(false);
-
-    // Automatically trigger toasts for flash messages
-    useEffect(() => {
-        if (flash?.success) {
-            toast.success(flash.success);
-        }
-        if (flash?.error) {
-            toast.error(flash.error);
-        }
-    }, [flash]);
 
     useEffect(() => {
         // Only show once per user across the whole app
