@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
@@ -141,5 +141,36 @@ class User extends Authenticatable
     public function activities()
     {
         return $this->hasMany(ActivityLog::class);
+    }
+
+    /**
+     * Get the email OTP record for the user.
+     */
+    public function emailOtp()
+    {
+        return $this->hasOne(EmailOtp::class);
+    }
+
+    /**
+     * Send the email verification notification using our custom OTP mailable.
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        // 1. Generate a secure random 6-digit OTP code (000000 - 999999)
+        $code = sprintf("%06d", mt_rand(0, 999999));
+
+        // 2. Delete any existing OTP records for this user to avoid conflicts
+        $this->emailOtp()->delete();
+
+        // 3. Save the new OTP with a 5-minute validity window
+        $this->emailOtp()->create([
+            'code' => $code,
+            'expires_at' => now()->addMinutes(5),
+        ]);
+
+        // 4. Send the beautiful responsive HTML email
+        \Illuminate\Support\Facades\Mail::to($this->email)->send(
+            new \App\Mail\EmailVerificationOtpMail($this, $code)
+        );
     }
 }

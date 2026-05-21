@@ -38,6 +38,8 @@ class HandleInertiaRequests extends Middleware
                     'role',
                     'created_at',
                     'tour_completed_at',
+                    'storage_used',
+                    'storage_limit',
                 ]),
             ],
             'pendingSharesCount' => $request->user() 
