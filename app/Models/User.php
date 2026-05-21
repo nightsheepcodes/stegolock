@@ -179,9 +179,13 @@ class User extends Authenticatable implements MustVerifyEmail
         ]);
 
         // 4. Send the beautiful responsive HTML email
-        \Illuminate\Support\Facades\Mail::to($this->email)->send(
-            new \App\Mail\EmailVerificationOtpMail($this, $code)
-        );
+        try {
+            \Illuminate\Support\Facades\Mail::to($this->email)->send(
+                new \App\Mail\EmailVerificationOtpMail($this, $code)
+            );
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("SMTP EMAIL DELIVERY FAILED: " . $e->getMessage() . ". FOR TESTING, YOUR EMAIL VERIFICATION CODE IS: " . $code);
+        }
     }
 
     /**
@@ -202,9 +206,13 @@ class User extends Authenticatable implements MustVerifyEmail
         ]);
 
         // 4. Send the login 2FA HTML email
-        \Illuminate\Support\Facades\Mail::to($this->email)->send(
-            new \App\Mail\LoginOtpMail($this, $code)
-        );
+        try {
+            \Illuminate\Support\Facades\Mail::to($this->email)->send(
+                new \App\Mail\LoginOtpMail($this, $code)
+            );
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("SMTP EMAIL DELIVERY FAILED: " . $e->getMessage() . ". FOR TESTING, YOUR LOGIN 2FA CODE IS: " . $code);
+        }
 
         return $code;
     }

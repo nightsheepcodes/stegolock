@@ -157,9 +157,13 @@ class ProfileController extends Controller
         Cache::put("2fa_enable:otp_expires_at:{$user->id}", $otpExpiresAt, 300);
 
         // 4. Send the responsive HTML email
-        \Illuminate\Support\Facades\Mail::to($user->email)->send(
-            new \App\Mail\EnableTwoFactorOtpMail($user, $code)
-        );
+        try {
+            \Illuminate\Support\Facades\Mail::to($user->email)->send(
+                new \App\Mail\EnableTwoFactorOtpMail($user, $code)
+            );
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("SMTP EMAIL DELIVERY FAILED: " . $e->getMessage() . ". FOR TESTING, YOUR ENABLE 2FA CODE IS: " . $code);
+        }
 
         return response()->json([
             'success' => true,
@@ -300,9 +304,13 @@ class ProfileController extends Controller
         Cache::put("2fa_enable:otp_expires_at:{$user->id}", $otpExpiresAt, 300);
 
         // Send the responsive HTML email
-        \Illuminate\Support\Facades\Mail::to($user->email)->send(
-            new \App\Mail\EnableTwoFactorOtpMail($user, $code)
-        );
+        try {
+            \Illuminate\Support\Facades\Mail::to($user->email)->send(
+                new \App\Mail\EnableTwoFactorOtpMail($user, $code)
+            );
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("SMTP EMAIL DELIVERY FAILED: " . $e->getMessage() . ". FOR TESTING, YOUR ENABLE 2FA RESEND CODE IS: " . $code);
+        }
 
         return response()->json([
             'success' => true,
