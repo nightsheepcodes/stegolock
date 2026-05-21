@@ -1,12 +1,24 @@
 import { Shield } from "lucide-react";
 import { DecorativeBackground } from "@/Components/DecorativeBackground";
-import { Link, router } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { useEffect, useState, useRef } from 'react';
+import { Toaster, toast } from 'sonner';
 
 export default function GuestLayout({ children, mode = 'login' }) {
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [currentChildren, setCurrentChildren] = useState(children);
     const prevMode = useRef(mode);
+
+    // Listen to flash messages in Guest pages
+    const { flash } = usePage().props;
+    useEffect(() => {
+        if (flash?.success) {
+            toast.success(flash.success);
+        }
+        if (flash?.error) {
+            toast.error(flash.error);
+        }
+    }, [flash]);
 
     useEffect(() => {
         const saved = localStorage.getItem('stegolock_theme');
@@ -43,7 +55,7 @@ export default function GuestLayout({ children, mode = 'login' }) {
             <div className="relative flex min-h-screen">
                 {/* Branding Panel - Natural sliding wipe with no fade */}
                 <div 
-                    className={`hidden lg:flex absolute inset-y-0 w-full flex-col items-center justify-center transition-all duration-1000 cubic-bezier(0.7, 0, 0.3, 1) z-30 bg-white dark:bg-cyber-void shadow-2xl ${
+                    className={`hidden lg:flex absolute inset-y-0 w-full flex-col items-center justify-center transition-all duration-1000 cubic-bezier(0.7, 0, 0.3, 1) z-30 bg-white dark:bg-cyber-void shadow-2xl pointer-events-none ${
                         isLogin ? 'translate-x-1/2' : '-translate-x-1/2'
                     }`}
                 >
@@ -52,7 +64,7 @@ export default function GuestLayout({ children, mode = 'login' }) {
                         <div className={`w-1/2 flex flex-col items-center justify-center p-12 transition-all duration-1000 cubic-bezier(0.7, 0, 0.3, 1) ${
                             isLogin ? '-translate-x-1/2' : 'translate-x-1/2'
                         }`}>
-                            <Link href="/" className="max-w-md text-center space-y-8 group cursor-pointer inline-block">
+                            <Link href="/" className="max-w-md text-center space-y-8 group cursor-pointer inline-block pointer-events-auto">
                                 <div className="relative inline-flex items-center justify-center p-8 bg-gradient-to-br from-cyber-accent via-indigo-500 to-purple-600 rounded-[3rem] shadow-2xl shadow-cyan-500/50 dark:shadow-[0_0_40px_rgba(34,211,238,0.6)] animate-bounce-subtle group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
                                     <Shield className="size-24 text-white drop-shadow-lg relative z-10" />
                                     <div className="absolute inset-0 rounded-[3rem] bg-gradient-to-tr from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -100,6 +112,7 @@ export default function GuestLayout({ children, mode = 'login' }) {
                     </div>
                 </div>
             </div>
+            <Toaster position="top-center" richColors />
         </div>
     );
 }
