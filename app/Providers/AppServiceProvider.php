@@ -27,5 +27,10 @@ class AppServiceProvider extends ServiceProvider
         if (env('APP_ENV') === 'production') {
             URL::forceScheme('https');
         }
+
+        // Register custom Brevo HTTP API Mail Transport
+        \Illuminate\Support\Facades\Mail::extend('brevo-api', function (array $config) {
+            return new \App\Mail\Transports\BrevoApiTransport($config['key']);
+        });
     }
 }
