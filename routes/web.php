@@ -56,6 +56,10 @@ Route::middleware('auth', 'verified')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/two-factor', [ProfileController::class, 'updateTwoFactor'])->name('profile.two-factor');
+    Route::post('/profile/two-factor/verify-password', [ProfileController::class, 'verifyTwoFactorPassword'])->name('profile.two-factor.verify-password');
+    Route::post('/profile/two-factor/verify-otp', [ProfileController::class, 'verifyTwoFactorOtp'])->name('profile.two-factor.verify-otp');
+    Route::post('/profile/two-factor/resend-otp', [ProfileController::class, 'resendTwoFactorOtp'])->name('profile.two-factor.resend-otp');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Document upload route

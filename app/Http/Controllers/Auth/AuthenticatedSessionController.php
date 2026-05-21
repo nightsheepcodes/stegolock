@@ -84,7 +84,24 @@ class AuthenticatedSessionController extends Controller
         $storage = new \App\Services\TemporaryKeyStorage();
         $token = $storage->store($master_key, $user->id);
 
-        // Store token in session instead of master key
+        // 🌟 Check if Email Two-Factor Authentication is enabled for this user
+        if ($user->email_2fa_enabled) {
+            // Cache credentials/tokens in safe temporary session keys
+            session([
+                '2fa:user_id' => $user->id,
+                '2fa:master_key_token' => $token,
+                '2fa:remember' => $request->boolean('remember'),
+                '2fa:redirect_to' => $request->input('redirect') ?: $request->query('redirect'),
+            ]);
+
+            // Generate and send the Login 2FA OTP code!
+            $user->sendLogin2faNotification();
+
+            // Redirect to the two-factor challenge screen!
+            return redirect()->route('two-factor.challenge');
+        }
+
+        // Standard direct login flow (no 2FA active)
         session(['master_key_token' => $token]);
         session()->forget(['master_key', 'master_key_expires_at']);
 
@@ -92,7 +109,7 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         // Login user manually
-        Auth::login($user);
+        Auth::login($user, $request->boolean('remember'));
 
         // Check if redirect to survey is requested (from form data or query parameter)
         $redirectTo = $request->input('redirect') ?: $request->query('redirect');

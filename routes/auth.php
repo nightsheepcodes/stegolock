@@ -35,6 +35,17 @@ Route::middleware('guest')->group(function () {
         ->name('password.store');
 });
 
+// Two-Factor Challenge routes (for partially-authenticated sessions)
+Route::get('two-factor-challenge', [\App\Http\Controllers\Auth\TwoFactorChallengeController::class, 'create'])
+    ->name('two-factor.challenge');
+
+Route::post('two-factor-challenge', [\App\Http\Controllers\Auth\TwoFactorChallengeController::class, 'store'])
+    ->middleware(['throttle:6,1']);
+
+Route::post('two-factor-challenge/resend', [\App\Http\Controllers\Auth\TwoFactorChallengeController::class, 'resend'])
+    ->middleware(['throttle:6,1'])
+    ->name('two-factor.resend');
+
 Route::middleware('auth')->group(function () {
     Route::get('verify-email', EmailVerificationPromptController::class)
         ->name('verification.notice');

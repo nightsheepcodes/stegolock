@@ -31,6 +31,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'storage_limit',
         'tour_completed_at',
         'last_logout_at',
+        'email_2fa_enabled',
     ];
 
     /**
@@ -71,6 +72,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'is_active' => 'boolean',
             'tour_completed_at' => 'datetime',
             'last_logout_at' => 'datetime',
+            'email_2fa_enabled' => 'boolean',
         ];
     }
 
@@ -152,6 +154,14 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Get the login 2FA OTP record for the user.
+     */
+    public function loginOtp()
+    {
+        return $this->hasOne(LoginOtp::class);
+    }
+
+    /**
      * Send the email verification notification using our custom OTP mailable.
      */
     public function sendEmailVerificationNotification(): void
@@ -172,5 +182,30 @@ class User extends Authenticatable implements MustVerifyEmail
         \Illuminate\Support\Facades\Mail::to($this->email)->send(
             new \App\Mail\EmailVerificationOtpMail($this, $code)
         );
+    }
+
+    /**
+     * Send the login 2FA OTP notification using our custom mailable.
+     */
+    public function sendLogin2faNotification(): string
+    {
+        // 1. Generate a secure random 6-digit OTP code (000000 - 999999)
+        $code = sprintf("%06d", mt_rand(0, 999999));
+
+        // 2. Delete any existing login OTP records for this user
+        $this->loginOtp()->delete();
+
+        // 3. Save the new OTP with a 5-minute validity window
+        $this->loginOtp()->create([
+            'code' => $code,
+            'expires_at' => now()->addMinutes(5),
+        ]);
+
+        // 4. Send the login 2FA HTML email
+        \Illuminate\Support\Facades\Mail::to($this->email)->send(
+            new \App\Mail\LoginOtpMail($this, $code)
+        );
+
+        return $code;
     }
 }
