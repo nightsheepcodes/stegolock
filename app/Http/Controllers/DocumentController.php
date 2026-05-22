@@ -983,6 +983,9 @@ class DocumentController extends Controller
             $document->update(['status' => 'stored']);
         }
 
+        // Reset fragment statuses back to 'embedded'
+        Fragment::where('document_id', $document->document_id)->update(['status' => 'embedded']);
+
         // Cleanup local decrypted file for THIS user
         $localPath = 'temp/decrypted/' . $userId . '/' . $document->document_id . '/' . $document->filename;
         if (Storage::disk('local')->exists($localPath)) {

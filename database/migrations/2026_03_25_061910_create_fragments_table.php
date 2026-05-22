@@ -15,10 +15,10 @@ return new class extends Migration
             $table->uuid('fragment_id')->primary();
             $table->unsignedBigInteger('document_id');
             $table->integer('index');
-            $table->longText('blob');
+            $table->longText('blob')->nullable();
             $table->integer('size');
             $table->string('hash', 64); // SHA-256 hash
-            $table->enum('status', ['floating', 'embedded', 'retrieved'])->default('floating');
+            $table->enum('status', ['floating', 'embedded', 'extracted'])->default('floating');
             $table->timestamps();
 
             $table->foreign('document_id')->references('document_id')->on('documents')->onDelete('cascade');

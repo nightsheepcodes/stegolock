@@ -101,6 +101,11 @@ class ProcessUnlockJob implements ShouldQueue
             $this->updateStatus('extracted');
             $this->startMetric('extraction');
             $this->extractFragmentsBatch($stegoData['files']);
+
+            // Update fragment records to 'extracted' status
+            $fragmentIds = $stegoData['files']->pluck('fragment_id')->toArray();
+            Fragment::whereIn('fragment_id', $fragmentIds)->update(['status' => 'extracted']);
+
             $this->finishMetric('extraction', $this->documentId, $this->userId ?? $document->user_id, $this->jobId, 'unlock');
             
             // 3. Streaming Assembly (Low Memory)

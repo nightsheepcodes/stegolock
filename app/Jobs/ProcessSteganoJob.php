@@ -477,6 +477,9 @@ class ProcessSteganoJob implements ShouldQueue
             $stegoMap[] = $this->embed($m['fragment_id'], $m['cover_id']);
         }
 
+        // Update FragmentMap status to 'complete' after steganographic embedding completes (before upload)
+        $map->update(['status' => 'complete']);
+
         $newStegoMap = StegoMap::create([
             'stego_map_id' => (string) Str::uuid(),
             'document_id' => $document->document_id,
@@ -545,6 +548,10 @@ class ProcessSteganoJob implements ShouldQueue
 
         $user->refreshStorageUsed();
         $newStegoMap->update(['status' => 'completed']);
+
+        // Securely purge raw ciphertext from fragments table once successfully locked and stored in the cloud
+        Fragment::where('document_id', $document->document_id)->update(['blob' => null]);
+
         $document->update(['status' => 'stored']);
         Log::info("[SteganoJob] All fragments stored and database updated.");
     }
@@ -689,6 +696,9 @@ class ProcessSteganoJob implements ShouldQueue
         ]);
 
         $offset = (int) end($output);
+
+        // Update fragment status to 'embedded' post-embedding
+        $fragment->update(['status' => 'embedded']);
 
         if (isset($cover->metadata['info']) && $cover->metadata['info'] === 'System-generated') {
              $cover->delete(); // Cleanup temp cover record
