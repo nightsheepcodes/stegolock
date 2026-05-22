@@ -26,31 +26,46 @@ class ScanCoversJob implements ShouldQueue
      */
     public function handle(): void
     {
-        Log::info("Starting background cover scan...");
+        Log::info("Starting background two-phase cover scan...");
 
-        // Audio candidates may be WAV or MP3; scan both extensions so uploaded MP3s are picked up
-        $this->scan('audio', ['wav', 'mp3'], 'cover_audios', 'python_backend/embedding/audio/get_wav_embedding_capacity.py');
-        // Image candidates may be PNG or JPEG; scan both extensions
-        $this->scan('image', ['png', 'jpg', 'jpeg'], 'cover_images', 'python_backend/embedding/image/check_image.py');
-        $this->scan('text', 'txt', 'cover_texts', 'python_backend/embedding/text/check_text.py');
+        $candidates = [];
 
-        Log::info("Cover scan completed.");
+        // --- PHASE 1: SCANNING AND VALIDATING ---
+        
+        // Scan audios
+        $this->scan('audio', ['wav', 'mp3'], 'cover_audios', 'python_backend/embedding/audio/get_wav_embedding_capacity.py', $candidates);
+        
+        // Scan images
+        $this->scan('image', ['png', 'jpg', 'jpeg'], 'cover_images', 'python_backend/embedding/image/check_image.py', $candidates);
+        
+        // Scan texts
+        $this->scan('text', 'txt', 'cover_texts', 'python_backend/embedding/text/check_text.py', $candidates);
+
+        Log::info("Phase 1 Complete: Found " . count($candidates) . " valid candidate(s).");
+
+        if (empty($candidates)) {
+            Log::info("No valid candidate covers found. Execution ended.");
+            return;
+        }
+
+        // --- PHASE 2: BATCH UPLOADING AND DATABASE ENTRIES ---
+        Log::info("Starting Phase 2: Batch uploading to Cloud (B2) and saving metadata to Database...");
+        $this->uploadAndRegister($candidates);
+        
+        Log::info("Cover scan and upload completed successfully.");
     }
 
     /**
      * Scans a specific folder for candidate cover files.
      */
-    /**
-     * Scan supports a single extension string or an array of extensions.
-     * @param string|string[] $extension
-     */
-    private function scan(string $type, $extension, string $folderName, string $scriptPath)
+    private function scan(string $type, $extension, string $folderName, string $scriptPath, array &$candidates)
     {
         $folderPath = storage_path("app/public/{$folderName}");
         if (!file_exists($folderPath)) {
             Log::warning("Scan directory does not exist: {$folderPath}");
             return;
         }
+
         $files = [];
         $exts = is_array($extension) ? $extension : [$extension];
         foreach ($exts as $ext) {
@@ -64,92 +79,112 @@ class ScanCoversJob implements ShouldQueue
             return;
         }
 
+        $candidateFolder = storage_path('app/public/candidate_covers/');
+        if (!file_exists($candidateFolder)) {
+            mkdir($candidateFolder, 0755, true);
+        }
+
+        $failedFolder = storage_path('app/public/failed/');
+        if (!file_exists($failedFolder)) {
+            mkdir($failedFolder, 0755, true);
+        }
+
+        $minCapacity = 128 * 1024; // 128 KB minimum capacity limit
+
         foreach ($files as $filePath) {
             try {
-                $this->processFile($type, $filePath, $folderName, $scriptPath);
+                $contents = file_get_contents($filePath);
+                if ($contents === false) {
+                    throw new \Exception("Could not read file contents.");
+                }
+
+                $hash = hash('sha256', $contents);
+
+                // Deduplication check
+                if (Cover::where('hash', $hash)->exists()) {
+                    Log::info("Deduplication: Cover with hash already exists, skipping: " . basename($filePath));
+                    unlink($filePath);
+                    continue;
+                }
+
+                // Check capacity via Python scripts
+                $command = config('app.python_binary', 'python') . " " . base_path($scriptPath) . " " . escapeshellarg($filePath) . " 2>&1";
+                Log::info("Running capacity script: type={$type} file=" . basename($filePath));
+                $output = [];
+                $status = 0;
+                exec($command, $output, $status);
+
+                if ($status !== 0 || empty($output)) {
+                    Log::error("Script failure for " . basename($filePath) . " (Status {$status}): " . implode("\n", $output));
+                    rename($filePath, $failedFolder . basename($filePath));
+                    continue;
+                }
+
+                $outputStr = trim(implode("\n", $output));
+                $parts = explode(',', $outputStr);
+                if (count($parts) < 2) {
+                    Log::error("Invalid script output for " . basename($filePath) . ": {$outputStr}");
+                    rename($filePath, $failedFolder . basename($filePath));
+                    continue;
+                }
+
+                $usableBytes = (int) $parts[0];
+                $totalBytes = (int) $parts[1];
+
+                Log::info("Cover capacity check: " . basename($filePath) . " | usable={$usableBytes} bytes | total={$totalBytes} bytes | min={$minCapacity} bytes");
+
+                if ($usableBytes >= $minCapacity) {
+                    // Passed capacity check: move to candidate folder
+                    $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+                    $randomHex = bin2hex(random_bytes(16));
+                    $newFilename = "{$randomHex}_cover_" . time() . ".{$extension}";
+                    $newFilePath = $candidateFolder . $newFilename;
+
+                    if (rename($filePath, $newFilePath)) {
+                        $candidates[] = [
+                            'type' => $type,
+                            'local_path' => $newFilePath,
+                            'filename' => $newFilename,
+                            'hash' => $hash,
+                            'usable_bytes' => $usableBytes,
+                            'total_bytes' => $totalBytes
+                        ];
+                        Log::info("Passed check: Moved " . basename($filePath) . " to candidate_covers as {$newFilename}");
+                    } else {
+                        Log::error("Could not move file to candidate_covers: " . basename($filePath));
+                    }
+                } else {
+                    // Failed capacity: move to failed folder
+                    rename($filePath, $failedFolder . basename($filePath));
+                    Log::info("Moved invalid cover file (low capacity) to failed folder: " . basename($filePath));
+                }
+
             } catch (\Exception $e) {
-                Log::error("Failed to process cover file {$filePath}: " . $e->getMessage());
+                Log::error("Failed to process cover file " . basename($filePath) . ": " . $e->getMessage());
             }
         }
     }
 
     /**
-     * Processes an individual file: validates capacity, checks for duplicates, uploads to cloud, and records in DB.
+     * Phase 2: Uploads valid candidate files in a batch loop to B2 and registers them in the database.
      */
-    private function processFile(string $type, string $filePath, string $folderName, string $scriptPath)
+    private function uploadAndRegister(array $candidates)
     {
-        $contents = file_get_contents($filePath);
-        if ($contents === false) {
-            throw new \Exception("Could not read file contents.");
-        }
-        
-        $hash = hash('sha256', $contents);
+        $prefixMap = [
+            'audio' => 'cover_audios',
+            'image' => 'cover_images',
+            'text' => 'cover_texts'
+        ];
 
-        // Deduplication: Skip if a cover with the same hash already exists
-        if (\App\Models\Cover::where('hash', $hash)->exists()) {
-            return;
-        }
-
-        // Build Python command to get embedding capacity
-        $command = config('app.python_binary', 'python') . " " . base_path($scriptPath) . " " . escapeshellarg($filePath) . " 2>&1";
-        Log::info("Running capacity script: type={$type} file={$filePath} command={$command}");
-        $output = [];
-        $status = 0;
-        exec($command, $output, $status);
-        Log::info("Script result for {$filePath}: status={$status} output=" . implode("\n", $output));
-
-        if ($status !== 0 || empty($output)) {
-            Log::error("Script failure for {$filePath} (Status {$status}): " . implode("\n", $output));
-            return;
-        }
-
-        $outputStr = trim(implode("\n", $output));
-        $parts = explode(',', $outputStr);
-        if (count($parts) < 2) {
-            Log::error("Invalid script output for {$filePath}: {$outputStr}");
-            return;
-        }
-
-        $usableBytes = (int) $parts[0];
-        $totalBytes = (int) $parts[1];
-
-        // STRICT ELIGIBILITY: 
-        // 1. Script must return valid capacity
-        // 2. Usable capacity must be at least 128KB to be useful for fragments
-        $minCapacity = 128 * 1024; 
-
-        // Log computed capacity for debugging
-        Log::info("Cover capacity check: {$filePath} | usable={$usableBytes} bytes | total={$totalBytes} bytes | min={$minCapacity} bytes");
-
-        if ($usableBytes >= $minCapacity) {
-            // Standardize filename
-            $extension = pathinfo($filePath, PATHINFO_EXTENSION);
-            $randomHex = bin2hex(random_bytes(16));
-            $newFilename = "{$randomHex}_cover_" . time() . ".{$extension}";
-            $newFilePath = dirname($filePath) . DIRECTORY_SEPARATOR . $newFilename;
-
-            if (rename($filePath, $newFilePath)) {
-                $filePath = $newFilePath;
-            }
-
-            Log::info("Uploading cover to cloud: " . basename($filePath));
-
-            // Upload to Backblaze B2
+        foreach ($candidates as $candidate) {
+            $filePath = $candidate['local_path'];
             try {
-                $b2Service = new \App\Providers\B2Service();
-                // B2Service::storeFile expects a local path and uploads to 'locked/'. 
-                // We might want a 'covers/' prefix instead.
-                // Let's modify storeFile or use a custom call.
+                Log::info("Uploading cover to B2 Cloud: {$candidate['filename']}");
                 
+                $b2Service = new \App\Providers\B2Service();
                 $upload = $b2Service->getUploadUrl();
                 
-                $prefixMap = [
-                    'audio' => 'cover_audios',
-                    'image' => 'cover_images',
-                    'text' => 'cover_texts'
-                ];
-                $b2FileName = $prefixMap[$type] . '/' . basename($filePath);
-                
+                $b2FileName = $prefixMap[$candidate['type']] . '/' . $candidate['filename'];
                 $sha1 = sha1_file($filePath);
 
                 $client = new \GuzzleHttp\Client(['timeout' => 0]);
@@ -166,37 +201,32 @@ class ScanCoversJob implements ShouldQueue
                 $b2Data = json_decode($response->getBody(), true);
 
                 if (isset($b2Data['fileId'])) {
-                    // Record in DB
-                    \App\Models\Cover::create([
+                    // Record in database
+                    Cover::create([
                         'cover_id' => (string) Str::uuid(),
-                        'type' => $type,
-                        'filename' => basename($filePath),
-                        'path' => $b2FileName, // Cloud path
-                        'size_bytes' => $totalBytes,
+                        'type' => $candidate['type'],
+                        'filename' => $candidate['filename'],
+                        'path' => $b2FileName,
+                        'size_bytes' => filesize($filePath),
+                        'total_embedding_capacity' => $candidate['total_bytes'],
                         'metadata' => [
                             'valid' => true,
-                            'capacity' => $usableBytes,
+                            'capacity' => $candidate['usable_bytes'],
                             'b2_file_id' => $b2Data['fileId'],
                             'cloud_synced' => true
                         ],
-                        'hash' => $hash,
+                        'hash' => $candidate['hash'],
                     ]);
 
-                    // Clean up local file
-                    unlink($filePath);
-                    Log::info("Successfully synced cover to cloud and database: " . basename($filePath));
+                    // File is NOT deleted locally from candidate_covers per user requirement
+                    Log::info("Successfully synced cover to B2 and Database: {$candidate['filename']} (B2 File ID: {$b2Data['fileId']})");
+                } else {
+                    Log::error("B2 did not return a valid file ID for {$candidate['filename']}");
                 }
+
             } catch (\Exception $e) {
-                Log::error("Cloud upload failed for cover {$filePath}: " . $e->getMessage());
+                Log::error("B2 Cloud upload failed for {$candidate['filename']}: " . $e->getMessage());
             }
-        } else {
-            // Move invalid files to a failed folder
-            $failedFolder = storage_path('app/public/failed/');
-            if (!file_exists($failedFolder)) {
-                mkdir($failedFolder, 0755, true);
-            }
-            rename($filePath, $failedFolder . basename($filePath));
-            Log::info("Moved invalid cover file to failed folder: " . basename($filePath));
         }
     }
 }

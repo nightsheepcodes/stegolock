@@ -614,13 +614,16 @@ class ProcessSteganoJob implements ShouldQueue
         // Note: No B2 upload here as per user request. 
         // These covers stay local and are purged after the job.
 
+        $usableCapacity = max(0, (int) $capacity - 15);
+
         return Cover::create([
             'cover_id' => (string) Str::uuid(),
             'type' => 'text',
             'filename' => $fileName,
             'path' => 'cover_texts/' . $fileName,
             'size_bytes' => strlen($content),
-            'metadata' => ['valid' => true, 'capacity' => $capacity, 'info' => 'System-generated'],
+            'total_embedding_capacity' => (int) floor(strlen($content) / 8),
+            'metadata' => ['valid' => true, 'capacity' => $usableCapacity, 'info' => 'System-generated'],
             'hash' => hash('sha256', $content),
         ]);
     }

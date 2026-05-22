@@ -51,9 +51,9 @@ def get_wav_embedding_capacity(wav_path):
 
         # --- Apply stealth usage ratio ---
         usable_bits = int(total_bits * USAGE_RATIO)
-        usable_bytes = usable_bits // 8
+        usable_bytes = (usable_bits // 8) - 15  # Subtract 15 bytes for delimiter '###STEGOLOCK###'
 
-        return usable_bytes, total_bytes
+        return max(0, usable_bytes), total_bytes
 
     except Exception as e:
         return -1, -1

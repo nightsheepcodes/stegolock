@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
 
         // Seed Covers (only if empty)
         if (\Illuminate\Support\Facades\DB::table('covers')->count() === 0) {
-            $this->call(CoverSeeder::class);
+            $this->call(StaticCoverSeeder::class);
         }
 
         // Seed Wiki Feeds (only if empty)

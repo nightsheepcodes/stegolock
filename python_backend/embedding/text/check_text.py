@@ -37,9 +37,9 @@ def get_txt_embedding_capacity(file_path):
         total_bytes = total_bits // 8
 
         usable_bits = int(total_bits * USAGE_RATIO)
-        usable_bytes = usable_bits // 8
+        usable_bytes = (usable_bits // 8) - 15  # Subtract 15 bytes for delimiter '###STEGOLOCK###'
 
-        return usable_bytes, total_bytes
+        return max(0, usable_bytes), total_bytes
 
     except Exception:
         return -1, -1

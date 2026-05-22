@@ -23,6 +23,7 @@ class Cover extends Model
         'filename',
         'path',
         'size_bytes',
+        'total_embedding_capacity',
         'metadata',
         'hash',
         'in_use',

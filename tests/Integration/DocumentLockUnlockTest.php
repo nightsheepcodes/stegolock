@@ -68,7 +68,8 @@ class DocumentLockUnlockTest extends TestCase
                 'filename' => $fileName,
                 'path' => "covers/{$fileName}",
                 'size_bytes' => strlen($content),
-                'metadata' => ['valid' => true, 'capacity' => 50000, 'info' => 'Seed'],
+                'total_embedding_capacity' => (int) floor(strlen($content) / 8),
+                'metadata' => ['valid' => true, 'capacity' => 50000 - 15, 'info' => 'Seed'],
                 'hash' => hash('sha256', $content),
                 'in_use' => false,
             ]);
