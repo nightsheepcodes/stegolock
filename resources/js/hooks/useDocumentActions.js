@@ -93,6 +93,11 @@ export function useDocumentActions({
             await axios.post('/documents/keep', {
                 document_id: docId
             });
+            if (setLocalDocs) {
+                setLocalDocs(prev => prev.map(doc => 
+                    doc.document_id === docId ? { ...doc, status: 'stored' } : doc
+                ));
+            }
             if (!silent) {
                 await sleep(2000);
                 toast.success(`${filename} is kept.`, { id: toastId });
@@ -101,6 +106,7 @@ export function useDocumentActions({
             }
             setShowKeepFileModal(null);
             setSelectedDocId(null);
+            router.reload();
         } catch (err) {
             if (!silent) {
                 toast.error(`Failed to keep ${filename}.`, { id: toastId });

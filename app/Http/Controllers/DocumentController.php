@@ -805,7 +805,23 @@ class DocumentController extends Controller
                 Storage::disk('local')->delete($localPath);
             }
 
-            // 5. Delete DB record (Cascade delete handles fragments, stego_maps, stego_files)
+            // 5. Notify recipients that the shared document has been deleted by its owner
+            $shares = \App\Models\DocumentShare::with('recipient')
+                ->where('document_id', $document->document_id)
+                ->get();
+
+            foreach ($shares as $share) {
+                if ($share->recipient) {
+                    $share->recipient->notify(new \App\Notifications\AppNotification(
+                        'Document Deleted',
+                        sprintf('The shared document "%s" has been deleted by its owner.', $document->filename),
+                        'share_revoked',
+                        '/sharedDocuments'
+                    ));
+                }
+            }
+
+            // 6. Delete DB record (Cascade delete handles fragments, stego_maps, stego_files)
             DocumentActivity::create([
                 'document_id' => $document->document_id,
                 'user_id' => Auth::id(),
@@ -992,6 +1008,13 @@ class DocumentController extends Controller
             Storage::disk('local')->deleteDirectory('temp/decrypted/' . $userId . '/' . $document->document_id);
         }
 
+        // Log 'kept' activity
+        DocumentActivity::create([
+            'document_id' => $document->document_id,
+            'user_id' => $userId,
+            'action' => 'kept'
+        ]);
+
         return [
             'message' => 'Document kept successfully'
         ];
@@ -1077,6 +1100,14 @@ class DocumentController extends Controller
                 'action' => 'shared',
                 'metadata' => ['recipient_email' => $recipient->email, 'recipient_name' => $recipient->name]
             ]);
+
+            // Notify recipient
+            $recipient->notify(new \App\Notifications\AppNotification(
+                'New File Shared',
+                Auth::user()->name . ' shared the file "' . $document->filename . '" with you.',
+                'share_granted',
+                '/sharedDocuments'
+            ));
         });
 
         return response()->json(['message' => 'Document shared successfully with ' . $recipient->name]);
@@ -1137,6 +1168,17 @@ class DocumentController extends Controller
             'user_id' => Auth::id(),
             'action' => 'accepted'
         ]);
+
+        // Notify owner/sender
+        $sender = $share->sender;
+        if ($sender) {
+            $sender->notify(new \App\Notifications\AppNotification(
+                'Share Invitation Accepted',
+                Auth::user()->name . ' accepted your share invitation for the file "' . $share->document->filename . '".',
+                'share_accepted',
+                '/sharedDocuments'
+            ));
+        }
 
         return response()->json(['message' => 'Share accepted successfully.']);
     }
@@ -1230,6 +1272,14 @@ class DocumentController extends Controller
                         'document_count' => count($documentIds)
                     ]
                 ]);
+
+                // Notify recipient
+                $recipient->notify(new \App\Notifications\AppNotification(
+                    'New Folder Shared',
+                    Auth::user()->name . ' shared the folder "' . $folder->name . '" with you.',
+                    'folder_share_granted',
+                    '/sharedDocuments'
+                ));
             });
 
             return response()->json(['message' => "Folder '{$folder->name}' shared successfully with {$recipient->name}."]);
@@ -1315,6 +1365,17 @@ class DocumentController extends Controller
                     'action' => 'accepted',
                     'metadata' => ['is_folder_share' => true]
                 ]);
+
+                // Notify owner/sender
+                $sender = $folderShare->sender;
+                if ($sender) {
+                    $sender->notify(new \App\Notifications\AppNotification(
+                        'Folder Share Accepted',
+                        Auth::user()->name . ' accepted your share invitation for the folder "' . $folderShare->folder->name . '".',
+                        'folder_share_accepted',
+                        '/sharedDocuments'
+                    ));
+                }
             });
 
             return response()->json(['message' => 'Folder share accepted successfully.']);
@@ -1349,6 +1410,19 @@ class DocumentController extends Controller
                     ]
                 ]);
 
+                // Notify recipient if the sender/owner is the one removing access
+                if ($share->sender_id === Auth::id()) {
+                    $recipient = $share->recipient;
+                    if ($recipient) {
+                        $recipient->notify(new \App\Notifications\AppNotification(
+                            'Share Access Revoked',
+                            Auth::user()->name . ' removed your access to the file "' . $share->document->filename . '".',
+                            'share_revoked',
+                            '/sharedDocuments'
+                        ));
+                    }
+                }
+
                 $share->delete();
             });
             return response()->json(['message' => 'Access removed.']);
@@ -1365,6 +1439,17 @@ class DocumentController extends Controller
                         'action' => 'removed',
                         'metadata' => ['target_user_id' => $share->recipient_id]
                     ]);
+
+                    $recipient = $share->recipient;
+                    if ($recipient) {
+                        $recipient->notify(new \App\Notifications\AppNotification(
+                            'Share Access Revoked',
+                            Auth::user()->name . ' removed your access to the file "' . $share->document->filename . '".',
+                            'share_revoked',
+                            '/sharedDocuments'
+                        ));
+                    }
+
                     $share->delete();
                 });
                 
@@ -1703,10 +1788,51 @@ class DocumentController extends Controller
             })
             ->firstOrFail();
 
-        $activities = DocumentActivity::with('user:id,name,email')
-            ->where('document_id', $id)
-            ->latest()
-            ->get();
+        $query = DocumentActivity::with('user:id,name,email')
+            ->where('document_id', $id);
+
+        if ($document->user_id !== Auth::id()) {
+            $userEmail = Auth::user()->email;
+            $userId = Auth::id();
+
+            // Find the share record to know when the file was shared with the recipient
+            $share = \App\Models\DocumentShare::where('document_id', $id)
+                ->where('recipient_id', $userId)
+                ->first();
+            
+            $sharedAt = $share ? $share->created_at : null;
+
+            $query->where(function ($q) use ($userId, $userEmail, $sharedAt) {
+                // Show system/owner lock events
+                $q->whereIn('action', ['locking_started', 'locking_completed', 'locking_failed', 'deleted'])
+                  // Show file-wide renamed events only if they occurred after the file was shared
+                  ->orWhere(function ($sq) use ($sharedAt) {
+                      $sq->where('action', 'renamed');
+                      if ($sharedAt) {
+                          $sq->where('created_at', '>=', $sharedAt);
+                      } else {
+                          $sq->whereRaw('1 = 0');
+                      }
+                  })
+                  // Show shared events only if shared with the logged-in recipient
+                  ->orWhere(function ($sq) use ($userEmail) {
+                      $sq->where('action', 'shared')
+                        ->where('metadata->recipient_email', $userEmail);
+                  })
+                  // Show accepted/unlocked/unlocking_failed/kept events only if performed by the logged-in recipient
+                  ->orWhere(function ($sq) use ($userId) {
+                      $sq->whereIn('action', ['accepted', 'unlocked', 'unlocking_failed', 'kept'])
+                        ->where('user_id', $userId);
+                  })
+                  // Show removed events only if access was removed for the logged-in recipient
+                  ->orWhere(function ($sq) use ($userId) {
+                      $sq->where('action', 'removed')
+                        ->where('metadata->target_user_id', $userId);
+                  });
+            });
+        }
+
+        $activities = $query->latest()->get();
 
         return response()->json($activities);
     }

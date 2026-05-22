@@ -1,4 +1,4 @@
-import { FileText, Star, MoreVertical, Loader2, AlertCircle, Unlock, Pencil, FolderInput, Share2, Info, Trash2, Users, Puzzle } from 'lucide-react';
+import { FileText, Star, MoreVertical, Loader2, AlertCircle, Unlock, Lock, Pencil, FolderInput, Share2, Info, Trash2, Users, Puzzle } from 'lucide-react';
 import { formatBytes, formatDate } from '@/Utils/fileUtils';
 import { useState, useRef, useEffect } from 'react';
 import Tooltip from '@/Components/Tooltip';
@@ -183,6 +183,29 @@ export default function DocumentCard({
                 </p>
             )}
 
+            {!isProcessing && (
+                <div className={`flex items-center gap-1.5 mt-1 ${showOwner ? 'mb-2.5' : 'mb-3'}`}>
+                    {['stored', 'retrieved'].includes(doc.status) ? (
+                        <span className="inline-flex items-center gap-1 bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-500/20 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">
+                            <Lock className="size-3" />
+                            Locked
+                        </span>
+                    ) : doc.status === 'decrypted' ? (
+                        <span className="inline-flex items-center gap-1 bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">
+                            <Unlock className="size-3" />
+                            Unlocked
+                        </span>
+                    ) : doc.status === 'failed' ? (
+                        <Tooltip content={doc.error_message ? (typeof doc.error_message === 'object' ? JSON.stringify(doc.error_message) : doc.error_message) : "Error occurred during processing"}>
+                            <span className="inline-flex items-center gap-1 bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-500/20 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider group/error cursor-help">
+                                <AlertCircle className="size-3" />
+                                Error
+                            </span>
+                        </Tooltip>
+                    ) : null}
+                </div>
+            )}
+
             <div className={`flex items-center min-h-[20px] ${isProcessing ? 'justify-center' : 'justify-between'}`}>
                 {isProcessing ? (
                     <div className="flex items-center gap-1.5">
@@ -190,15 +213,6 @@ export default function DocumentCard({
                             {getStatusDisplay(doc.status, doc.document_id)}
                         </span>
                     </div>
-                ) : doc.status === 'failed' ? (
-                    <Tooltip content={doc.error_message ? (typeof doc.error_message === 'object' ? JSON.stringify(doc.error_message) : doc.error_message) : "Error occurred during processing"}>
-                        <div className="flex items-center gap-1 group/error">
-                            <AlertCircle className="size-3 text-red-500 dark:text-red-400" />
-                            <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${getStatusColor(doc.status)}`}>
-                                Error
-                            </span>
-                        </div>
-                    </Tooltip>
                 ) : (
                     <>
                         <span className="text-[9px] sm:text-[10px] text-slate-500 dark:text-slate-400 font-medium">

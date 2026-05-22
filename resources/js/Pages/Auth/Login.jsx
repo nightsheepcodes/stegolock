@@ -5,9 +5,10 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 
 export default function Login({ status, canResetPassword }) {
+    const { flash } = usePage().props;
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
@@ -32,6 +33,13 @@ export default function Login({ status, canResetPassword }) {
                 <div className="mb-6 p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/30 flex items-center gap-3 text-green-600 dark:text-green-400">
                     <CheckCircle2 className="size-5 shrink-0" />
                     <span className="text-sm font-medium">{status}</span>
+                </div>
+            )}
+
+            {flash?.error && (
+                <div className="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 flex items-center gap-3 text-red-600 dark:text-red-400 animate-in fade-in slide-in-from-top-2 duration-500">
+                    <AlertCircle className="size-5 shrink-0" />
+                    <span className="text-sm font-medium">{flash.error}</span>
                 </div>
             )}
 

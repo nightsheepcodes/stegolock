@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { usePage } from '@inertiajs/react';
-import { X, History, FileText, User, Clock, CheckCircle2, Share2, Unlock, Trash2, ShieldCheck, Loader2, AlertCircle, Lock, Zap, Search, Activity, Gauge } from 'lucide-react';
+import { X, History, FileText, User, Clock, CheckCircle2, Share2, Unlock, Trash2, ShieldCheck, Loader2, AlertCircle, Lock, Zap, Search, Activity, Gauge, Pencil } from 'lucide-react';
 import { formatDate, formatBytes } from '@/Utils/fileUtils';
 import axios from 'axios';
+import Tooltip from '@/Components/Tooltip';
 
 export function FileInfoModal({ document: doc, onClose }) {
   const [activities, setActivities] = useState([]);
@@ -15,6 +16,7 @@ export function FileInfoModal({ document: doc, onClose }) {
   const { auth } = usePage().props;
   const isOwner = auth.user.id === doc.user_id;
   const isShared = doc.shares_count > 0 || doc.is_shared;
+  const isAdmin = ['superadmin', 'db_storage_admin'].includes(auth.user.role);
 
   useEffect(() => {
     fetchActivity();
@@ -62,6 +64,7 @@ export function FileInfoModal({ document: doc, onClose }) {
       case 'shared': return <Share2 className="size-4 text-indigo-600 dark:text-indigo-400" />;
       case 'accepted': return <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400" />;
       case 'unlocked': return <Unlock className="size-4 text-purple-600 dark:text-purple-400" />;
+      case 'renamed': return <Pencil className="size-4 text-blue-600 dark:text-blue-400" />;
       case 'removed': return <Trash2 className="size-4 text-red-600 dark:text-red-400" />;
       case 'locking_started': return <Lock className="size-4 text-amber-600 dark:text-amber-400" />;
       case 'locking_completed': return <ShieldCheck className="size-4 text-emerald-600 dark:text-emerald-400" />;
@@ -77,8 +80,44 @@ export function FileInfoModal({ document: doc, onClose }) {
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  const getLockingDuration = (completedActivity, allActivities) => {
+    const startedActivity = allActivities.find(
+      (act) => act.action === 'locking_started'
+    );
+    if (!startedActivity) return null;
+
+    const start = new Date(startedActivity.created_at);
+    const end = new Date(completedActivity.created_at);
+    const diffSeconds = Math.max(0, Math.round((end - start) / 1000));
+
+    if (diffSeconds < 60) {
+      return `${diffSeconds}s`;
+    }
+    const minutes = Math.floor(diffSeconds / 60);
+    const seconds = diffSeconds % 60;
+    return seconds > 0 ? `${minutes}m ${seconds}s` : `${minutes}m`;
+  };
+
+  const getActorElement = (activity) => {
+    const isYou = activity.user?.id === auth.user.id;
+    const actorName = isYou ? "You" : (activity.user?.name || "System");
+    const actorEmail = activity.user?.email;
+
+    if (isYou || !actorEmail || actorName === "System") {
+      return <span className="font-semibold text-slate-800 dark:text-slate-200">{actorName}</span>;
+    }
+
+    return (
+      <Tooltip content={actorEmail}>
+        <span className="font-semibold text-slate-800 dark:text-slate-200 hover:text-cyan-600 dark:hover:text-cyber-accent border-b border-dashed border-slate-300 dark:border-slate-700 cursor-help transition-colors">
+          {actorName}
+        </span>
+      </Tooltip>
+    );
+  };
+
   const getActionText = (activity) => {
-    const actor = activity.user.id === doc.user_id ? "You" : activity.user.name;
+    const actor = getActorElement(activity);
     const errorMsg = activity.metadata?.error ? (
         <span className="block text-[10px] text-red-500 dark:text-red-400 font-mono mt-2 bg-red-50 dark:bg-red-900/20 p-2 rounded-xl border border-red-100 dark:border-red-900/30">
             Error: {activity.metadata.error}
@@ -86,22 +125,91 @@ export function FileInfoModal({ document: doc, onClose }) {
     ) : null;
 
     switch (activity.action) {
-      case 'shared': 
-        return <>{actor} shared this file with <span className="font-black text-slate-900 dark:text-white">{activity.metadata?.recipient_email}</span></>;
+      case 'shared': {
+        const recipientName = activity.metadata?.recipient_name;
+        const recipientEmail = activity.metadata?.recipient_email;
+        const isRecipientMe = recipientEmail === auth.user.email;
+
+        if (isRecipientMe) {
+          return (
+            <>
+              {actor} shared this file with <span className="font-semibold text-slate-800 dark:text-slate-200">you</span>
+            </>
+          );
+        }
+
+        if (recipientName && recipientEmail) {
+          return (
+            <>
+              {actor} shared this file with{' '}
+              <Tooltip content={recipientEmail}>
+                <span className="font-black text-slate-900 dark:text-white hover:text-cyan-600 dark:hover:text-cyber-accent border-b border-dashed border-slate-300 dark:border-slate-700 cursor-help transition-colors">
+                  {recipientName}
+                </span>
+              </Tooltip>
+            </>
+          );
+        }
+
+        return <>{actor} shared this file with <span className="font-black text-slate-900 dark:text-white">{recipientEmail || "a recipient"}</span></>;
+      }
       case 'accepted': 
         return <>{actor} accepted the share invitation</>;
       case 'unlocked': 
         return <>{actor} unlocked/decrypted the file</>;
-      case 'removed': 
-        return <>{actor} removed access for a recipient</>;
+      case 'kept':
+        return <>{actor} kept the file secured & locked in the cloud</>;
+      case 'removed': {
+        const targetUserId = activity.metadata?.target_user_id;
+        const isSelfRemoval = activity.metadata?.self === true || (activity.user_id && targetUserId && activity.user_id === targetUserId);
+
+        if (isSelfRemoval) {
+          const isYou = activity.user?.id === auth.user.id;
+          if (isYou) {
+            return (
+              <>
+                {actor} removed your access to this file
+              </>
+            );
+          }
+          return (
+            <>
+              {actor} removed their access to this file
+            </>
+          );
+        }
+
+        const recipientEmail = activity.metadata?.target_user_email;
+        const isRecipientMe = recipientEmail === auth.user.email;
+        const recipientText = isRecipientMe ? "you" : (recipientEmail || "a recipient");
+
+        return (
+          <>
+            {actor} removed access for <span className="font-black text-slate-900 dark:text-white">{recipientText}</span>
+          </>
+        );
+      }
       case 'locking_started':
         return <>{actor} initiated file encryption & locking</>;
-      case 'locking_completed':
-        return <>File encryption & locking completed successfully</>;
+      case 'locking_completed': {
+        const duration = getLockingDuration(activity, activities);
+        return (
+          <>
+            File encryption & locking completed successfully in 
+            {duration && (
+              <span className="ml-1.5 text-[9px] font-black text-cyan-600 dark:text-cyber-accent bg-cyan-50 dark:bg-cyber-accent/10 px-2 py-0.5 rounded border border-cyan-100 dark:border-cyber-accent/20 tracking-normal uppercase">
+                {duration}
+              </span>
+            )}
+          </>
+        );
+      }
       case 'locking_failed':
         return <>{actor} failed to lock file {errorMsg}</>;
       case 'unlocking_failed':
         return <>{actor} failed to unlock file {errorMsg}</>;
+      case 'renamed':
+        return <>{actor} renamed the file</>;
       case 'deleted':
         return <>{actor} deleted this file from the system</>;
       default: 
@@ -127,7 +235,7 @@ export function FileInfoModal({ document: doc, onClose }) {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 dark:bg-cyber-accent/20 rounded-full mb-4 shadow-inner">
             <History className="size-10 text-white dark:text-cyber-accent" />
           </div>
-          <h2 className="text-xl font-bold dark:text-white uppercase tracking-tight">File History</h2>
+          <h2 className="text-xl font-bold dark:text-white uppercase tracking-tight">File Info</h2>
           
           <div className="flex flex-col items-center mt-1">
               <p className="text-indigo-100 dark:text-slate-400 text-xs font-bold uppercase tracking-widest truncate px-6">
@@ -161,7 +269,7 @@ export function FileInfoModal({ document: doc, onClose }) {
                     Activity
                 </div>
               </button>
-              {isOwner && (
+              {isOwner && isAdmin && (
                 <button
                   onClick={() => setActiveTab('performance')}
                   className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${
@@ -181,15 +289,34 @@ export function FileInfoModal({ document: doc, onClose }) {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar min-h-[400px]">
-            {activeTab === 'activity' || !isOwner ? (
+            {activeTab === 'activity' || !isOwner || !isAdmin ? (
                 <>
                     {/* File Stats Summary */}
                     <div className="grid grid-cols-2 gap-4">
                         <div className="p-4 bg-slate-50 dark:bg-cyber-surface/50 rounded-2xl border border-slate-100 dark:border-cyber-border">
                             <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Status</p>
                             <div className="flex items-center gap-2">
-                                <ShieldCheck className="size-4 text-emerald-600 dark:text-emerald-400" />
-                                <p className="text-xs font-black text-slate-900 dark:text-white uppercase">{doc.status}</p>
+                                {['stored', 'retrieved'].includes(doc.status) ? (
+                                    <>
+                                        <ShieldCheck className="size-4 text-emerald-600 dark:text-emerald-400" />
+                                        <p className="text-xs font-black text-emerald-600 dark:text-emerald-400 uppercase">Locked</p>
+                                    </>
+                                ) : doc.status === 'decrypted' ? (
+                                    <>
+                                        <Unlock className="size-4 text-amber-600 dark:text-amber-400" />
+                                        <p className="text-xs font-black text-amber-600 dark:text-amber-400 uppercase">Unlocked</p>
+                                    </>
+                                ) : doc.status === 'failed' ? (
+                                    <>
+                                        <AlertCircle className="size-4 text-red-600 dark:text-red-400" />
+                                        <p className="text-xs font-black text-red-600 dark:text-red-400 uppercase">Failed</p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Loader2 className="size-4 text-cyan-600 dark:text-cyber-accent animate-spin" />
+                                        <p className="text-xs font-black text-cyan-600 dark:text-cyber-accent uppercase">{doc.status.replace(/_/g, ' ')}</p>
+                                    </>
+                                )}
                             </div>
                         </div>
                         <div className="p-4 bg-slate-50 dark:bg-cyber-surface/50 rounded-2xl border border-slate-100 dark:border-cyber-border">
@@ -205,7 +332,7 @@ export function FileInfoModal({ document: doc, onClose }) {
                     <div className="space-y-4">
                         <div className="flex items-center gap-2 mb-2">
                             <History className="size-4 text-cyan-500" />
-                            <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Audit Logs</h3>
+                            <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Activity History</h3>
                         </div>
                         
                         {isLoading ? (

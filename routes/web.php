@@ -120,6 +120,16 @@ Route::middleware('auth')->group(function () {
         ->name('tour.complete');
     Route::get('/tour/verify', [TourController::class, 'verify'])
         ->name('tour.verify');
+
+    // User Notifications
+    Route::get('/notifications', [NotificationController::class, 'index'])
+        ->name('notifications.index');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])
+        ->name('notifications.read');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])
+        ->name('notifications.read-all');
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])
+        ->name('notifications.destroy');
 });
 
 Route::get('/capacity/check', [CapacityController::class, 'check'])->name('capacity.check');

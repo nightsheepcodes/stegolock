@@ -4,6 +4,7 @@ import { Toaster } from 'sonner';
 import Dropdown from '@/Components/Dropdown';
 
 import Sidebar from "@/Components/Sidebar";
+import NotificationDropdown from "@/Components/NotificationDropdown";
 
 import { Link, usePage, router } from '@inertiajs/react';
 import React, { useState, useEffect } from 'react';
@@ -144,6 +145,9 @@ import useInactivityTimeout from '@/hooks/useInactivityTimeout';
                             <div className="flex items-center gap-3 shrink-0">
                                 {/* Page-specific actions (e.g., Grid/List Toggle) */}
                                 {headerActions}
+
+                                {/* Notification Dropdown */}
+                                <NotificationDropdown />
 
                                 {/* Global Profile Menu */}
                                 <Dropdown>
