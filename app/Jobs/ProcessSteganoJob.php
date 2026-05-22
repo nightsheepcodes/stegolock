@@ -285,17 +285,16 @@ class ProcessSteganoJob implements ShouldQueue
 
         // 3. Greedy Expansion (if 3 fragments aren't enough)
         while ($remainingCapacity > 0) {
-            // During expansion, we pick DESC (largest) to ensure we fit the file within 15 fragments
-            $cover = $this->findBestCover('image', 0, 104857600, $selectedCovers->pluck('cover_id')->toArray(), 'DESC');
-            
-            if (!$cover) {
-                // Try audio if no images
-                $cover = $this->findBestCover('audio', 0, 104857600, $selectedCovers->pluck('cover_id')->toArray(), 'DESC');
-            }
+            // During expansion, we randomly pick whether to try an image or an audio cover first to ensure media diversity.
+            // We exclude text covers completely from the expansion phase.
+            $typesToTry = (rand(0, 1) === 0) ? ['image', 'audio'] : ['audio', 'image'];
+            $cover = null;
 
-            if (!$cover) {
-                // Try text as final resort
-                $cover = $this->findBestCover('text', 0, 104857600, $selectedCovers->pluck('cover_id')->toArray(), 'DESC');
+            foreach ($typesToTry as $type) {
+                $cover = $this->findBestCover($type, 0, 104857600, $selectedCovers->pluck('cover_id')->toArray(), 'DESC');
+                if ($cover) {
+                    break;
+                }
             }
 
             if (!$cover) break;
@@ -440,9 +439,38 @@ class ProcessSteganoJob implements ShouldQueue
                     'status' => 'floating',
                 ]);
 
+                $coverId = $cover->cover_id;
+
+                // Randomized small fragment routing:
+                // If the cover is an image or audio cover, and the fragment size is between 1 byte and 1 KB (inclusive),
+                // we have a 50% chance to randomly route it to a new dynamically generated text cover.
+                if (in_array($cover->type, ['image', 'audio']) && $fragment->size >= 1 && $fragment->size <= 1024) {
+                    if (rand(1, 100) <= 50) {
+                        Log::info("[SteganoJob] Randomly routing small fragment to a text cover.", [
+                            'fragment_id' => $fragment->fragment_id,
+                            'original_cover_type' => $cover->type,
+                            'fragment_size' => $fragment->size
+                        ]);
+                        
+                        // Generate a text cover dynamically to perfectly fit this fragment size
+                        $textCover = $this->generate_text_cover($fragment->size);
+                        $coverId = $textCover->cover_id;
+
+                        // Place the dynamically generated text cover in the job's temp path so the embedder can find it
+                        $sourceRelativePath = "temp/covers/{$textCover->filename}";
+                        $targetPath = "{$this->jobTempPath}/{$textCover->filename}";
+                        if (Storage::disk('local')->exists($sourceRelativePath)) {
+                            file_put_contents($targetPath, Storage::disk('local')->get($sourceRelativePath));
+                            $this->createdTempFiles[] = $targetPath;
+                        } else {
+                            throw new \Exception("Dynamically generated text cover missing locally: {$textCover->filename}");
+                        }
+                    }
+                }
+
                 $mappingArray[] = [
                     'fragment_id' => $fragment->fragment_id,
-                    'cover_id' => $cover->cover_id,
+                    'cover_id' => $coverId,
                     'offset' => 0 
                 ];
 
