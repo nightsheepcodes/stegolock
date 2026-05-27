@@ -290,51 +290,55 @@ export function FileInfoModal({ document: doc, onClose }) {
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar min-h-[400px]">
             {activeTab === 'activity' || !isOwner || !isAdmin ? (
-                <>
-                    {/* File Stats Summary */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="p-4 bg-slate-50 dark:bg-cyber-surface/50 rounded-2xl border border-slate-100 dark:border-cyber-border">
-                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Status</p>
-                            <div className="flex items-center gap-2">
-                                {['stored', 'retrieved'].includes(doc.status) ? (
-                                    <>
-                                        <ShieldCheck className="size-4 text-emerald-600 dark:text-emerald-400" />
-                                        <p className="text-xs font-black text-emerald-600 dark:text-emerald-400 uppercase">Locked</p>
-                                    </>
-                                ) : doc.status === 'decrypted' ? (
-                                    <>
-                                        <Unlock className="size-4 text-amber-600 dark:text-amber-400" />
-                                        <p className="text-xs font-black text-amber-600 dark:text-amber-400 uppercase">Unlocked</p>
-                                    </>
-                                ) : doc.status === 'failed' ? (
-                                    <>
-                                        <AlertCircle className="size-4 text-red-600 dark:text-red-400" />
-                                        <p className="text-xs font-black text-red-600 dark:text-red-400 uppercase">Failed</p>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Loader2 className="size-4 text-cyan-600 dark:text-cyber-accent animate-spin" />
-                                        <p className="text-xs font-black text-cyan-600 dark:text-cyber-accent uppercase">{doc.status.replace(/_/g, ' ')}</p>
-                                    </>
-                                )}
+                <div className="flex flex-col">
+                    {/* Sticky Header: Stats Summary & Label */}
+                    <div className="sticky -top-6 bg-white dark:bg-cyber-void pt-6 pb-4 z-20 space-y-6 border-b border-slate-100 dark:border-cyber-border/30">
+                        {/* File Stats Summary */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="p-4 bg-slate-50 dark:bg-cyber-surface/50 rounded-2xl border border-slate-100 dark:border-cyber-border">
+                                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Status</p>
+                                <div className="flex items-center gap-2">
+                                    {['stored', 'retrieved'].includes(doc.status) ? (
+                                        <>
+                                            <ShieldCheck className="size-4 text-emerald-600 dark:text-emerald-400" />
+                                            <p className="text-xs font-black text-emerald-600 dark:text-emerald-400 uppercase">Locked</p>
+                                        </>
+                                    ) : doc.status === 'decrypted' ? (
+                                        <>
+                                            <Unlock className="size-4 text-amber-600 dark:text-amber-400" />
+                                            <p className="text-xs font-black text-amber-600 dark:text-amber-400 uppercase">Unlocked</p>
+                                        </>
+                                    ) : doc.status === 'failed' ? (
+                                        <>
+                                            <AlertCircle className="size-4 text-red-600 dark:text-red-400" />
+                                            <p className="text-xs font-black text-red-600 dark:text-red-400 uppercase">Failed</p>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Loader2 className="size-4 text-cyan-600 dark:text-cyber-accent animate-spin" />
+                                            <p className="text-xs font-black text-cyan-600 dark:text-cyber-accent uppercase">{doc.status.replace(/_/g, ' ')}</p>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="p-4 bg-slate-50 dark:bg-cyber-surface/50 rounded-2xl border border-slate-100 dark:border-cyber-border">
+                                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Created</p>
+                                <div className="flex items-center gap-2">
+                                    <Clock className="size-4 text-indigo-600 dark:text-indigo-400" />
+                                    <p className="text-xs font-black text-slate-900 dark:text-white">{formatDate(doc.created_at)}</p>
+                                </div>
                             </div>
                         </div>
-                        <div className="p-4 bg-slate-50 dark:bg-cyber-surface/50 rounded-2xl border border-slate-100 dark:border-cyber-border">
-                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Created</p>
-                            <div className="flex items-center gap-2">
-                                <Clock className="size-4 text-indigo-600 dark:text-indigo-400" />
-                                <p className="text-xs font-black text-slate-900 dark:text-white">{formatDate(doc.created_at)}</p>
-                            </div>
-                        </div>
-                    </div>
 
-                    {/* Timeline */}
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-2 mb-2">
+                        {/* Label */}
+                        <div className="flex items-center gap-2">
                             <History className="size-4 text-cyan-500" />
                             <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Activity History</h3>
                         </div>
-                        
+                    </div>
+                    
+                    {/* Scrollable History Timeline */}
+                    <div className="pt-6">
                         {isLoading ? (
                             <div className="p-10 flex flex-col items-center justify-center text-slate-400 dark:text-slate-600">
                                 <Loader2 className="size-10 animate-spin mb-4" />
@@ -367,7 +371,7 @@ export function FileInfoModal({ document: doc, onClose }) {
                             </div>
                         )}
                     </div>
-                </>
+                </div>
             ) : (
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
                     {/* Metrics List */}
