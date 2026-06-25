@@ -1,6 +1,6 @@
     import AdminLayout from '@/Layouts/Admin/AdminLayout';
     import { Head } from '@inertiajs/react';
-    import { useState, useMemo } from 'react';
+    import { useState, useMemo, useEffect, useRef } from 'react';
     import axios from 'axios';
     import { 
         Server, 
@@ -25,7 +25,11 @@
         ChevronUp,
         ChevronDown,
         Filter,
-        X
+        X,
+        Pin,
+        GripVertical,
+        Eye,
+        EyeOff
     } from 'lucide-react';
 
 export default function DatabasePage({ database, tables, integrity }) {
@@ -583,6 +587,154 @@ function SortableHeader({ label, sortKey, sortConfig, requestSort, align }) {
 function TableDataModal({ isOpen, onClose, tableName, tableData }) {
     if (!isOpen) return null;
 
+    const [columnConfig, setColumnConfig] = useState({
+        ordered: [],
+        pinned: [],
+        hidden: []
+    });
+    const [draggedCol, setDraggedCol] = useState(null);
+    const [showColumnDropdown, setShowColumnDropdown] = useState(false);
+    const headerRefs = useRef({});
+    const [columnOffsets, setColumnOffsets] = useState({});
+
+    useEffect(() => {
+        if (isOpen && tableData.columns) {
+            setColumnConfig({
+                ordered: [...tableData.columns],
+                pinned: [],
+                hidden: []
+            });
+        }
+    }, [isOpen, tableData.columns]);
+
+    useEffect(() => {
+        const measure = () => {
+            const offsets = {};
+            let currentLeft = 0;
+            columnConfig.ordered.forEach((col) => {
+                const el = headerRefs.current[col];
+                if (el) {
+                    offsets[col] = currentLeft;
+                    if (columnConfig.pinned.includes(col)) {
+                        currentLeft += el.offsetWidth;
+                    }
+                }
+            });
+            setColumnOffsets(offsets);
+        };
+
+        const timer = setTimeout(measure, 100);
+        window.addEventListener('resize', measure);
+        return () => {
+            clearTimeout(timer);
+            window.removeEventListener('resize', measure);
+        };
+    }, [columnConfig, tableData.data, isOpen]);
+
+    const handleReset = () => {
+        if (tableData.columns) {
+            setColumnConfig({
+                ordered: [...tableData.columns],
+                pinned: [],
+                hidden: []
+            });
+        }
+    };
+
+    const togglePin = (columnName) => {
+        setColumnConfig(prev => {
+            const isPinned = prev.pinned.includes(columnName);
+            let nextPinned;
+            if (isPinned) {
+                nextPinned = prev.pinned.filter(c => c !== columnName);
+            } else {
+                nextPinned = [...prev.pinned, columnName];
+            }
+            
+            // Reorder: pinned first, then unpinned (preserving relative order)
+            const pinnedCols = prev.ordered.filter(c => nextPinned.includes(c));
+            const unpinnedCols = prev.ordered.filter(c => !nextPinned.includes(c));
+            
+            return {
+                ...prev,
+                ordered: [...pinnedCols, ...unpinnedCols],
+                pinned: nextPinned
+            };
+        });
+    };
+
+    const toggleVisibility = (columnName) => {
+        setColumnConfig(prev => {
+            const isHidden = prev.hidden.includes(columnName);
+            let nextHidden;
+            if (isHidden) {
+                nextHidden = prev.hidden.filter(c => c !== columnName);
+            } else {
+                nextHidden = [...prev.hidden, columnName];
+            }
+            return {
+                ...prev,
+                hidden: nextHidden
+            };
+        });
+    };
+
+    const handleDragStart = (e, columnName) => {
+        setDraggedCol(columnName);
+        e.dataTransfer.effectAllowed = 'move';
+    };
+
+    const handleDragOver = (e, columnName) => {
+        e.preventDefault();
+    };
+
+    const handleDrop = (e, targetColumnName) => {
+        e.preventDefault();
+        if (!draggedCol || draggedCol === targetColumnName) return;
+        
+        setColumnConfig(prev => {
+            const dragIndex = prev.ordered.indexOf(draggedCol);
+            const dropIndex = prev.ordered.indexOf(targetColumnName);
+            
+            if (dragIndex === -1 || dropIndex === -1) return prev;
+            
+            const newOrdered = [...prev.ordered];
+            newOrdered.splice(dragIndex, 1);
+            newOrdered.splice(dropIndex, 0, draggedCol);
+            
+            const targetIsPinned = prev.pinned.includes(targetColumnName);
+            const dragIsPinned = prev.pinned.includes(draggedCol);
+            
+            let newPinned = [...prev.pinned];
+            if (targetIsPinned && !dragIsPinned) {
+                newPinned.push(draggedCol);
+            } else if (!targetIsPinned && dragIsPinned) {
+                newPinned = newPinned.filter(c => c !== draggedCol);
+            }
+            
+            // Group all pinned columns at the start
+            const pinnedCols = newOrdered.filter(c => newPinned.includes(c));
+            const unpinnedCols = newOrdered.filter(c => !newPinned.includes(c));
+            
+            return {
+                ...prev,
+                ordered: [...pinnedCols, ...unpinnedCols],
+                pinned: newPinned
+            };
+        });
+        
+        setDraggedCol(null);
+    };
+
+    const handleDragEnd = () => {
+        setDraggedCol(null);
+    };
+
+    const visibleColumns = columnConfig.ordered.filter(col => !columnConfig.hidden.includes(col));
+    const hasLayoutChanges = columnConfig.pinned.length > 0 || 
+                             columnConfig.hidden.length > 0 || 
+                             JSON.stringify(columnConfig.ordered) !== JSON.stringify(tableData.columns);
+
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
             <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
@@ -598,16 +750,59 @@ function TableDataModal({ isOpen, onClose, tableName, tableData }) {
                                 Table Inspector: <span className="text-indigo-500">{tableName}</span>
                             </h3>
                             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">
-                                Previewing up to 100 most recent records
+                                Previewing up to 100 most recent records &bull; Drag headers to reorder &bull; Click pin to freeze
                             </p>
                         </div>
                     </div>
-                    <button 
-                        onClick={onClose}
-                        className="p-2 hover:bg-slate-200 dark:hover:bg-cyber-void rounded-lg text-slate-400 transition-colors"
-                    >
-                        <X className="size-6" />
-                    </button>
+                    
+                    <div className="flex items-center gap-3">
+                        <div className="relative">
+                            <button
+                                onClick={() => setShowColumnDropdown(!showColumnDropdown)}
+                                className="flex items-center gap-2 px-3 py-1.5 border border-slate-200 dark:border-cyber-border hover:bg-slate-50 dark:hover:bg-cyber-void text-slate-700 dark:text-slate-300 rounded-xl text-xs font-black uppercase tracking-widest transition-all"
+                            >
+                                <Eye className="size-4 text-indigo-500" />
+                                <span>Columns ({visibleColumns.length})</span>
+                            </button>
+                            
+                            {showColumnDropdown && (
+                                <>
+                                    <div className="fixed inset-0 z-40" onClick={() => setShowColumnDropdown(false)} />
+                                    <div className="absolute right-0 top-10 w-56 bg-white dark:bg-[#151f32] border border-slate-200 dark:border-cyber-border rounded-xl shadow-xl p-3 z-50 max-h-[300px] overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-2 duration-150">
+                                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] mb-2 px-1">
+                                            Toggle Columns
+                                        </div>
+                                        <div className="space-y-1">
+                                            {columnConfig.ordered.map(col => {
+                                                const isHidden = columnConfig.hidden.includes(col);
+                                                return (
+                                                    <label 
+                                                        key={col} 
+                                                        className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-slate-50/50 dark:hover:bg-white/5 cursor-pointer text-xs font-semibold text-slate-700 dark:text-slate-300 transition-colors"
+                                                    >
+                                                        <input 
+                                                            type="checkbox"
+                                                            checked={!isHidden}
+                                                            onChange={() => toggleVisibility(col)}
+                                                            className="rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-cyber-border dark:bg-cyber-void"
+                                                        />
+                                                        <span className="truncate">{col}</span>
+                                                    </label>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
+                        <button 
+                            onClick={onClose}
+                            className="p-2 hover:bg-slate-200 dark:hover:bg-cyber-void rounded-lg text-slate-400 transition-colors"
+                        >
+                            <X className="size-6" />
+                        </button>
+                    </div>
                 </div>
 
                 <div className="flex-1 overflow-auto p-0 custom-scrollbar">
@@ -626,25 +821,95 @@ function TableDataModal({ isOpen, onClose, tableName, tableData }) {
                             <table className="w-full text-left border-collapse">
                                 <thead className="sticky top-0 bg-slate-50 dark:bg-cyber-void z-10 border-b border-slate-200 dark:border-cyber-border/50 shadow-sm">
                                     <tr>
-                                        {tableData.columns.map(col => (
-                                            <th key={col} className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest border-r border-slate-100 dark:border-cyber-border/10 last:border-0">
-                                                {col}
-                                            </th>
-                                        ))}
+                                        {visibleColumns.map((col, index) => {
+                                            const isPinned = columnConfig.pinned.includes(col);
+                                            const isLastPinned = isPinned && columnConfig.pinned.indexOf(col) === columnConfig.pinned.length - 1;
+                                            const leftOffset = columnOffsets[col] ?? 0;
+                                            const stickyStyle = isPinned ? {
+                                                position: 'sticky',
+                                                left: `${leftOffset}px`,
+                                                zIndex: 30
+                                            } : {};
+
+                                            return (
+                                                <th 
+                                                    key={col} 
+                                                    ref={el => { headerRefs.current[col] = el; }}
+                                                    draggable
+                                                    onDragStart={(e) => handleDragStart(e, col)}
+                                                    onDragOver={(e) => handleDragOver(e, col)}
+                                                    onDrop={(e) => handleDrop(e, col)}
+                                                    onDragEnd={handleDragEnd}
+                                                    style={stickyStyle}
+                                                    className={`px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest last:border-0 cursor-grab active:cursor-grabbing select-none relative group transition-colors duration-200 ${
+                                                        isPinned 
+                                                        ? 'bg-slate-100 dark:bg-cyber-surface/90 text-indigo-600 dark:text-indigo-400 font-bold' 
+                                                        : 'bg-slate-50 dark:bg-cyber-void hover:bg-slate-100 dark:hover:bg-cyber-surface/50'
+                                                    } ${draggedCol === col ? 'opacity-40 border-2 border-dashed border-indigo-400' : ''} ${
+                                                        isLastPinned 
+                                                        ? 'border-r-2 border-r-indigo-500/30 dark:border-r-indigo-500/50' 
+                                                        : 'border-r border-slate-100 dark:border-cyber-border/10'
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center justify-between gap-2">
+                                                        <div className="flex items-center gap-1.5 min-w-0">
+                                                            <GripVertical className="size-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab shrink-0" />
+                                                            <span className="truncate" title={col}>{col}</span>
+                                                        </div>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                togglePin(col);
+                                                            }}
+                                                            className={`p-1 rounded-md hover:bg-slate-200 dark:hover:bg-cyber-void transition-colors shrink-0 ${
+                                                                isPinned ? 'text-indigo-500' : 'text-slate-300 hover:text-slate-500 opacity-0 group-hover:opacity-100'
+                                                            }`}
+                                                            title={isPinned ? "Unpin column" : "Pin column"}
+                                                        >
+                                                            <Pin className="size-3" />
+                                                        </button>
+                                                    </div>
+                                                </th>
+                                            );
+                                        })}
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-cyber-border/10">
                                     {tableData.data.map((row, idx) => (
-                                        <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
-                                            {tableData.columns.map(col => (
-                                                <td key={col} className="px-6 py-4 text-xs font-mono text-slate-600 dark:text-slate-400 border-r border-slate-100 dark:border-cyber-border/10 last:border-0 whitespace-nowrap overflow-hidden text-ellipsis max-w-[250px]" title={String(row[col])}>
-                                                    {row[col] === null ? (
-                                                        <span className="text-rose-400 italic bg-rose-400/5 px-1.5 py-0.5 rounded">null</span>
-                                                    ) : (
-                                                        String(row[col])
-                                                    )}
-                                                </td>
-                                            ))}
+                                        <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group">
+                                            {visibleColumns.map(col => {
+                                                const isPinned = columnConfig.pinned.includes(col);
+                                                const isLastPinned = isPinned && columnConfig.pinned.indexOf(col) === columnConfig.pinned.length - 1;
+                                                const leftOffset = columnOffsets[col] ?? 0;
+                                                const stickyStyle = isPinned ? {
+                                                    position: 'sticky',
+                                                    left: `${leftOffset}px`,
+                                                    zIndex: 20
+                                                } : {};
+
+                                                return (
+                                                    <td 
+                                                        key={col} 
+                                                        style={stickyStyle}
+                                                        className={`px-6 py-4 text-xs font-mono text-slate-600 dark:text-slate-400 last:border-0 whitespace-nowrap overflow-hidden text-ellipsis max-w-[250px] transition-colors ${
+                                                            isPinned 
+                                                            ? 'bg-slate-50 dark:bg-[#1b253c] font-semibold z-20 group-hover:bg-slate-100 dark:group-hover:bg-[#222e4a]' 
+                                                            : 'group-hover:bg-slate-50/50 dark:group-hover:bg-white/5'
+                                                        } ${
+                                                            isLastPinned 
+                                                            ? 'border-r-2 border-r-indigo-500/20 dark:border-r-indigo-500/30' 
+                                                            : 'border-r border-slate-100 dark:border-cyber-border/10'
+                                                        }`}
+                                                        title={row[col] !== null ? String(row[col]) : ''}
+                                                    >
+                                                        {row[col] === null ? (
+                                                            <span className="text-rose-400 italic bg-rose-400/5 px-1.5 py-0.5 rounded">null</span>
+                                                        ) : (
+                                                            String(row[col])
+                                                        )}
+                                                    </td>
+                                                );
+                                            })}
                                         </tr>
                                     ))}
                                 </tbody>
@@ -657,12 +922,22 @@ function TableDataModal({ isOpen, onClose, tableName, tableData }) {
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                         Total rows in preview: {tableData.data.length}
                     </p>
-                    <button 
-                        onClick={onClose}
-                        className="px-6 py-2 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg"
-                    >
-                        Close Inspector
-                    </button>
+                    <div className="flex gap-3">
+                        {hasLayoutChanges && (
+                            <button
+                                onClick={handleReset}
+                                className="px-4 py-2 border border-slate-200 dark:border-cyber-border hover:bg-slate-50 dark:hover:bg-cyber-void text-slate-700 dark:text-slate-300 rounded-xl text-xs font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all"
+                            >
+                                Reset Layout
+                            </button>
+                        )}
+                        <button 
+                            onClick={onClose}
+                            className="px-6 py-2 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg"
+                        >
+                            Close Inspector
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
