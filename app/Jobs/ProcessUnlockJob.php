@@ -342,7 +342,7 @@ class ProcessUnlockJob implements ShouldQueue
         );
 
         if ($dek === null || hash('sha256', $dek) !== $document->dek_hash) {
-            throw new \Exception('Document Key integrity check failed. Wrong master key?');
+            throw new \Exception('Document Key integrity check failed. Wrong cryptographic values.');
         }
 
         $plaintext = $cryptoService->decrypt($ciphertext, $dek, $nonce, $tag);
