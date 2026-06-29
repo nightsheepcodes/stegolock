@@ -596,6 +596,8 @@ function TableDataModal({ isOpen, onClose, tableName, tableData }) {
     const [showColumnDropdown, setShowColumnDropdown] = useState(false);
     const headerRefs = useRef({});
     const [columnOffsets, setColumnOffsets] = useState({});
+    const [selectedRecord, setSelectedRecord] = useState(null);
+    const [hiddenDetails, setHiddenDetails] = useState([]);
 
     useEffect(() => {
         if (isOpen && tableData.columns) {
@@ -606,6 +608,13 @@ function TableDataModal({ isOpen, onClose, tableName, tableData }) {
             });
         }
     }, [isOpen, tableData.columns]);
+
+    useEffect(() => {
+        if (!isOpen) {
+            setSelectedRecord(null);
+            setHiddenDetails([]);
+        }
+    }, [isOpen]);
 
     useEffect(() => {
         const measure = () => {
@@ -638,6 +647,7 @@ function TableDataModal({ isOpen, onClose, tableName, tableData }) {
                 pinned: [],
                 hidden: []
             });
+            setHiddenDetails([]);
         }
     };
 
@@ -733,6 +743,7 @@ function TableDataModal({ isOpen, onClose, tableName, tableData }) {
     const visibleColumns = columnConfig.ordered.filter(col => !columnConfig.hidden.includes(col));
     const hasLayoutChanges = columnConfig.pinned.length > 0 || 
                              columnConfig.hidden.length > 0 || 
+                             hiddenDetails.length > 0 ||
                              JSON.stringify(columnConfig.ordered) !== JSON.stringify(tableData.columns);
 
     return (
@@ -876,7 +887,11 @@ function TableDataModal({ isOpen, onClose, tableName, tableData }) {
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-cyber-border/10">
                                     {tableData.data.map((row, idx) => (
-                                        <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group">
+                                        <tr 
+                                            key={idx} 
+                                            onClick={() => setSelectedRecord(row)}
+                                            className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group cursor-pointer"
+                                        >
                                             {visibleColumns.map(col => {
                                                 const isPinned = columnConfig.pinned.includes(col);
                                                 const isLastPinned = isPinned && columnConfig.pinned.indexOf(col) === columnConfig.pinned.length - 1;
@@ -936,6 +951,188 @@ function TableDataModal({ isOpen, onClose, tableName, tableData }) {
                             className="px-6 py-2 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg"
                         >
                             Close Inspector
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <RecordDetailsModal 
+                isOpen={!!selectedRecord} 
+                onClose={() => setSelectedRecord(null)} 
+                record={selectedRecord} 
+                tableName={tableName} 
+                columns={tableData.columns} 
+                hiddenDetails={hiddenDetails} 
+                setHiddenDetails={setHiddenDetails} 
+            />
+        </div>
+    );
+}
+
+function RecordDetailsModal({ isOpen, onClose, record, tableName, columns, hiddenDetails, setHiddenDetails }) {
+    if (!isOpen || !record) return null;
+
+    const [showFieldsDropdown, setShowFieldsDropdown] = useState(false);
+
+    const toggleFieldVisibility = (col) => {
+        setHiddenDetails(prev => {
+            if (prev.includes(col)) {
+                return prev.filter(c => c !== col);
+            } else {
+                return [...prev, col];
+            }
+        });
+    };
+
+    const handleResetDetails = () => {
+        setHiddenDetails([]);
+    };
+
+    const visibleFields = columns.filter(col => !hiddenDetails.includes(col));
+
+    return (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 sm:p-6">
+            <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity animate-in fade-in duration-200" onClick={onClose} />
+            
+            <div className="relative w-full max-w-4xl max-h-[85vh] bg-white dark:bg-[#0e1626] rounded-2xl shadow-2xl border border-slate-200 dark:border-cyber-border overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 z-[120]">
+                {/* Header */}
+                <div className="p-6 border-b border-slate-100 dark:border-cyber-border/30 flex items-center justify-between bg-slate-50/50 dark:bg-cyber-void/10">
+                    <div className="flex items-center gap-3">
+                        <div className="size-10 rounded-xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20">
+                            <Info className="size-6 text-orange-500" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                                Record Details &bull; <span className="text-orange-500">{tableName}</span>
+                            </h3>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">
+                                Single Record View &bull; Hover cards to hide details
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                        {/* Fields Toggle Dropdown */}
+                        <div className="relative">
+                            <button
+                                onClick={() => setShowFieldsDropdown(!showFieldsDropdown)}
+                                className="flex items-center gap-2 px-3 py-1.5 border border-slate-200 dark:border-cyber-border hover:bg-slate-50 dark:hover:bg-cyber-void text-slate-700 dark:text-slate-300 rounded-xl text-xs font-black uppercase tracking-widest transition-all"
+                            >
+                                <Eye className="size-4 text-orange-500" />
+                                <span>Fields ({visibleFields.length})</span>
+                            </button>
+                            
+                            {showFieldsDropdown && (
+                                <>
+                                    <div className="fixed inset-0 z-40" onClick={() => setShowFieldsDropdown(false)} />
+                                    <div className="absolute right-0 top-10 w-56 bg-white dark:bg-[#151f32] border border-slate-200 dark:border-cyber-border rounded-xl shadow-xl p-3 z-50 max-h-[300px] overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-2 duration-150">
+                                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] mb-2 px-1">
+                                            Toggle Fields
+                                        </div>
+                                        <div className="space-y-1">
+                                            {columns.map(col => {
+                                                const isHidden = hiddenDetails.includes(col);
+                                                return (
+                                                    <label 
+                                                        key={col} 
+                                                        className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-slate-50/50 dark:hover:bg-white/5 cursor-pointer text-xs font-semibold text-slate-700 dark:text-slate-300 transition-colors"
+                                                    >
+                                                        <input 
+                                                            type="checkbox"
+                                                            checked={!isHidden}
+                                                            onChange={() => toggleFieldVisibility(col)}
+                                                            className="rounded text-orange-600 focus:ring-orange-500 border-slate-300 dark:border-cyber-border dark:bg-cyber-void"
+                                                        />
+                                                        <span className="truncate">{col}</span>
+                                                    </label>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
+                        <button 
+                            onClick={onClose}
+                            className="p-2 hover:bg-slate-200 dark:hover:bg-cyber-void rounded-lg text-slate-400 transition-colors"
+                        >
+                            <X className="size-6" />
+                        </button>
+                    </div>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 overflow-auto p-6 custom-scrollbar">
+                    {visibleFields.length === 0 ? (
+                        <div className="h-64 flex flex-col items-center justify-center text-slate-400">
+                            <EyeOff className="size-12 opacity-20 mb-4" />
+                            <p className="text-sm font-bold uppercase tracking-widest">All fields are hidden</p>
+                            <button
+                                onClick={handleResetDetails}
+                                className="mt-4 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-bold transition-all shadow-lg"
+                            >
+                                Reset Details View
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {visibleFields.map(col => {
+                                const val = record[col];
+                                const isNull = val === null;
+
+                                return (
+                                    <div 
+                                        key={col}
+                                        className="p-4 bg-slate-50 dark:bg-cyber-surface/50 border border-slate-200/60 dark:border-cyber-border/40 rounded-xl relative group flex flex-col justify-between hover:border-orange-500/30 dark:hover:border-orange-500/30 transition-all duration-300"
+                                    >
+                                        <div className="flex items-center justify-between gap-4 mb-2">
+                                            <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate" title={col}>
+                                                {col}
+                                            </span>
+                                            
+                                            <button
+                                                onClick={() => toggleFieldVisibility(col)}
+                                                className="p-1 rounded bg-slate-200 dark:bg-cyber-void hover:bg-rose-500/10 text-slate-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all"
+                                                title="Hide field"
+                                            >
+                                                <EyeOff className="size-3" />
+                                            </button>
+                                        </div>
+
+                                        <div className="text-sm font-mono break-all text-slate-800 dark:text-slate-200 font-medium">
+                                            {isNull ? (
+                                                <span className="text-rose-400 italic bg-rose-400/5 px-1.5 py-0.5 rounded">null</span>
+                                            ) : (
+                                                String(val)
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+
+                {/* Footer */}
+                <div className="p-4 border-t border-slate-100 dark:border-cyber-border/30 bg-slate-50/50 dark:bg-cyber-void/10 flex items-center justify-between">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        Showing {visibleFields.length} of {columns.length} fields
+                    </p>
+                    <div className="flex gap-3">
+                        {hiddenDetails.length > 0 && (
+                            <button
+                                onClick={handleResetDetails}
+                                className="px-4 py-2 border border-slate-200 dark:border-cyber-border hover:bg-slate-50 dark:hover:bg-cyber-void text-slate-700 dark:text-slate-300 rounded-xl text-xs font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all"
+                            >
+                                Reset Details View
+                            </button>
+                        )}
+                        <button 
+                            onClick={onClose}
+                            className="px-6 py-2 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg"
+                        >
+                            Close Details
                         </button>
                     </div>
                 </div>
