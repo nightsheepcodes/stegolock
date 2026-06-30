@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -55,6 +56,11 @@ class AuthenticatedSessionController extends Controller
 
         // Verify password
         if (!hash_equals(base64_encode($password_derivedKey), $user->password_hash)) {
+            Log::warning('Failed login attempt: incorrect password', [
+                'user_id' => $user->id,
+                'email' => $email,
+                'ip' => $request->ip(),
+            ]);
             return back()->withErrors(['email' => 'Invalid credentials']);
         }
 
