@@ -37,6 +37,10 @@ class AuthenticatedSessionController extends Controller
         $user = User::query()->where('email', '=', $email)->first();
 
         if (!$user) {
+            Log::warning('Failed login attempt: non-existent email', [
+                'email' => $email,
+                'ip' => $request->ip(),
+            ]);
             return back()->withErrors(['email' => 'Invalid credentials']);
         }
 
@@ -83,6 +87,11 @@ class AuthenticatedSessionController extends Controller
         );
 
         if ($master_key === false) {
+            Log::warning('Cryptographic failure: master key decryption failed', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'ip' => $request->ip(),
+            ]);
             return back()->withErrors(['email' => 'Failed to decrypt master key']);
         }
 
@@ -103,6 +112,12 @@ class AuthenticatedSessionController extends Controller
             // Generate and send the Login 2FA OTP code!
             $user->sendLogin2faNotification();
 
+            Log::info('Two-factor authentication code sent', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'ip' => $request->ip(),
+            ]);
+
             // Redirect to the two-factor challenge screen!
             return redirect()->route('two-factor.challenge');
         }
@@ -116,6 +131,12 @@ class AuthenticatedSessionController extends Controller
 
         // Login user manually
         Auth::login($user, $request->boolean('remember'));
+
+        Log::info('User logged in successfully', [
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'ip' => $request->ip(),
+        ]);
 
         // Check if redirect to survey is requested (from form data or query parameter)
         $redirectTo = $request->input('redirect') ?: $request->query('redirect');
@@ -146,6 +167,11 @@ class AuthenticatedSessionController extends Controller
 
         $user = Auth::user();
         if ($user) {
+            Log::info('User logged out', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'ip' => $request->ip(),
+            ]);
             $user->update(['last_logout_at' => now()]);
         }
 
