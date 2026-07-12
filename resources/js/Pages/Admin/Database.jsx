@@ -592,6 +592,7 @@ function TableDataModal({ isOpen, onClose, tableName, tableData }) {
         pinned: [],
         hidden: []
     });
+    const [columnWidths, setColumnWidths] = useState({});
     const [draggedCol, setDraggedCol] = useState(null);
     const [showColumnDropdown, setShowColumnDropdown] = useState(false);
     const headerRefs = useRef({});
@@ -606,6 +607,7 @@ function TableDataModal({ isOpen, onClose, tableName, tableData }) {
                 pinned: [],
                 hidden: []
             });
+            setColumnWidths({});
         }
     }, [isOpen, tableData.columns]);
 
@@ -638,7 +640,7 @@ function TableDataModal({ isOpen, onClose, tableName, tableData }) {
             clearTimeout(timer);
             window.removeEventListener('resize', measure);
         };
-    }, [columnConfig, tableData.data, isOpen]);
+    }, [columnConfig, tableData.data, isOpen, columnWidths]);
 
     const handleReset = () => {
         if (tableData.columns) {
@@ -647,6 +649,7 @@ function TableDataModal({ isOpen, onClose, tableName, tableData }) {
                 pinned: [],
                 hidden: []
             });
+            setColumnWidths({});
             setHiddenDetails([]);
         }
     };
@@ -689,7 +692,36 @@ function TableDataModal({ isOpen, onClose, tableName, tableData }) {
         });
     };
 
+    const handleResizeStart = (e, colName) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const startX = e.clientX;
+        const startWidth = headerRefs.current[colName]?.offsetWidth || 150;
+
+        const handleMouseMove = (moveEvent) => {
+            const deltaX = moveEvent.clientX - startX;
+            const newWidth = Math.max(60, startWidth + deltaX);
+            setColumnWidths(prev => ({
+                ...prev,
+                [colName]: newWidth
+            }));
+        };
+
+        const handleMouseUp = () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+    };
+
     const handleDragStart = (e, columnName) => {
+        if (e.target.classList.contains('resize-handle') || e.target.closest('.resize-handle')) {
+            e.preventDefault();
+            return;
+        }
         setDraggedCol(columnName);
         e.dataTransfer.effectAllowed = 'move';
     };
@@ -744,6 +776,7 @@ function TableDataModal({ isOpen, onClose, tableName, tableData }) {
     const hasLayoutChanges = columnConfig.pinned.length > 0 || 
                              columnConfig.hidden.length > 0 || 
                              hiddenDetails.length > 0 ||
+                             Object.keys(columnWidths).length > 0 ||
                              JSON.stringify(columnConfig.ordered) !== JSON.stringify(tableData.columns);
 
     return (
@@ -842,6 +875,12 @@ function TableDataModal({ isOpen, onClose, tableName, tableData }) {
                                                 zIndex: 30
                                             } : {};
 
+                                            const customWidthStyle = columnWidths[col] ? {
+                                                width: `${columnWidths[col]}px`,
+                                                minWidth: `${columnWidths[col]}px`,
+                                                maxWidth: `${columnWidths[col]}px`,
+                                            } : {};
+
                                             return (
                                                 <th 
                                                     key={col} 
@@ -851,7 +890,7 @@ function TableDataModal({ isOpen, onClose, tableName, tableData }) {
                                                     onDragOver={(e) => handleDragOver(e, col)}
                                                     onDrop={(e) => handleDrop(e, col)}
                                                     onDragEnd={handleDragEnd}
-                                                    style={stickyStyle}
+                                                    style={{ ...stickyStyle, ...customWidthStyle }}
                                                     className={`px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest last:border-0 cursor-grab active:cursor-grabbing select-none relative group transition-colors duration-200 ${
                                                         isPinned 
                                                         ? 'bg-slate-100 dark:bg-cyber-surface/90 text-indigo-600 dark:text-indigo-400 font-bold' 
@@ -862,7 +901,7 @@ function TableDataModal({ isOpen, onClose, tableName, tableData }) {
                                                         : 'border-r border-slate-100 dark:border-cyber-border/10'
                                                     }`}
                                                 >
-                                                    <div className="flex items-center justify-between gap-2">
+                                                    <div className="flex items-center justify-between gap-2 pr-1.5">
                                                         <div className="flex items-center gap-1.5 min-w-0">
                                                             <GripVertical className="size-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab shrink-0" />
                                                             <span className="truncate" title={col}>{col}</span>
@@ -880,6 +919,13 @@ function TableDataModal({ isOpen, onClose, tableName, tableData }) {
                                                             <Pin className="size-3" />
                                                         </button>
                                                     </div>
+
+                                                    {/* Resize Handle */}
+                                                    <div 
+                                                        onMouseDown={(e) => handleResizeStart(e, col)}
+                                                        className="resize-handle absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-indigo-500/50 active:bg-indigo-500 z-40 transition-colors"
+                                                        title="Drag to resize"
+                                                    />
                                                 </th>
                                             );
                                         })}
@@ -902,10 +948,16 @@ function TableDataModal({ isOpen, onClose, tableName, tableData }) {
                                                     zIndex: 20
                                                 } : {};
 
+                                                const customWidthStyle = columnWidths[col] ? {
+                                                    width: `${columnWidths[col]}px`,
+                                                    minWidth: `${columnWidths[col]}px`,
+                                                    maxWidth: `${columnWidths[col]}px`,
+                                                } : {};
+
                                                 return (
                                                     <td 
                                                         key={col} 
-                                                        style={stickyStyle}
+                                                        style={{ ...stickyStyle, ...customWidthStyle }}
                                                         className={`px-6 py-4 text-xs font-mono text-slate-600 dark:text-slate-400 last:border-0 whitespace-nowrap overflow-hidden text-ellipsis max-w-[250px] transition-colors ${
                                                             isPinned 
                                                             ? 'bg-slate-50 dark:bg-[#1b253c] font-semibold z-20 group-hover:bg-slate-100 dark:group-hover:bg-[#222e4a]' 
