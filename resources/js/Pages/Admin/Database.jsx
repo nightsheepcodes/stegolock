@@ -593,6 +593,7 @@ function TableDataModal({ isOpen, onClose, tableName, tableData }) {
         hidden: []
     });
     const [columnWidths, setColumnWidths] = useState({});
+    const [modalSize, setModalSize] = useState({ width: null, height: null });
     const [draggedCol, setDraggedCol] = useState(null);
     const [showColumnDropdown, setShowColumnDropdown] = useState(false);
     const headerRefs = useRef({});
@@ -608,6 +609,7 @@ function TableDataModal({ isOpen, onClose, tableName, tableData }) {
                 hidden: []
             });
             setColumnWidths({});
+            setModalSize({ width: null, height: null });
         }
     }, [isOpen, tableData.columns]);
 
@@ -640,7 +642,7 @@ function TableDataModal({ isOpen, onClose, tableName, tableData }) {
             clearTimeout(timer);
             window.removeEventListener('resize', measure);
         };
-    }, [columnConfig, tableData.data, isOpen, columnWidths]);
+    }, [columnConfig, tableData.data, isOpen, columnWidths, modalSize]);
 
     const handleReset = () => {
         if (tableData.columns) {
@@ -650,6 +652,7 @@ function TableDataModal({ isOpen, onClose, tableName, tableData }) {
                 hidden: []
             });
             setColumnWidths({});
+            setModalSize({ width: null, height: null });
             setHiddenDetails([]);
         }
     };
@@ -706,6 +709,39 @@ function TableDataModal({ isOpen, onClose, tableName, tableData }) {
                 ...prev,
                 [colName]: newWidth
             }));
+        };
+
+        const handleMouseUp = () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+    };
+
+    const handleModalResizeStart = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const startX = e.clientX;
+        const startY = e.clientY;
+
+        const modalEl = e.currentTarget.parentElement;
+        const startWidth = modalEl.offsetWidth;
+        const startHeight = modalEl.offsetHeight;
+
+        const handleMouseMove = (moveEvent) => {
+            const deltaX = moveEvent.clientX - startX;
+            const deltaY = moveEvent.clientY - startY;
+
+            const newWidth = Math.min(window.innerWidth * 0.95, Math.max(500, startWidth + deltaX));
+            const newHeight = Math.min(window.innerHeight * 0.95, Math.max(300, startHeight + deltaY));
+
+            setModalSize({
+                width: newWidth,
+                height: newHeight
+            });
         };
 
         const handleMouseUp = () => {
@@ -777,13 +813,25 @@ function TableDataModal({ isOpen, onClose, tableName, tableData }) {
                              columnConfig.hidden.length > 0 || 
                              hiddenDetails.length > 0 ||
                              Object.keys(columnWidths).length > 0 ||
+                             modalSize.width !== null ||
+                             modalSize.height !== null ||
                              JSON.stringify(columnConfig.ordered) !== JSON.stringify(tableData.columns);
+
+    const modalStyle = {
+        width: modalSize.width ? `${modalSize.width}px` : undefined,
+        height: modalSize.height ? `${modalSize.height}px` : undefined,
+        maxWidth: '95vw',
+        maxHeight: '95vh',
+    };
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
             <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
             
-            <div className="relative w-full max-w-6xl max-h-[90vh] bg-white dark:bg-cyber-surface rounded-2xl shadow-2xl border border-slate-200 dark:border-cyber-border overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+            <div 
+                style={modalStyle}
+                className="relative w-full max-w-6xl max-h-[90vh] bg-white dark:bg-cyber-surface rounded-2xl shadow-2xl border border-slate-200 dark:border-cyber-border overflow-hidden flex flex-col animate-in zoom-in-95 duration-200"
+            >
                 <div className="p-6 border-b border-slate-100 dark:border-cyber-border/30 flex items-center justify-between bg-slate-50/50 dark:bg-cyber-void/10">
                     <div className="flex items-center gap-3">
                         <div className="size-10 rounded-xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
@@ -1005,6 +1053,18 @@ function TableDataModal({ isOpen, onClose, tableName, tableData }) {
                             Close Inspector
                         </button>
                     </div>
+                </div>
+
+                {/* Modal Resize Handle */}
+                <div 
+                    onMouseDown={handleModalResizeStart}
+                    className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize z-50 flex items-end justify-end p-0.5"
+                    title="Drag to resize modal"
+                >
+                    <svg className="size-3 text-slate-400 dark:text-slate-500 hover:text-indigo-500 transition-colors" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <line x1="8" y1="2" x2="2" y2="8" />
+                        <line x1="8" y1="5" x2="5" y2="8" />
+                    </svg>
                 </div>
             </div>
 
